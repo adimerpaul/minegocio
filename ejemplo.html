@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',Helvetica,Arial,sans-serif;background:#eceae7;color:#221a15}
+*{box-sizing:border-box}
+input,select,button,textarea{font-family:inherit}
+a{color:#f4632c;text-decoration:none} a:hover{color:#c94d1e}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)}}
+::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+
+<div style="max-width:430px;margin:0 auto;min-height:100vh;background:#faf8f6;box-shadow:0 0 40px rgba(40,20,5,0.10);position:relative">
+
+  <!-- ============ LOGIN ============ -->
+  <sc-if value="{{ esLogin }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Login" style="min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;background:#221a15;padding:0">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:40px 28px">
+      <div style="width:64px;height:64px;border-radius:18px;background:{{ primary }};color:#ffffff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:30px">G</div>
+      <div style="font-size:30px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;text-align:center">GestiónPro</div>
+      <div style="font-size:15px;color:#b3a89f;text-align:center;line-height:1.5;max-width:280px">Tu negocio y tu tienda en línea, desde el celular.</div>
+    </div>
+    <div style="background:#faf8f6;border-radius:24px 24px 0 0;padding:28px 24px 36px;animation:fadeUp 0.4s ease">
+      <button onClick="{{ iniciarSesion }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px;border:1px solid #e4ddd6;border-radius:14px;background:#ffffff;font-size:16px;font-weight:600;color:#221a15;cursor:pointer" style-hover="background:#f4f0ec">
+        <span style="width:22px;height:22px;border-radius:50%;border:1px solid #e4ddd6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:{{ primary }}">G</span>
+        Iniciar sesión con Gmail
+      </button>
+      <button onClick="{{ verTiendaDesdeLogin }}" style="width:100%;margin-top:12px;padding:15px;border:none;border-radius:14px;background:{{ primary }};color:#ffffff;font-size:16px;font-weight:600;cursor:pointer" style-hover="filter:brightness(1.08)">Ver la tienda en línea</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ REGISTRO DE EMPRESA ============ -->
+  <sc-if value="{{ esRegistro }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Registro de empresa" style="min-height:100vh;padding:28px 24px 40px;animation:fadeUp 0.35s ease">
+    <div style="font-size:12px;font-weight:700;color:{{ primary }};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Cuenta verificada con Gmail</div>
+    <div style="font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">Registra tu empresa</div>
+    <div style="font-size:14px;color:#8a7d73;line-height:1.5;margin-bottom:26px">Tu cuenta no está vinculada a ninguna empresa. Completa estos datos para comenzar.</div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:13px;font-weight:600;color:#5d5148">Nombre comercial</label>
+        <input placeholder="Ej. Comercial Andina" style="padding:14px;border:1px solid #e4ddd6;border-radius:12px;font-size:15px;outline:none;background:#ffffff" style-focus="border-color:#f4632c">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:600;color:#5d5148">NIT</label>
+          <input placeholder="1023456019" style="padding:14px;border:1px solid #e4ddd6;border-radius:12px;font-size:15px;outline:none;background:#ffffff" style-focus="border-color:#f4632c">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:600;color:#5d5148">Teléfono</label>
+          <input placeholder="+591 700 12345" style="padding:14px;border:1px solid #e4ddd6;border-radius:12px;font-size:15px;outline:none;background:#ffffff" style-focus="border-color:#f4632c">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:13px;font-weight:600;color:#5d5148">Dirección</label>
+        <input placeholder="Av. América #245, Cochabamba" style="padding:14px;border:1px solid #e4ddd6;border-radius:12px;font-size:15px;outline:none;background:#ffffff" style-focus="border-color:#f4632c">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:13px;font-weight:600;color:#5d5148">Correo de la empresa</label>
+        <input placeholder="ventas@empresa.bo" style="padding:14px;border:1px solid #e4ddd6;border-radius:12px;font-size:15px;outline:none;background:#ffffff" style-focus="border-color:#f4632c">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:13px;font-weight:600;color:#5d5148">Moneda principal</label>
+        <select style="padding:14px;border:1px solid #e4ddd6;border-radius:12px;font-size:15px;background:#ffffff;outline:none">
+          <option>BOB — Boliviano (Bs)</option>
+          <option>USD — Dólar ($us)</option>
+          <option>PEN — Sol (S/.)</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:13px;font-weight:600;color:#5d5148">Logo</label>
+        <div style="border:1.5px dashed #d9cfc6;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;gap:10px;color:#8a7d73;font-size:13px;background:#fdfcfb">
+          <span style="width:34px;height:34px;border-radius:8px;background:repeating-linear-gradient(45deg,#f5efe9,#f5efe9 6px,#ede4dc 6px,#ede4dc 12px)"></span>
+          Toca para subir tu logo
+        </div>
+      </div>
+    </div>
+    <button onClick="{{ crearEmpresa }}" style="width:100%;margin-top:26px;padding:16px;border:none;border-radius:14px;background:{{ primary }};color:#ffffff;font-size:16px;font-weight:600;cursor:pointer" style-hover="filter:brightness(1.08)">Crear empresa y entrar</button>
+  </div>
+  </sc-if>
+
+  <!-- ============ TIENDA EN LÍNEA (catálogo público) ============ -->
+  <sc-if value="{{ esTienda }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Tienda en línea" style="min-height:100vh;padding-bottom:170px">
+    <div style="padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:34px;height:34px;border-radius:10px;background:{{ primary }};color:#ffffff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px">C</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;letter-spacing:-0.2px">Comercial Andina</div>
+          <div style="font-size:11px;color:#8a7d73">Tienda oficial · Cochabamba</div>
+        </div>
+      </div>
+      <button onClick="{{ salirTienda }}" style="height:40px;padding:0 14px;border:1px solid #e4ddd6;border-radius:999px;background:#ffffff;font-size:12.5px;font-weight:600;color:#5d5148;cursor:pointer" style-hover="background:#f4f0ec">‹ Salir</button>
+    </div>
+    <div style="padding:16px 20px 0">
+      <div style="display:flex;align-items:center;gap:10px;background:#ffffff;border:1px solid #e4ddd6;border-radius:999px;padding:4px 6px 4px 16px">
+        <span style="color:#b3a89f;font-size:14px">¿Qué estás buscando?</span>
+        <div style="flex:1"></div>
+        <span style="width:36px;height:36px;border-radius:50%;background:{{ primary }};color:#ffffff;display:flex;align-items:center;justify-content:center;font-size:15px">⌕</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding:16px 20px 4px">
+      <sc-for list="{{ chipsTienda }}" as="ch" hint-placeholder-count="5">
+        <button onClick="{{ ch.sel }}" style="flex-shrink:0;height:38px;padding:0 16px;border:1px solid {{ ch.borde }};border-radius:999px;background:{{ ch.bg }};color:{{ ch.fg }};font-size:13.5px;font-weight:600;cursor:pointer">{{ ch.label }}</button>
+      </sc-for>
+    </div>
+    <div style="padding:14px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <sc-for list="{{ tiendaProds }}" as="p" hint-placeholder-count="6">
+        <div style="background:#ffffff;border:1px solid #eee7e1;border-radius:16px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:120px;background:repeating-linear-gradient(45deg,#f5efe9,#f5efe9 8px,#ede4dc 8px,#ede4dc 16px);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:10px;color:#a5988d;position:relative">
+            {{ p.img }}
+            <button onClick="{{ p.fav }}" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:none;background:#ffffff;color:{{ p.corazonColor }};font-size:15px;cursor:pointer;box-shadow:0 2px 8px rgba(40,20,5,0.12)">♥</button>
+          </div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:3px;flex:1">
+            <div style="font-size:13.5px;font-weight:600;line-height:1.3;flex:1">{{ p.nombre }}</div>
+            <sc-if value="{{ mostrarStockTienda }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11.5px;color:#8a7d73">{{ p.stock }} disponibles</div>
+            </sc-if>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+              <div style="font-size:15.5px;font-weight:700">{{ p.precioFmt }}</div>
+              <button onClick="{{ p.agregar }}" style="width:34px;height:34px;border:none;border-radius:50%;background:{{ primary }};color:#ffffff;font-size:18px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="filter:brightness(1.08)">+</button>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- barra carrito -->
+    <sc-if value="{{ hayCarrito }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ abrirCarrito }}" style="position:fixed;bottom:96px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 40px));display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border:none;border-radius:16px;background:#221a15;color:#ffffff;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 12px 32px rgba(20,10,2,0.35);z-index:30">
+        <span>Ver carrito ({{ carritoCount }})</span>
+        <span style="font-weight:700">{{ carritoTotalFmt }}</span>
+      </button>
+    </sc-if>
+
+    <!-- bottom nav tienda -->
+    <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100vw);background:#ffffff;border-top:1px solid #eee7e1;display:flex;padding:10px 8px 18px;z-index:20">
+      <sc-for list="{{ navTienda }}" as="n" hint-placeholder-count="4">
+        <button onClick="{{ n.go }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;cursor:pointer;padding:4px 0">
+          <span style="width:34px;height:34px;border-radius:12px;background:{{ n.iconBg }};color:{{ n.iconFg }};display:flex;align-items:center;justify-content:center;font-size:15px">{{ n.icono }}</span>
+          <span style="font-size:11px;font-weight:600;color:{{ n.fg }}">{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <!-- hoja carrito -->
+    <sc-if value="{{ carritoAbierto }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,10,2,0.45);z-index:40" onClick="{{ cerrarCarrito }}"></div>
+      <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100vw);background:#ffffff;border-radius:22px 22px 0 0;z-index:50;max-height:78vh;display:flex;flex-direction:column;animation:slideUp 0.28s ease">
+        <div style="width:44px;height:5px;border-radius:999px;background:#e4ddd6;margin:10px auto 4px"></div>
+        <div style="padding:8px 24px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:18px;font-weight:700">Tu carrito</div>
+          <button onClick="{{ cerrarCarrito }}" style="width:36px;height:36px;border:none;border-radius:50%;background:#f4f0ec;font-size:16px;color:#5d5148;cursor:pointer">×</button>
+        </div>
+        <sc-if value="{{ pedidoConfirmado }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px 24px 40px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+            <div style="width:60px;height:60px;border-radius:50%;background:#e8f5ec;color:#1d7a3e;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700">✓</div>
+            <div style="font-size:19px;font-weight:700">¡Pedido enviado!</div>
+            <div style="font-size:13.5px;color:#8a7d73;line-height:1.5;max-width:260px">La tienda confirmará tu pedido y te contactará por WhatsApp.</div>
+            <button onClick="{{ cerrarCarrito }}" style="margin-top:6px;padding:13px 26px;border:none;border-radius:12px;background:{{ primary }};color:#ffffff;font-size:15px;font-weight:600;cursor:pointer">Seguir comprando</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ carritoConItems }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;overflow:auto;padding:0 24px;display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ carritoItems }}" as="it" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:48px;height:48px;border-radius:12px;background:repeating-linear-gradient(45deg,#f5efe9,#f5efe9 6px,#ede4dc 6px,#ede4dc 12px);flex-shrink:0"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.nombre }}</div>
+                  <div style="font-size:12.5px;color:#8a7d73">{{ it.qty }} × {{ it.precioFmt }}</div>
+                </div>
+                <div style="font-size:14px;font-weight:700">{{ it.subtotalFmt }}</div>
+                <button onClick="{{ it.quitar }}" style="width:32px;height:32px;border:none;border-radius:50%;background:#f4f0ec;color:#8a7d73;font-size:14px;cursor:pointer" style-hover="color:#c2410c">×</button>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:16px 24px 30px;border-top:1px solid #f0eae4;margin-top:14px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+              <span style="font-size:14px;color:#8a7d73">Total</span>
+              <span style="font-size:19px;font-weight:700">{{ carritoTotalFmt }}</span>
+            </div>
+            <button onClick="{{ finalizarPedido }}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{ primary }};color:#ffffff;font-size:16px;font-weight:600;cursor:pointer" style-hover="filter:brightness(1.08)">Finalizar pedido</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ carritoVacio }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px 24px 44px;text-align:center;color:#8a7d73;font-size:14px">Aún no agregaste productos.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- ============ APP (panel del negocio) ============ -->
+  <sc-if value="{{ esApp }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;padding-bottom:110px">
+    <!-- header -->
+    <div style="position:sticky;top:0;z-index:20;background:#faf8f6;padding:14px 20px 10px;display:flex;align-items:center;gap:12px">
+      <button onClick="{{ abrirMenu }}" style="width:44px;height:44px;border:1px solid #e4ddd6;border-radius:14px;background:#ffffff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+        <span style="width:16px;height:2px;background:#221a15;border-radius:2px"></span><span style="width:16px;height:2px;background:#221a15;border-radius:2px"></span><span style="width:10px;height:2px;background:#221a15;border-radius:2px;align-self:flex-start;margin-left:14px"></span>
+      </button>
+      <div style="flex:1;font-size:18px;font-weight:700;letter-spacing:-0.3px">{{ tituloModulo }}</div>
+      <button onClick="{{ irTienda }}" style="width:44px;height:44px;border:none;border-radius:14px;background:{{ primary }};color:#ffffff;font-size:17px;cursor:pointer" title="Ver tienda en línea" style-hover="filter:brightness(1.08)">⌂</button>
+    </div>
+
+    <!-- INICIO -->
+    <sc-if value="{{ mInicio }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Inicio" style="padding:6px 20px 0;display:flex;flex-direction:column;gap:16px;animation:fadeUp 0.3s ease">
+      <div style="background:#221a15;border-radius:18px;padding:20px;color:#ffffff">
+        <div style="font-size:12.5px;color:#b3a89f;margin-bottom:4px">Ventas de hoy · 10 jul</div>
+        <div style="font-size:30px;font-weight:700;letter-spacing:-0.6px">Bs 2.480</div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <span style="font-size:12px;font-weight:600;background:rgba(255,255,255,0.12);border-radius:999px;padding:5px 12px">+12% vs ayer</span>
+          <span style="font-size:12px;font-weight:600;background:{{ primary }};border-radius:999px;padding:5px 12px">18 ventas</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <button onClick="{{ k.go }}" style="text-align:left;background:#ffffff;border:1px solid #eee7e1;border-radius:16px;padding:14px 16px;cursor:pointer" style-hover="border-color:#f4632c">
+            <div style="width:34px;height:34px;border-radius:11px;background:{{ k.iconBg }};color:{{ k.iconFg }};display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:10px">{{ k.icono }}</div>
+            <div style="font-size:19px;font-weight:700;letter-spacing:-0.3px">{{ k.valor }}</div>
+            <div style="font-size:12px;color:#8a7d73;font-weight:500;margin-top:2px">{{ k.label }}</div>
+          </button>
+        </sc-for>
+      </div>
+      <div style="background:#ffffff;border:1px solid #eee7e1;border-radius:16px;padding:18px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+          <div style="font-size:15px;font-weight:700">Ventas de la semana</div>
+          <div style="font-size:12px;color:#8a7d73">Bs 15.690</div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:110px">
+          <sc-for list="{{ barras }}" as="b" hint-placeholder-count="7">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end">
+              <div style="width:100%;max-width:30px;border-radius:6px;background:{{ b.color }};height:{{ b.altura }}"></div>
+              <div style="font-size:10.5px;color:#a5988d">{{ b.dia }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#ffffff;border:1px solid #eee7e1;border-radius:16px;padding:18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:15px;font-weight:700">Pedidos en línea</div>
+          <button onClick="{{ irPedidos }}" style="border:none;background:none;color:{{ primary }};font-size:13px;font-weight:600;cursor:pointer">Ver todos ›</button>
+        </div>
+        <sc-for list="{{ pedidosRecientes }}" as="p" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #f4efe9">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13.5px;font-weight:600">{{ p.cliente }}</div>
+              <div style="font-size:11.5px;color:#8a7d73">{{ p.num }} · {{ p.items }}</div>
+            </div>
+            <span style="font-size:13.5px;font-weight:700">{{ p.total }}</span>
+            <span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:{{ p.bg }};color:{{ p.fg }}">{{ p.estado }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#fff3ec;border:1px solid #ffd9c4;border-radius:16px;padding:16px 18px">
+        <div style="font-size:14px;font-weight:700;color:#9a3d12;margin-bottom:8px">⚠ Stock crítico</div>
+        <sc-for list="{{ stockBajo }}" as="s" hint-placeholder-count="3">
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px">
+            <span style="font-weight:500;color:#5d4237">{{ s.nombre }}</span>
+            <span style="font-weight:700;color:#c2410c">{{ s.stock }} und.</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- VENTA RÁPIDA (POS) -->
+    <sc-if value="{{ mVenta }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Venta rápida" style="padding:6px 20px 90px;animation:fadeUp 0.3s ease">
+      <input value="{{ filtroPos }}" onChange="{{ setFiltroPos }}" placeholder="Nombre del producto o código de barras" style="width:100%;padding:14px 16px;border:1px solid #e4ddd6;border-radius:14px;font-size:14px;background:#ffffff;outline:none" style-focus="border-color:#f4632c">
+      <div style="display:flex;gap:8px;overflow-x:auto;padding:14px 0 4px">
+        <sc-for list="{{ chipsPos }}" as="ch" hint-placeholder-count="5">
+          <button onClick="{{ ch.sel }}" style="flex-shrink:0;height:38px;padding:0 16px;border:1px solid {{ ch.borde }};border-radius:999px;background:{{ ch.bg }};color:{{ ch.fg }};font-size:13.5px;font-weight:600;cursor:pointer">{{ ch.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+        <sc-for list="{{ posProds }}" as="p" hint-placeholder-count="6">
+          <button onClick="{{ p.agregar }}" style="text-align:left;background:#ffffff;border:1.5px solid {{ p.borde }};border-radius:16px;overflow:hidden;cursor:pointer;padding:0;position:relative" style-hover="border-color:#f4632c">
+            <sc-if value="{{ p.qty }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;top:8px;right:8px;min-width:26px;height:26px;border-radius:999px;background:{{ primary }};color:#ffffff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 7px;z-index:2">{{ p.qty }}</span>
+            </sc-if>
+            <div style="height:84px;background:repeating-linear-gradient(45deg,#f5efe9,#f5efe9 8px,#ede4dc 8px,#ede4dc 16px);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:10px;color:#a5988d">{{ p.img }}</div>
+            <div style="padding:10px 12px 12px">
+              <div style="font-size:13px;font-weight:600;line-height:1.3">{{ p.nombre }}</div>
+              <div style="font-size:14.5px;font-weight:700;color:{{ primary }};margin-top:4px">{{ p.precioFmt }}</div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <!-- barra resumen orden -->
+    <button onClick="{{ abrirOrden }}" style="position:fixed;bottom:96px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 40px));display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border:none;border-radius:16px;background:#221a15;color:#ffffff;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 12px 32px rgba(20,10,2,0.35);z-index:30">
+      <span>Resumen de la orden ({{ ordenCount }})</span>
+      <span style="display:flex;align-items:center;gap:10px"><span style="font-weight:700">{{ ordenTotalFmt }}</span><span style="width:28px;height:28px;border-radius:50%;background:{{ primary }};display:flex;align-items:center;justify-content:center;font-size:14px">↑</span></span>
+    </button>
+    </sc-if>
+
+    <!-- LISTAS (productos, categorías, clientes, etc.) -->
+    <sc-if value="{{ mLista }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Módulo de gestión" style="padding:6px 20px 0;display:flex;flex-direction:column;gap:14px;animation:fadeUp 0.3s ease">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <sc-for list="{{ statsModulo }}" as="s" hint-placeholder-count="2">
+          <div style="background:#ffffff;border:1px solid #eee7e1;border-radius:14px;padding:13px 16px">
+            <div style="font-size:11.5px;font-weight:600;color:#8a7d73">{{ s.label }}</div>
+            <div style="font-size:18px;font-weight:700;letter-spacing:-0.3px;margin-top:2px">{{ s.valor }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <input value="{{ filtro }}" onChange="{{ setFiltro }}" placeholder="{{ placeholderBusqueda }}" style="width:100%;padding:14px 16px;border:1px solid #e4ddd6;border-radius:14px;font-size:14px;background:#ffffff;outline:none" style-focus="border-color:#f4632c">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ tarjetas }}" as="c" hint-placeholder-count="6">
+          <div style="background:#ffffff;border:1px solid #eee7e1;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+            <div style="width:44px;height:44px;border-radius:12px;background:{{ c.iconBg }};color:{{ c.iconFg }};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0">{{ c.icono }}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.t }}</div>
+              <div style="font-size:12px;color:#8a7d73;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.s }}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:14px;font-weight:700">{{ c.r }}</div>
+              <sc-if value="{{ c.b }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-block;margin-top:4px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:{{ c.bBg }};color:{{ c.bFg }}">{{ c.b }}</span>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ sinResultados }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:30px;text-align:center;color:#8a7d73;font-size:14px">Sin resultados para tu búsqueda.</div>
+        </sc-if>
+      </div>
+    </div>
+    <button onClick="{{ abrirNuevo }}" style="position:fixed;bottom:96px;right:calc(50% - min(215px,50vw) + 20px);width:58px;height:58px;border:none;border-radius:50%;background:{{ primary }};color:#ffffff;font-size:26px;cursor:pointer;box-shadow:0 10px 26px rgba(200,70,10,0.4);z-index:30" style-hover="filter:brightness(1.08)">+</button>
+    </sc-if>
+
+    <!-- CONFIGURACIÓN -->
+    <sc-if value="{{ mConfig }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Configuración" style="padding:6px 20px 0;display:flex;flex-direction:column;gap:16px;animation:fadeUp 0.3s ease">
+      <div style="background:#ffffff;border:1px solid #eee7e1;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:15px;font-weight:700">Datos de la empresa</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:600;color:#5d5148">Nombre comercial</label>
+          <input defaultValue="Comercial Andina" style="padding:13px;border:1px solid #e4ddd6;border-radius:12px;font-size:14px;outline:none" style-focus="border-color:#f4632c">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:13px;font-weight:600;color:#5d5148">NIT</label>
+            <input defaultValue="1023456019" style="padding:13px;border:1px solid #e4ddd6;border-radius:12px;font-size:14px;outline:none" style-focus="border-color:#f4632c">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:13px;font-weight:600;color:#5d5148">Teléfono</label>
+            <input defaultValue="+591 700 12345" style="padding:13px;border:1px solid #e4ddd6;border-radius:12px;font-size:14px;outline:none" style-focus="border-color:#f4632c">
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:600;color:#5d5148">Dirección</label>
+          <input defaultValue="Av. América #245, Cochabamba" style="padding:13px;border:1px solid #e4ddd6;border-radius:12px;font-size:14px;outline:none" style-focus="border-color:#f4632c">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:600;color:#5d5148">Correo</label>
+          <input defaultValue="ventas@andina.bo" style="padding:13px;border:1px solid #e4ddd6;border-radius:12px;font-size:14px;outline:none" style-focus="border-color:#f4632c">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:600;color:#5d5148">Moneda</label>
+          <select style="padding:13px;border:1px solid #e4ddd6;border-radius:12px;font-size:14px;background:#ffffff;outline:none">
+            <option>BOB — Boliviano (Bs)</option>
+            <option>USD — Dólar ($us)</option>
+          </select>
+        </div>
+        <button style="padding:14px;border:none;border-radius:12px;background:{{ primary }};color:#ffffff;font-size:15px;font-weight:600;cursor:pointer" style-hover="filter:brightness(1.08)">Guardar cambios</button>
+      </div>
+      <div style="background:#ffffff;border:1px solid #eee7e1;border-radius:16px;padding:18px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Tienda en línea</div>
+        <div style="font-size:13px;color:#8a7d73;margin-bottom:12px;line-height:1.5">Tu catálogo público está activo en <a href="#" onClick="{{ irTiendaLink }}">tienda.gestionpro.bo/comercial-andina</a></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:500">
+          <span style="width:38px;height:22px;border-radius:999px;background:{{ primary }};position:relative;display:inline-block"><span style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#ffffff"></span></span>
+          Catálogo público habilitado
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- bottom nav app -->
+    <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100vw);background:#ffffff;border-top:1px solid #eee7e1;display:flex;padding:10px 8px 18px;z-index:20">
+      <sc-for list="{{ navApp }}" as="n" hint-placeholder-count="4">
+        <button onClick="{{ n.go }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;cursor:pointer;padding:4px 0;position:relative">
+          <sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;top:0;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:999px;background:{{ primary }};color:#ffffff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;z-index:2">{{ n.badge }}</span>
+          </sc-if>
+          <span style="width:34px;height:34px;border-radius:12px;background:{{ n.iconBg }};color:{{ n.iconFg }};display:flex;align-items:center;justify-content:center;font-size:15px">{{ n.icono }}</span>
+          <span style="font-size:11px;font-weight:600;color:{{ n.fg }}">{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <!-- menú lateral -->
+    <sc-if value="{{ menuAbierto }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,10,2,0.45);z-index:60" onClick="{{ cerrarMenu }}"></div>
+      <div style="position:fixed;top:0;bottom:0;left:max(0px,calc(50% - 215px));width:min(320px,86vw);background:#ffffff;z-index:70;display:flex;flex-direction:column;box-shadow:20px 0 60px rgba(20,10,2,0.3)">
+        <div style="background:#fff3ec;padding:22px 20px 18px;display:flex;align-items:center;gap:12px">
+          <div style="width:48px;height:48px;border-radius:50%;background:{{ primary }};color:#ffffff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700">MR</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:700">María Rojas</div>
+            <div style="font-size:12px;color:#9a3d12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Administradora · Comercial Andina</div>
+          </div>
+          <button onClick="{{ cerrarSesion }}" title="Cerrar sesión" style="width:38px;height:38px;border:none;border-radius:12px;background:#ffffff;color:#9a3d12;font-size:15px;cursor:pointer">⏻</button>
+        </div>
+        <div style="flex:1;overflow:auto;padding:10px 14px 20px">
+          <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="14">
+            <sc-if value="{{ m.esSeccion }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#b3a89f;padding:16px 12px 6px">{{ m.label }}</div>
+            </sc-if>
+            <sc-if value="{{ m.esItem }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ m.go }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;border:none;border-radius:12px;background:{{ m.bg }};cursor:pointer" style-hover="background:#faf4ef">
+                <span style="width:36px;height:36px;border-radius:11px;background:{{ m.iconBg }};color:{{ m.iconFg }};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">{{ m.icono }}</span>
+                <span style="flex:1;font-size:14.5px;font-weight:{{ m.peso }};color:{{ m.fg }}">{{ m.label }}</span>
+                <sc-if value="{{ m.badge }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px;font-weight:700;color:{{ primary }}">{{ m.badge }}</span>
+                </sc-if>
+              </button>
+            </sc-if>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- hoja resumen de orden (POS) -->
+    <sc-if value="{{ ordenAbierta }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,10,2,0.45);z-index:60" onClick="{{ cerrarOrden }}"></div>
+      <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100vw);background:#ffffff;border-radius:22px 22px 0 0;z-index:70;max-height:80vh;display:flex;flex-direction:column;animation:slideUp 0.28s ease">
+        <div style="width:44px;height:5px;border-radius:999px;background:#e4ddd6;margin:10px auto 4px"></div>
+        <div style="padding:8px 24px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:18px;font-weight:700">Resumen de la orden</div>
+          <button onClick="{{ cerrarOrden }}" style="width:36px;height:36px;border:none;border-radius:50%;background:#f4f0ec;font-size:16px;color:#5d5148;cursor:pointer">×</button>
+        </div>
+        <sc-if value="{{ ventaConfirmada }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px 24px 40px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+            <div style="width:60px;height:60px;border-radius:50%;background:#e8f5ec;color:#1d7a3e;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700">✓</div>
+            <div style="font-size:19px;font-weight:700">Venta registrada</div>
+            <div style="font-size:13.5px;color:#8a7d73">El stock se actualizó automáticamente.</div>
+            <button onClick="{{ cerrarOrden }}" style="margin-top:6px;padding:13px 26px;border:none;border-radius:12px;background:{{ primary }};color:#ffffff;font-size:15px;font-weight:600;cursor:pointer">Nueva venta</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ ordenConItems }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;overflow:auto;padding:0 24px;display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ ordenItems }}" as="it" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.nombre }}</div>
+                  <div style="font-size:12.5px;color:#8a7d73">{{ it.precioFmt }} c/u</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button onClick="{{ it.menos }}" style="width:34px;height:34px;border:1px solid #e4ddd6;border-radius:50%;background:#ffffff;font-size:16px;color:#5d5148;cursor:pointer">−</button>
+                  <span style="min-width:22px;text-align:center;font-size:15px;font-weight:700">{{ it.qty }}</span>
+                  <button onClick="{{ it.mas }}" style="width:34px;height:34px;border:none;border-radius:50%;background:{{ primary }};color:#ffffff;font-size:16px;cursor:pointer">+</button>
+                </div>
+                <div style="width:74px;text-align:right;font-size:14px;font-weight:700">{{ it.subtotalFmt }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:16px 24px 30px;border-top:1px solid #f0eae4;margin-top:14px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+              <span style="font-size:14px;color:#8a7d73">Total a cobrar</span>
+              <span style="font-size:20px;font-weight:700">{{ ordenTotalFmt }}</span>
+            </div>
+            <button onClick="{{ cobrar }}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{ primary }};color:#ffffff;font-size:16px;font-weight:600;cursor:pointer" style-hover="filter:brightness(1.08)">Cobrar {{ ordenTotalFmt }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ ordenVacia }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px 24px 44px;text-align:center;color:#8a7d73;font-size:14px">Toca los productos para agregarlos a la orden.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- hoja nuevo registro -->
+    <sc-if value="{{ modalAbierto }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,10,2,0.45);z-index:60" onClick="{{ cerrarModal }}"></div>
+      <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100vw);background:#ffffff;border-radius:22px 22px 0 0;z-index:70;max-height:84vh;overflow:auto;animation:slideUp 0.28s ease;padding:0 24px 30px">
+        <div style="width:44px;height:5px;border-radius:999px;background:#e4ddd6;margin:10px auto 12px"></div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:16px">{{ etiquetaNuevo }}</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ camposModal }}" as="f" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <label style="font-size:13px;font-weight:600;color:#5d5148">{{ f.label }}</label>
+              <input placeholder="{{ f.ph }}" style="padding:13px;border:1px solid #e4ddd6;border-radius:12px;font-size:14px;outline:none" style-focus="border-color:#f4632c">
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:22px">
+          <button onClick="{{ cerrarModal }}" style="flex:1;padding:14px;border:1px solid #e4ddd6;border-radius:12px;background:#ffffff;font-size:14.5px;font-weight:600;color:#5d5148;cursor:pointer">Cancelar</button>
+          <button onClick="{{ cerrarModal }}" style="flex:1;padding:14px;border:none;border-radius:12px;background:{{ primary }};color:#ffffff;font-size:14.5px;font-weight:600;cursor:pointer">Guardar</button>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:900},&quot;colorPrimario&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#e8590c&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#f4632c&quot;,&quot;#e8590c&quot;,&quot;#d97706&quot;,&quot;#2563eb&quot;],&quot;section&quot;:&quot;Marca&quot;},&quot;mostrarStockTienda&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Tienda en línea&quot;}}">
+class Component extends DCLogic {
+  state = {
+    pantalla: 'login',
+    modulo: 'inicio',
+    origen: 'login',
+    menuAbierto: false,
+    // POS
+    orden: {},
+    ordenAbierta: false,
+    ventaConfirmada: false,
+    catPos: 'Todos',
+    filtroPos: '',
+    // tienda
+    carrito: {},
+    carritoAbierto: false,
+    pedidoConfirmado: false,
+    catTienda: 'Todos',
+    favoritos: {},
+    tabTienda: 'inicio',
+    // listas
+    filtro: '',
+    modalAbierto: false
+  };
+
+  fmt(n) {
+    const p = n.toFixed(2).split('.');
+    return 'Bs ' + p[0].replace(/\B(?=(\d{3})+$)/g, '.') + ',' + p[1];
+  }
+
+  productosBase() {
+    return [
+      { codigo: 'P-001', nombre: 'Aceite Fino 900 ml', cat: 'Abarrotes', precio: 14.5, stock: 48 },
+      { codigo: 'P-002', nombre: 'Arroz Grano de Oro 5 kg', cat: 'Abarrotes', precio: 42, stock: 25 },
+      { codigo: 'P-003', nombre: 'Azúcar Guabirá 1 kg', cat: 'Abarrotes', precio: 7.5, stock: 4 },
+      { codigo: 'P-004', nombre: 'Leche PIL entera 946 ml', cat: 'Lácteos', precio: 8, stock: 36 },
+      { codigo: 'P-005', nombre: 'Coca-Cola 2 L', cat: 'Bebidas', precio: 12, stock: 60 },
+      { codigo: 'P-006', nombre: 'Detergente OMO 800 g', cat: 'Limpieza', precio: 18.5, stock: 3 },
+      { codigo: 'P-007', nombre: 'Papel higiénico Scott x4', cat: 'Limpieza', precio: 15, stock: 22 },
+      { codigo: 'P-008', nombre: 'Fideo Coronilla 1 kg', cat: 'Abarrotes', precio: 9.5, stock: 5 },
+      { codigo: 'P-009', nombre: 'Jabón Bolívar 200 g', cat: 'Limpieza', precio: 6, stock: 40 },
+      { codigo: 'P-010', nombre: 'Atún Van Camps 170 g', cat: 'Enlatados', precio: 13, stock: 18 }
+    ];
+  }
+
+  lista(modulo, B) {
+    const naranja = { iconBg: '#fff3ec', iconFg: '#c2410c' };
+    if (modulo === 'productos') {
+      return {
+        titulo: 'Productos',
+        stats: [{ label: 'Productos activos', valor: '124' }, { label: 'Con stock bajo', valor: '6' }],
+        ph: 'Buscar por nombre, código o categoría…',
+        etiqueta: 'Nuevo producto',
+        campos: [
+          { label: 'Código', ph: 'P-011' }, { label: 'Nombre', ph: 'Nombre del producto' },
+          { label: 'Categoría', ph: 'Abarrotes' }, { label: 'Precio de venta (Bs)', ph: '0,00' }, { label: 'Stock inicial', ph: '0' }
+        ],
+        tarjetas: this.productosBase().map((p) => ({
+          icono: p.nombre.charAt(0), ...naranja,
+          t: p.nombre, s: p.codigo + ' · ' + p.cat + ' · ' + p.stock + ' und.',
+          r: this.fmt(p.precio),
+          b: p.stock <= 5 ? 'Stock bajo' : false, bBg: B.rojo.bg, bFg: B.rojo.fg
+        }))
+      };
+    }
+    if (modulo === 'categorias') {
+      const cats = [
+        ['Abarrotes', 'Alimentos secos y básicos de despensa', 46],
+        ['Bebidas', 'Gaseosas, jugos y aguas', 22],
+        ['Lácteos', 'Leche, yogurt y quesos', 15],
+        ['Limpieza', 'Hogar y cuidado personal', 28],
+        ['Enlatados', 'Conservas y enlatados', 13]
+      ];
+      return {
+        titulo: 'Categorías',
+        stats: [{ label: 'Categorías', valor: '5' }, { label: 'Más grande', valor: 'Abarrotes' }],
+        ph: 'Buscar categoría…', etiqueta: 'Nueva categoría',
+        campos: [{ label: 'Nombre', ph: 'Ej. Snacks' }, { label: 'Descripción', ph: 'Descripción breve' }],
+        tarjetas: cats.map((c) => ({ icono: c[0].charAt(0), ...naranja, t: c[0], s: c[1], r: c[2] + ' prod.', b: false, bBg: '', bFg: '' }))
+      };
+    }
+    if (modulo === 'clientes') {
+      const cl = [
+        ['Rosa Mamani', '+591 712 45678 · rosa.m@gmail.com', 'Bs 1.240'],
+        ['Jorge Quispe', '+591 765 88213 · jquispe@gmail.com', 'Bs 890'],
+        ['Restaurante El Fogón', '+591 4 452 8890 · pedidos@elfogon.bo', 'Bs 6.420'],
+        ['Carla Ticona', '+591 700 33421 · carla.tic@gmail.com', 'Bs 512'],
+        ['Farmacia San Rafael', '+591 4 411 2034 · compras@sanrafael.bo', 'Bs 2.130']
+      ];
+      return {
+        titulo: 'Clientes',
+        stats: [{ label: 'Total clientes', valor: '87' }, { label: 'Compras del mes', valor: 'Bs 18.640' }],
+        ph: 'Buscar por nombre o teléfono…', etiqueta: 'Nuevo cliente',
+        campos: [{ label: 'Nombre completo', ph: 'Nombre del cliente' }, { label: 'CI / NIT', ph: '1234567' }, { label: 'Teléfono', ph: '+591 …' }, { label: 'Correo', ph: 'cliente@gmail.com' }],
+        tarjetas: cl.map((c) => ({ icono: c[0].charAt(0), ...naranja, t: c[0], s: c[1], r: c[2], b: false, bBg: '', bFg: '' }))
+      };
+    }
+    if (modulo === 'proveedores') {
+      const pr = [
+        ['Distribuidora La Ideal', 'Marco Salazar · +591 776 11223', 'Abarrotes'],
+        ['PIL Andina S.A.', 'Ventas mayoristas · 800 10 4040', 'Lácteos'],
+        ['Embol S.A.', 'Canal tradicional · +591 733 55889', 'Bebidas'],
+        ['Quimtia Hogar', 'Patricia Rojas · +591 765 43210', 'Limpieza']
+      ];
+      return {
+        titulo: 'Proveedores',
+        stats: [{ label: 'Proveedores', valor: '14' }, { label: 'Por pagar', valor: 'Bs 4.150' }],
+        ph: 'Buscar proveedor…', etiqueta: 'Nuevo proveedor',
+        campos: [{ label: 'Razón social', ph: 'Nombre del proveedor' }, { label: 'Persona de contacto', ph: 'Nombre' }, { label: 'Teléfono', ph: '+591 …' }, { label: 'Rubro', ph: 'Ej. Abarrotes' }],
+        tarjetas: pr.map((c) => ({ icono: c[0].charAt(0), ...naranja, t: c[0], s: c[1], r: c[2], b: false, bBg: '', bFg: '' }))
+      };
+    }
+    if (modulo === 'compras') {
+      const co = [
+        ['Distribuidora La Ideal', 'C-0158 · 09 jul · 12 ítems', 3240, 'Pendiente', B.ambar],
+        ['PIL Andina S.A.', 'C-0157 · 08 jul · 6 ítems', 1180, 'Recibida', B.verde],
+        ['Embol S.A.', 'C-0156 · 07 jul · 4 ítems', 960, 'Recibida', B.verde],
+        ['Quimtia Hogar', 'C-0155 · 05 jul · 9 ítems', 2140.5, 'Parcial', B.azul],
+        ['Distribuidora La Ideal', 'C-0154 · 02 jul · 15 ítems', 4890, 'Recibida', B.verde]
+      ];
+      return {
+        titulo: 'Compras',
+        stats: [{ label: 'Compras del mes', valor: 'Bs 26.780' }, { label: 'Órdenes pendientes', valor: '2' }],
+        ph: 'Buscar por número o proveedor…', etiqueta: 'Nueva compra',
+        campos: [{ label: 'Proveedor', ph: 'Seleccionar proveedor' }, { label: 'Fecha', ph: '10/07/2026' }, { label: 'Producto', ph: 'Buscar producto' }, { label: 'Cantidad', ph: '0' }],
+        tarjetas: co.map((c) => ({ icono: '⇩', ...naranja, t: c[0], s: c[1], r: this.fmt(c[2]), b: c[3], bBg: c[4].bg, bFg: c[4].fg }))
+      };
+    }
+    if (modulo === 'ventas') {
+      const ve = [
+        ['Rosa Mamani', 'V-1046 · hoy · 3 ítems', 86.5, 'En línea', B.azul],
+        ['Venta en mostrador', 'V-1045 · hoy · 7 ítems', 214, 'Local', B.gris],
+        ['Restaurante El Fogón', 'V-1044 · 09 jul · 14 ítems', 1120, 'Local', B.gris],
+        ['Jorge Quispe', 'V-1043 · 09 jul · 5 ítems', 154, 'En línea', B.azul],
+        ['Farmacia San Rafael', 'V-1041 · 08 jul · 10 ítems', 685, 'Local', B.gris]
+      ];
+      return {
+        titulo: 'Ventas',
+        stats: [{ label: 'Ventas de hoy', valor: 'Bs 2.480' }, { label: 'Ventas del mes', valor: 'Bs 41.920' }],
+        ph: 'Buscar por número o cliente…', etiqueta: 'Nueva venta',
+        campos: [{ label: 'Cliente', ph: 'Venta en mostrador' }, { label: 'Producto', ph: 'Buscar producto' }, { label: 'Cantidad', ph: '1' }],
+        tarjetas: ve.map((c) => ({ icono: '⇧', ...naranja, t: c[0], s: c[1], r: this.fmt(c[2]), b: c[3], bBg: c[4].bg, bFg: c[4].fg }))
+      };
+    }
+    if (modulo === 'inventario') {
+      const mv = [
+        ['Aceite Fino 900 ml', 'hoy · stock final 48', '+24', 'Entrada', B.verde],
+        ['Coca-Cola 2 L', 'hoy · stock final 60', '−12', 'Salida', B.gris],
+        ['Detergente OMO 800 g', '09 jul · stock final 3', '−5', 'Salida', B.gris],
+        ['Azúcar Guabirá 1 kg', '09 jul · stock final 4', '−2', 'Ajuste', B.ambar],
+        ['Leche PIL entera 946 ml', '08 jul · stock final 36', '+36', 'Entrada', B.verde]
+      ];
+      return {
+        titulo: 'Inventario',
+        stats: [{ label: 'Unidades en stock', valor: '3.412' }, { label: 'Stock crítico', valor: '6' }],
+        ph: 'Buscar por producto…', etiqueta: 'Registrar movimiento',
+        campos: [{ label: 'Producto', ph: 'Buscar producto' }, { label: 'Tipo', ph: 'Entrada / Salida / Ajuste' }, { label: 'Cantidad', ph: '0' }, { label: 'Motivo', ph: 'Ej. reposición, merma' }],
+        tarjetas: mv.map((c) => ({ icono: '⇅', ...naranja, t: c[0], s: c[1], r: c[2], b: c[3], bBg: c[4].bg, bFg: c[4].fg }))
+      };
+    }
+    if (modulo === 'pedidos') {
+      const pe = [
+        ['Rosa Mamani', 'PED-0087 · hoy · 3 ítems', 86.5, 'Pendiente', B.ambar],
+        ['Jorge Quispe', 'PED-0086 · hoy · 5 ítems', 154, 'Pendiente', B.ambar],
+        ['Carla Ticona', 'PED-0085 · hoy · 2 ítems', 41.5, 'Pendiente', B.ambar],
+        ['Luis Choque', 'PED-0084 · 09 jul · 6 ítems', 210, 'Confirmado', B.azul],
+        ['Ana Flores', 'PED-0083 · 09 jul · 4 ítems', 98, 'Entregado', B.verde],
+        ['Marta Vargas', 'PED-0082 · 08 jul · 1 ítem', 42, 'Cancelado', B.rojo]
+      ];
+      return {
+        titulo: 'Pedidos en línea',
+        stats: [{ label: 'Pendientes', valor: '3' }, { label: 'Entregados este mes', valor: '41' }],
+        ph: 'Buscar por número o cliente…', etiqueta: 'Registrar pedido',
+        campos: [{ label: 'Cliente', ph: 'Nombre del cliente' }, { label: 'Teléfono', ph: '+591 …' }, { label: 'Dirección de entrega', ph: 'Calle y número' }],
+        tarjetas: pe.map((c) => ({ icono: '◷', ...naranja, t: c[0], s: c[1], r: this.fmt(c[2]), b: c[3], bBg: c[4].bg, bFg: c[4].fg }))
+      };
+    }
+    return null;
+  }
+
+  renderVals() {
+    const st = this.state;
+    const primary = this.props.colorPrimario ?? '#f4632c';
+    const tinte = '#fff3ec';
+    const B = {
+      verde: { bg: '#e8f5ec', fg: '#1d7a3e' },
+      ambar: { bg: '#fdf1e0', fg: '#b45309' },
+      azul:  { bg: '#e8efff', fg: '#1d4ed8' },
+      rojo:  { bg: '#fdeaea', fg: '#b91c1c' },
+      gris:  { bg: '#f1ede9', fg: '#5d5148' }
+    };
+    const prods = this.productosBase();
+    const cats = ['Todos', 'Abarrotes', 'Bebidas', 'Lácteos', 'Limpieza', 'Enlatados'];
+    const irModulo = (m) => this.setState({ modulo: m, filtro: '', menuAbierto: false, modalAbierto: false });
+
+    // ---- POS ----
+    const fpos = st.filtroPos.trim().toLowerCase();
+    const posProds = prods
+      .filter((p) => (st.catPos === 'Todos' || p.cat === st.catPos) && (!fpos || (p.nombre + ' ' + p.codigo).toLowerCase().includes(fpos)))
+      .map((p) => ({
+        nombre: p.nombre, precioFmt: this.fmt(p.precio),
+        img: '[ ' + p.cat.toLowerCase() + ' ]',
+        qty: st.orden[p.codigo] || false,
+        borde: st.orden[p.codigo] ? primary : '#eee7e1',
+        agregar: () => this.setState((s) => ({ orden: { ...s.orden, [p.codigo]: (s.orden[p.codigo] || 0) + 1 }, ventaConfirmada: false }))
+      }));
+    const chipsPos = cats.map((c) => ({
+      label: c,
+      bg: st.catPos === c ? primary : '#ffffff',
+      fg: st.catPos === c ? '#ffffff' : '#5d5148',
+      borde: st.catPos === c ? primary : '#e4ddd6',
+      sel: () => this.setState({ catPos: c })
+    }));
+    const ordenEntradas = Object.entries(st.orden);
+    const ordenItems = ordenEntradas.map(([codigo, qty]) => {
+      const p = prods.find((x) => x.codigo === codigo);
+      return {
+        nombre: p.nombre, qty, precioFmt: this.fmt(p.precio), subtotalFmt: this.fmt(p.precio * qty),
+        mas: () => this.setState((s) => ({ orden: { ...s.orden, [codigo]: s.orden[codigo] + 1 } })),
+        menos: () => this.setState((s) => {
+          const o = { ...s.orden };
+          if (o[codigo] <= 1) { delete o[codigo]; } else { o[codigo] = o[codigo] - 1; }
+          return { orden: o };
+        })
+      };
+    });
+    const ordenCount = ordenEntradas.reduce((a, [, q]) => a + q, 0);
+    const ordenTotal = ordenEntradas.reduce((a, [c, q]) => a + prods.find((x) => x.codigo === c).precio * q, 0);
+
+    // ---- tienda ----
+    const chipsTienda = cats.map((c) => ({
+      label: c,
+      bg: st.catTienda === c ? primary : '#ffffff',
+      fg: st.catTienda === c ? '#ffffff' : '#5d5148',
+      borde: st.catTienda === c ? primary : '#e4ddd6',
+      sel: () => this.setState({ catTienda: c })
+    }));
+    const tiendaProds = prods
+      .filter((p) => st.catTienda === 'Todos' || p.cat === st.catTienda)
+      .map((p) => ({
+        nombre: p.nombre, stock: p.stock, precioFmt: this.fmt(p.precio),
+        img: '[ foto ]',
+        corazonColor: st.favoritos[p.codigo] ? primary : '#d9cfc6',
+        fav: () => this.setState((s) => ({ favoritos: { ...s.favoritos, [p.codigo]: !s.favoritos[p.codigo] } })),
+        agregar: () => this.setState((s) => ({ carrito: { ...s.carrito, [p.codigo]: (s.carrito[p.codigo] || 0) + 1 }, pedidoConfirmado: false }))
+      }));
+    const carEntradas = Object.entries(st.carrito);
+    const carritoItems = carEntradas.map(([codigo, qty]) => {
+      const p = prods.find((x) => x.codigo === codigo);
+      return {
+        nombre: p.nombre, qty, precioFmt: this.fmt(p.precio), subtotalFmt: this.fmt(p.precio * qty),
+        quitar: () => this.setState((s) => { const c = { ...s.carrito }; delete c[codigo]; return { carrito: c }; })
+      };
+    });
+    const carritoCount = carEntradas.reduce((a, [, q]) => a + q, 0);
+    const carritoTotal = carEntradas.reduce((a, [c, q]) => a + prods.find((x) => x.codigo === c).precio * q, 0);
+    const navTiendaDef = [
+      ['inicio', '⌂', 'Inicio'], ['favoritos', '♥', 'Favoritos'], ['carrito', '◱', 'Carrito'], ['perfil', '◔', 'Perfil']
+    ];
+    const navTienda = navTiendaDef.map(([id, icono, label]) => ({
+      icono, label,
+      iconBg: st.tabTienda === id ? tinte : 'transparent',
+      iconFg: st.tabTienda === id ? primary : '#a5988d',
+      fg: st.tabTienda === id ? primary : '#a5988d',
+      go: () => {
+        if (id === 'carrito') { this.setState({ carritoAbierto: true, tabTienda: id }); }
+        else { this.setState({ tabTienda: id }); }
+      }
+    }));
+
+    // ---- listas ----
+    const datos = this.lista(st.modulo, B);
+    const filtro = st.filtro.trim().toLowerCase();
+    let tarjetas = datos ? datos.tarjetas : [];
+    if (datos && filtro) tarjetas = tarjetas.filter((c) => (c.t + ' ' + c.s).toLowerCase().includes(filtro));
+
+    // ---- inicio ----
+    const dias = [['L', 1850], ['M', 2100], ['X', 1620], ['J', 2440], ['V', 3180], ['S', 3520], ['D', 980]];
+    const maxDia = Math.max(...dias.map((d) => d[1]));
+    const barras = dias.map((d, i) => ({
+      dia: d[0], altura: Math.round((d[1] / maxDia) * 100) + '%',
+      color: i === 4 ? primary : '#f0e3d8'
+    }));
+    const kpis = [
+      { icono: '◷', valor: '8', label: 'Pedidos en línea', iconBg: tinte, iconFg: '#c2410c', go: () => irModulo('pedidos') },
+      { icono: '▦', valor: '124', label: 'Productos', iconBg: tinte, iconFg: '#c2410c', go: () => irModulo('productos') },
+      { icono: '⇩', valor: '2', label: 'Compras pendientes', iconBg: tinte, iconFg: '#c2410c', go: () => irModulo('compras') },
+      { icono: '⚠', valor: '6', label: 'Stock crítico', iconBg: '#fdeaea', iconFg: '#b91c1c', go: () => irModulo('inventario') }
+    ];
+
+    // ---- navegación ----
+    const navAppDef = [
+      ['inicio', '⌂', 'Inicio', false],
+      ['venta', '⚡', 'Venta rápida', false],
+      ['pedidos', '◷', 'Pedidos', '3'],
+      ['menu', '☰', 'Menú', false]
+    ];
+    const navApp = navAppDef.map(([id, icono, label, badge]) => {
+      const activo = id === 'menu' ? st.menuAbierto : st.modulo === id;
+      return {
+        icono, label, badge,
+        iconBg: activo ? tinte : 'transparent',
+        iconFg: activo ? primary : '#a5988d',
+        fg: activo ? primary : '#a5988d',
+        go: () => { if (id === 'menu') { this.setState({ menuAbierto: true }); } else { irModulo(id); } }
+      };
+    });
+    const mi = (id, icono, label, badge) => ({
+      esItem: true, icono, label, badge: badge || false,
+      bg: st.modulo === id ? tinte : 'transparent',
+      fg: st.modulo === id ? '#9a3d12' : '#221a15',
+      peso: st.modulo === id ? 700 : 500,
+      iconBg: st.modulo === id ? primary : '#f4f0ec',
+      iconFg: st.modulo === id ? '#ffffff' : '#8a7d73',
+      go: () => irModulo(id)
+    });
+    const menuItems = [
+      { esSeccion: true, label: 'Menús de caja' },
+      mi('venta', '⚡', 'Venta rápida'), mi('ventas', '⇧', 'Ventas'), mi('pedidos', '◷', 'Mercado en línea', '3'), mi('inventario', '⇅', 'Estado del inventario'),
+      { esSeccion: true, label: 'Menús de administración' },
+      mi('productos', '▦', 'Gestión de productos', '124'), mi('categorias', '▤', 'Categorías'), mi('compras', '⇩', 'Compras'), mi('clientes', '◔', 'Gestión de clientes'), mi('proveedores', '⌂', 'Proveedores'), mi('config', '⚙', 'Configuración de empresa')
+    ];
+    const titulos = { inicio: 'Hola, María 👋'.replace(' 👋', ''), venta: 'Venta rápida', config: 'Configuración' };
+
+    return {
+      primary,
+      esLogin: st.pantalla === 'login',
+      esRegistro: st.pantalla === 'registro',
+      esApp: st.pantalla === 'app',
+      esTienda: st.pantalla === 'tienda',
+      iniciarSesion: () => this.setState({ pantalla: 'registro' }),
+      crearEmpresa: () => this.setState({ pantalla: 'app', modulo: 'inicio' }),
+      cerrarSesion: () => this.setState({ pantalla: 'login', menuAbierto: false }),
+      verTiendaDesdeLogin: () => this.setState({ pantalla: 'tienda', origen: 'login' }),
+      irTienda: () => this.setState({ pantalla: 'tienda', origen: 'app' }),
+      irTiendaLink: (e) => { e.preventDefault(); this.setState({ pantalla: 'tienda', origen: 'app' }); },
+      salirTienda: () => this.setState({ pantalla: st.origen === 'app' ? 'app' : 'login', carritoAbierto: false }),
+
+      tituloModulo: titulos[st.modulo] || (datos ? datos.titulo : ''),
+      menuAbierto: st.menuAbierto,
+      abrirMenu: () => this.setState({ menuAbierto: true }),
+      cerrarMenu: () => this.setState({ menuAbierto: false }),
+      menuItems, navApp,
+
+      // inicio
+      mInicio: st.pantalla === 'app' && st.modulo === 'inicio',
+      kpis, barras,
+      stockBajo: [
+        { nombre: 'Detergente OMO 800 g', stock: 3 },
+        { nombre: 'Azúcar Guabirá 1 kg', stock: 4 },
+        { nombre: 'Fideo Coronilla 1 kg', stock: 5 }
+      ],
+      pedidosRecientes: [
+        { num: 'PED-0087', cliente: 'Rosa Mamani', items: '3 ítems', total: 'Bs 86,50', estado: 'Pendiente', bg: B.ambar.bg, fg: B.ambar.fg },
+        { num: 'PED-0086', cliente: 'Jorge Quispe', items: '5 ítems', total: 'Bs 154,00', estado: 'Pendiente', bg: B.ambar.bg, fg: B.ambar.fg },
+        { num: 'PED-0084', cliente: 'Luis Choque', items: '6 ítems', total: 'Bs 210,00', estado: 'Confirmado', bg: B.azul.bg, fg: B.azul.fg }
+      ],
+      irPedidos: () => irModulo('pedidos'),
+
+      // POS
+      mVenta: st.pantalla === 'app' && st.modulo === 'venta',
+      chipsPos, posProds,
+      filtroPos: st.filtroPos,
+      setFiltroPos: (e) => this.setState({ filtroPos: e.target.value }),
+      ordenCount,
+      ordenTotalFmt: this.fmt(ordenTotal),
+      ordenAbierta: st.ordenAbierta,
+      abrirOrden: () => this.setState({ ordenAbierta: true }),
+      cerrarOrden: () => this.setState({ ordenAbierta: false, ventaConfirmada: false }),
+      ordenItems,
+      ordenConItems: !st.ventaConfirmada && ordenItems.length > 0,
+      ordenVacia: !st.ventaConfirmada && ordenItems.length === 0,
+      ventaConfirmada: st.ventaConfirmada,
+      cobrar: () => this.setState({ ventaConfirmada: true, orden: {} }),
+
+      // listas
+      mLista: st.pantalla === 'app' && !!datos && ['productos', 'categorias', 'clientes', 'proveedores', 'compras', 'ventas', 'inventario', 'pedidos'].includes(st.modulo),
+      statsModulo: datos ? datos.stats : [],
+      tarjetas,
+      sinResultados: !!datos && tarjetas.length === 0,
+      filtro: st.filtro,
+      setFiltro: (e) => this.setState({ filtro: e.target.value }),
+      placeholderBusqueda: datos ? datos.ph : 'Buscar…',
+      etiquetaNuevo: datos ? datos.etiqueta : 'Nuevo registro',
+      camposModal: datos ? datos.campos : [],
+      modalAbierto: st.modalAbierto,
+      abrirNuevo: () => this.setState({ modalAbierto: true }),
+      cerrarModal: () => this.setState({ modalAbierto: false }),
+
+      // config
+      mConfig: st.pantalla === 'app' && st.modulo === 'config',
+
+      // tienda
+      chipsTienda, tiendaProds, navTienda,
+      mostrarStockTienda: this.props.mostrarStockTienda ?? true,
+      hayCarrito: carritoCount > 0 && !st.carritoAbierto,
+      carritoCount, carritoItems,
+      carritoTotalFmt: this.fmt(carritoTotal),
+      carritoAbierto: st.carritoAbierto,
+      carritoVacio: !st.pedidoConfirmado && carritoItems.length === 0,
+      carritoConItems: !st.pedidoConfirmado && carritoItems.length > 0,
+      pedidoConfirmado: st.pedidoConfirmado,
+      abrirCarrito: () => this.setState({ carritoAbierto: true, pedidoConfirmado: false }),
+      cerrarCarrito: () => this.setState({ carritoAbierto: false, pedidoConfirmado: false, tabTienda: 'inicio' }),
+      finalizarPedido: () => this.setState({ pedidoConfirmado: true, carrito: {} })
+    };
+  }
+}
+</script>
+</body>
+</html>
