@@ -6,6 +6,8 @@
       <sourceFolder url="file://$MODULE_DIR$/back/database/factories" isTestSource="false" packagePrefix="Database\Factories\" />
       <sourceFolder url="file://$MODULE_DIR$/back/database/seeders" isTestSource="false" packagePrefix="Database\Seeders\" />
       <sourceFolder url="file://$MODULE_DIR$/back/tests" isTestSource="true" packagePrefix="Tests\" />
+      <sourceFolder url="file://$MODULE_DIR$/back/tests/Feature" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/back/tests/Unit" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/brianium/paratest" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/brick/math" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/carbonphp/carbon-doctrine-types" />
@@ -19,6 +21,7 @@
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/fakerphp/faker" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/fidry/cpu-core-counter" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/filp/whoops" />
+      <excludeFolder url="file://$MODULE_DIR$/back/vendor/firebase/php-jwt" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/fruitcake/php-cors" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/graham-campbell/result-type" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/guzzlehttp/guzzle" />
@@ -36,6 +39,7 @@
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/laravel/pint" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/laravel/prompts" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/laravel/roster" />
+      <excludeFolder url="file://$MODULE_DIR$/back/vendor/laravel/sanctum" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/laravel/serializable-closure" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/laravel/tinker" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/league/commonmark" />
@@ -98,6 +102,8 @@
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/sebastian/recursion-context" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/sebastian/type" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/sebastian/version" />
+      <excludeFolder url="file://$MODULE_DIR$/back/vendor/spatie/laravel-package-tools" />
+      <excludeFolder url="file://$MODULE_DIR$/back/vendor/spatie/laravel-translation-loader" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/staabm/side-effects-detector" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/symfony/clock" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/symfony/console" />

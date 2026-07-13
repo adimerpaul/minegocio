@@ -148,6 +148,10 @@
       <path value="$PROJECT_DIR$/back/vendor/league/flysystem-local" />
       <path value="$PROJECT_DIR$/back/vendor/league/mime-type-detection" />
       <path value="$PROJECT_DIR$/back/vendor/league/config" />
+      <path value="$PROJECT_DIR$/back/vendor/laravel/sanctum" />
+      <path value="$PROJECT_DIR$/back/vendor/firebase/php-jwt" />
+      <path value="$PROJECT_DIR$/back/vendor/spatie/laravel-package-tools" />
+      <path value="$PROJECT_DIR$/back/vendor/spatie/laravel-translation-loader" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
@@ -155,6 +159,11 @@
   </component>
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/back/phpunit.xml" custom_loader_path="$PROJECT_DIR$/back/vendor/autoload.php" paratest_path="$PROJECT_DIR$/back/vendor/bin/paratest_for_phpstorm" use_configuration_file="true" />
+    </phpunit_settings>
   </component>
   <component name="PsalmOptionsConfiguration">
     <option name="transferred" value="true" />

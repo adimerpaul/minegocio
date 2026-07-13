@@ -14,6 +14,10 @@ return [
     |
     */
 
+    'firebase' => [
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

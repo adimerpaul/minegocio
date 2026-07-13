@@ -49,6 +49,16 @@ flutter analyze       # linter (flutter_lints)
 
 ## Arquitectura
 
+### Flujo de autenticación (Firebase → Laravel)
+
+1. La app hace login con Google vía Firebase Auth y obtiene el ID token de Firebase.
+2. `ApiService.syncGoogleLogin()` lo envía a `POST /api/auth/google` del backend.
+3. `GoogleAuthController` verifica el token con `App\Services\FirebaseTokenVerifier` (valida firma RS256 contra los certificados públicos de Google; requiere `FIREBASE_PROJECT_ID` en el `.env`). **La primera vez** crea el usuario con `firebase_uid`, `google_id`, `photo_url`, nombre y correo; en logins posteriores solo lo devuelve sin sobrescribir. Siempre responde `{user, token, is_new}` con un token Sanctum.
+4. La app guarda el token de API y el usuario en `shared_preferences`. Si el backend falla, se revierte la sesión de Firebase (no quedan sesiones a medias).
+5. La URL del backend se define en `aplicacion/lib/config.dart` (`--dart-define=API_URL=...`); emulador Android usa `http://10.0.2.2:8000`, teléfono físico la IP LAN con `php artisan serve --host=0.0.0.0`. El manifest de Android tiene `usesCleartextTraffic=true` solo para desarrollo.
+
+En los tests del backend, `FirebaseTokenVerifier` se mockea (`$this->mock(FirebaseTokenVerifier::class)`); ver `tests/Feature/GoogleAuthTest.php`.
+
 ### App Flutter (`aplicacion/lib/`)
 
 - Login con Google vía Firebase Auth + `google_sign_in` v7 (API nueva: `authenticate()`, no `signIn()`).
