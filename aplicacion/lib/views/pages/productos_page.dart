@@ -88,8 +88,7 @@ class _ProductosPageState extends State<ProductosPage> {
                 .toLowerCase()
                 .contains(filtro))
         .toList();
-    final stockBajo =
-        _catalogo!.productos.where((p) => p.stock <= 5).length;
+    final stockBajo = _catalogo!.productos.where((p) => p.stockBajo).length;
 
     return Column(
       children: [
@@ -232,7 +231,7 @@ class _ProductosPageState extends State<ProductosPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${producto.codigo} · ${_nombreCategoria(producto.categoriaId)} · ${producto.stock} und.',
+                  '${producto.codigo} · ${_nombreCategoria(producto.categoriaId)} · stock ${producto.stock} · mín ${producto.stockMinimo}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -255,7 +254,7 @@ class _ProductosPageState extends State<ProductosPage> {
                   color: Paleta.texto,
                 ),
               ),
-              if (producto.stock <= 5)
+              if (producto.stockBajo)
                 Container(
                   margin: const EdgeInsets.only(top: 4),
                   padding: const EdgeInsets.symmetric(

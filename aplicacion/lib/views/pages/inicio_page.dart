@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../config/formato.dart';
 import '../../config/paleta.dart';
+import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/venta_service.dart';
 
-/// Dashboard de inicio (mockup): resumen de ventas, accesos rápidos y
-/// pedidos. Productos y stock salen del catálogo real; ventas y pedidos
-/// arrancan en cero hasta conectar esos módulos.
+/// Dashboard de inicio (mockup): ventas de hoy y de la semana reales,
+/// accesos rápidos con contadores del catálogo y pedidos (próximamente).
 class InicioPage extends StatefulWidget {
   final Session session;
   final ValueChanged<String> onIrModulo;
@@ -23,143 +24,235 @@ class InicioPage extends StatefulWidget {
 }
 
 class _InicioPageState extends State<InicioPage> {
-  static const _meses = [
-    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
-  ];
+  static const _letrasDia = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
   int _productos = 0;
   int _stockCritico = 0;
+  List<Venta> _ventas = [];
 
-  ValueChanged<String> get onIrModulo => widget.onIrModulo;
+  String get _simbolo => simboloMoneda(widget.session.user.empresa?.moneda);
 
   @override
   void initState() {
     super.initState();
-    _cargarCatalogo();
+    _cargar();
   }
 
-  Future<void> _cargarCatalogo() async {
+  Future<void> _cargar() async {
+    // El dashboard no se rompe si algo falla: se quedan los ceros.
     try {
       final catalogo =
           await CatalogoService.instance.listar(widget.session.token);
       if (!mounted) return;
       setState(() {
         _productos = catalogo.productos.length;
-        _stockCritico =
-            catalogo.productos.where((p) => p.stock <= 5).length;
+        _stockCritico = catalogo.productos.where((p) => p.stockBajo).length;
       });
-    } catch (_) {
-      // El dashboard no depende del catálogo; se quedan los ceros.
-    }
+    } catch (_) {}
+
+    try {
+      final ventas = await VentaService.instance.listar(widget.session.token);
+      if (!mounted) return;
+      setState(() => _ventas = ventas);
+    } catch (_) {}
   }
+
+  bool _mismoDia(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 
   @override
   Widget build(BuildContext context) {
     final hoy = DateTime.now();
-    final fecha = '${hoy.day} ${_meses[hoy.month - 1]}';
-    final moneda = simboloMoneda(widget.session.user.empresa?.moneda);
+    // Las ventas anuladas no cuentan en los totales.
+    final validas = _ventas.where((v) => !v.anulada).toList();
+    final ventasHoy = validas.where((v) => _mismoDia(v.fecha, hoy)).toList();
+    final totalHoy = ventasHoy.fold(0.0, (a, v) => a + v.total);
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Paleta.fondoOscuro,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Ventas de hoy · $fecha',
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  color: Color(0xFFB3A89F),
+    // Últimos 7 días (hoy al final) para el gráfico de la semana.
+    final dias = List.generate(7, (i) {
+      final dia = hoy.subtract(Duration(days: 6 - i));
+      final total = validas
+          .where((v) => _mismoDia(v.fecha, dia))
+          .fold(0.0, (a, v) => a + v.total);
+      return (dia, total);
+    });
+    final totalSemana = dias.fold(0.0, (a, d) => a + d.$2);
+
+    return RefreshIndicator(
+      color: Paleta.primario,
+      onRefresh: _cargar,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Paleta.fondoOscuro,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ventas de hoy · ${hoy.day} ${_mesCorto(hoy)}',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: Color(0xFFB3A89F),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$moneda 0,00',
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.6,
-                  color: Paleta.blanco,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Paleta.primario,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  '0 ventas',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(height: 4),
+                Text(
+                  formatoMoneda(totalHoy, simbolo: _simbolo),
+                  style: const TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.6,
                     color: Paleta.blanco,
                   ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Paleta.primario,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${ventasHoy.length} ${ventasHoy.length == 1 ? 'venta' : 'ventas'}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Paleta.blanco,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _kpi(Icons.schedule, '0', 'Pedidos en línea', 'pedidos'),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child:
+                    _kpi(Icons.grid_view, '$_productos', 'Productos', 'productos'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _kpi(
+                  Icons.north_east,
+                  '${_ventas.length}',
+                  'Ventas registradas',
+                  'ventas',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _kpi(
+                  Icons.warning_amber_rounded,
+                  '$_stockCritico',
+                  'Stock crítico',
+                  'productos',
+                  alerta: true,
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.55,
-          children: [
-            _kpi(Icons.schedule, '0', 'Pedidos en línea', 'pedidos'),
-            _kpi(Icons.grid_view, '$_productos', 'Productos', 'productos'),
-            _kpi(Icons.south_west, '0', 'Compras pendientes', 'compras'),
-            _kpi(
-              Icons.warning_amber_rounded,
-              '$_stockCritico',
-              'Stock crítico',
-              'inventario',
-              alerta: true,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        _tarjeta(
-          titulo: 'Ventas de la semana',
-          trailing: '$moneda 0,00',
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Text(
-              'Aún no registraste ventas. Usa Venta rápida para empezar.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Paleta.textoSuave),
+          const SizedBox(height: 16),
+          _tarjeta(
+            titulo: 'Ventas de la semana',
+            trailing: formatoMoneda(totalSemana, simbolo: _simbolo),
+            child: totalSemana == 0
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      'Aún no registraste ventas esta semana. Usa Venta rápida para empezar.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: Paleta.textoSuave),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: _graficoSemana(dias),
+                  ),
+          ),
+          const SizedBox(height: 16),
+          _tarjeta(
+            titulo: 'Pedidos en línea',
+            accion: 'Ver todos ›',
+            onAccion: () => widget.onIrModulo('pedidos'),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Sin pedidos todavía. Llegarán desde tu tienda en línea.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: Paleta.textoSuave),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        _tarjeta(
-          titulo: 'Pedidos en línea',
-          accion: 'Ver todos ›',
-          onAccion: () => onIrModulo('pedidos'),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Text(
-              'Sin pedidos todavía. Llegarán desde tu tienda en línea.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Paleta.textoSuave),
+        ],
+      ),
+    );
+  }
+
+  String _mesCorto(DateTime d) => const [
+        'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+        'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+      ][d.month - 1];
+
+  Widget _graficoSemana(List<(DateTime, double)> dias) {
+    final maximo =
+        dias.fold(0.0, (a, d) => d.$2 > a ? d.$2 : a).clamp(1.0, double.infinity);
+
+    return SizedBox(
+      height: 110,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (final (dia, total) in dias)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      height: total == 0 ? 3 : 4 + 80 * (total / maximo),
+                      constraints: const BoxConstraints(maxWidth: 30),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: _mismoDia(dia, DateTime.now())
+                            ? Paleta.primario
+                            : const Color(0xFFF0E3D8),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      _letrasDia[dia.weekday - 1],
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: Paleta.grisClaro,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -175,7 +268,7 @@ class _InicioPageState extends State<InicioPage> {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => onIrModulo(modulo),
+        onTap: () => widget.onIrModulo(modulo),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
@@ -184,7 +277,7 @@ class _InicioPageState extends State<InicioPage> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 34,
@@ -196,14 +289,14 @@ class _InicioPageState extends State<InicioPage> {
                 child: Icon(
                   icono,
                   size: 17,
-                  color: alerta
-                      ? Paleta.alertaTexto
-                      : const Color(0xFFC2410C),
+                  color: alerta ? Paleta.alertaTexto : const Color(0xFFC2410C),
                 ),
               ),
               const SizedBox(height: 10),
               Text(
                 valor,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w700,
@@ -214,6 +307,8 @@ class _InicioPageState extends State<InicioPage> {
               const SizedBox(height: 2),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,

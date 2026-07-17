@@ -11,6 +11,7 @@ import 'pages/inicio_page.dart';
 import 'pages/lista_page.dart';
 import 'pages/productos_page.dart';
 import 'pages/venta_page.dart';
+import 'pages/ventas_page.dart';
 
 /// Shell principal del negocio (mockup ejemplo.html): header con menú,
 /// contenido por módulo, barra inferior y menú lateral con secciones.
@@ -129,6 +130,8 @@ class _HomeViewState extends State<HomeView> {
         return InicioPage(session: _session, onIrModulo: _irModulo);
       case 'venta':
         return VentaPage(session: _session);
+      case 'ventas':
+        return VentasPage(session: _session);
       case 'productos':
         return ProductosPage(session: _session);
       case 'categorias':

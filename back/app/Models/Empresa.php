@@ -31,4 +31,9 @@ class Empresa extends Model implements AuditableContract
     {
         return $this->hasMany(Producto::class);
     }
+
+    public function ventas(): HasMany
+    {
+        return $this->hasMany(Venta::class);
+    }
 }

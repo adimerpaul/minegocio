@@ -78,66 +78,72 @@ class _CategoriasPageState extends State<CategoriasPage> {
             .length;
 
         return Container(
-          padding: const EdgeInsets.all(14),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: Paleta.blanco,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Paleta.bordeSuave),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Paleta.tinte,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  categoria.nombre.characters.first.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFC2410C),
+              if (categoria.imagenUrl != null)
+                AspectRatio(
+                  aspectRatio: 640 / 341,
+                  child: Image.network(
+                    categoria.imagenUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      color: Paleta.tinte,
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.category_outlined,
+                        color: Color(0xFFC2410C),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
                   children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            categoria.nombre,
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                              color: Paleta.texto,
+                            ),
+                          ),
+                          if (categoria.descripcion != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              categoria.descripcion!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Paleta.textoSuave,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
-                      categoria.nombre,
+                      '$cuantos prod.',
                       style: const TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                         color: Paleta.texto,
                       ),
                     ),
-                    if (categoria.descripcion != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        categoria.descripcion!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Paleta.textoSuave,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '$cuantos prod.',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Paleta.texto,
                 ),
               ),
             ],

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
-#[Fillable(['empresa_id', 'categoria_id', 'codigo', 'nombre', 'precio', 'stock', 'imagen_path'])]
+#[Fillable(['empresa_id', 'categoria_id', 'codigo', 'nombre', 'precio', 'stock', 'stock_minimo', 'imagen_path'])]
 class Producto extends Model implements AuditableContract
 {
     use Auditable, SoftDeletes;
@@ -21,6 +21,7 @@ class Producto extends Model implements AuditableContract
         return [
             'precio' => 'float',
             'stock' => 'integer',
+            'stock_minimo' => 'integer',
         ];
     }
 

@@ -79,6 +79,12 @@ class CatalogoInicial
                 'descripcion' => $descripcion,
             ]);
 
+            $banner = self::copiarBannerCategoria($empresa, $nombreCategoria);
+
+            if ($banner !== null) {
+                $categoria->update(['imagen_path' => $banner]);
+            }
+
             foreach ($productos as [$nombre, $precio]) {
                 $producto = $empresa->productos()->create([
                     'categoria_id' => $categoria->id,
@@ -96,6 +102,27 @@ class CatalogoInicial
                 }
             }
         }
+    }
+
+    /**
+     * Copia el banner empaquetado de la categoría
+     * (resources/categorias/{slug}.webp) al disco público de la empresa.
+     * Devuelve la ruta pública, o null si no hay banner para esa categoría.
+     */
+    private static function copiarBannerCategoria(Empresa $empresa, string $nombre): ?string
+    {
+        $slug = Str::slug($nombre);
+        $origen = resource_path("categorias/{$slug}.webp");
+
+        if (! is_file($origen)) {
+            return null;
+        }
+
+        $archivo = "categorias/{$empresa->id}/{$slug}.webp";
+        Storage::disk('public')->makeDirectory(dirname($archivo));
+        copy($origen, Storage::disk('public')->path($archivo));
+
+        return "/storage/{$archivo}";
     }
 
     /**

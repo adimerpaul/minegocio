@@ -10,21 +10,32 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
-#[Fillable(['empresa_id', 'nombre', 'descripcion', 'imagen_path'])]
-class Categoria extends Model implements AuditableContract
+#[Fillable(['empresa_id', 'user_id', 'codigo', 'cliente', 'total', 'estado'])]
+class Venta extends Model implements AuditableContract
 {
     use Auditable, SoftDeletes;
 
-    /** La tabla no sigue el plural automático de Eloquent en inglés. */
-    protected $table = 'categorias';
+    protected $table = 'ventas';
+
+    protected function casts(): array
+    {
+        return [
+            'total' => 'float',
+        ];
+    }
 
     public function empresa(): BelongsTo
     {
         return $this->belongsTo(Empresa::class);
     }
 
-    public function productos(): HasMany
+    public function user(): BelongsTo
     {
-        return $this->hasMany(Producto::class, 'categoria_id');
+        return $this->belongsTo(User::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(VentaItem::class, 'venta_id');
     }
 }

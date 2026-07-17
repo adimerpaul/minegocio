@@ -87,6 +87,11 @@ it('crea el catálogo de comida por defecto al registrar la empresa', function (
         ->toBe(['Pollos', 'Extras', 'Jugos', 'Refrescos']);
     expect($empresa->productos()->count())->toBe(16);
 
+    // Cada categoría lleva su banner empaquetado.
+    $pollos = $empresa->categorias()->where('nombre', 'Pollos')->first();
+    expect($pollos->imagen_path)->toBe("/storage/categorias/{$empresa->id}/pollos.webp");
+    Storage::disk('public')->assertExists("categorias/{$empresa->id}/pollos.webp");
+
     $pollo = $empresa->productos()->where('nombre', 'Pollo entero')->first();
     expect($pollo->precio)->toBe(90.0)
         ->and($pollo->codigo)->toBe('P-001')

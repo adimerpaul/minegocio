@@ -15,3 +15,20 @@ String simboloMoneda(String? moneda) => switch (moneda) {
       'PEN' => 'S/.',
       _ => 'Bs',
     };
+
+const _meses = [
+  'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+  'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+];
+
+/// Fecha corta como en el mockup: `17 jul`; `hoy` si es el día actual.
+String formatoFecha(DateTime fecha) {
+  final ahora = DateTime.now();
+  if (fecha.year == ahora.year &&
+      fecha.month == ahora.month &&
+      fecha.day == ahora.day) {
+    return 'hoy';
+  }
+
+  return '${fecha.day} ${_meses[fecha.month - 1]}';
+}

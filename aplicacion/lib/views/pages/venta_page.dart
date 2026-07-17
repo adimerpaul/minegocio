@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import '../../config/formato.dart';
 import '../../config/paleta.dart';
 import '../../models/producto.dart';
+import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/venta_service.dart';
+import '../../services/voucher_service.dart';
 import '../widgets/campo_texto.dart';
 
 /// Venta rápida (POS del mockup): buscador, chips por categoría, grilla de
-/// productos del catálogo y resumen de la orden. El cobro se conectará al
-/// backend en la siguiente etapa.
+/// productos del catálogo y resumen de la orden. Cobrar registra la venta
+/// en el backend y descuenta el stock.
 class VentaPage extends StatefulWidget {
   final Session session;
 
@@ -26,6 +29,7 @@ class _VentaPageState extends State<VentaPage> {
   int? _categoriaSeleccionada; // null = Todos
   String _filtro = '';
   final Map<int, int> _orden = {}; // productoId → cantidad
+  bool _cobrando = false;
 
   String get _simbolo => simboloMoneda(widget.session.user.empresa?.moneda);
 
@@ -84,6 +88,141 @@ class _VentaPageState extends State<VentaPage> {
         _orden[producto.id] = qty - 1;
       }
     });
+  }
+
+  /// Registra la venta en el backend, descuenta el stock y limpia la orden.
+  Future<void> _cobrar() async {
+    if (_orden.isEmpty || _cobrando) return;
+    setState(() => _cobrando = true);
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final venta = await VentaService.instance.crear(
+        token: widget.session.token,
+        orden: Map.of(_orden),
+      );
+
+      // El stock cambió: se refresca el catálogo.
+      final catalogo = await CatalogoService.instance
+          .listar(widget.session.token, refrescar: true);
+
+      if (!mounted) return;
+      setState(() {
+        _orden.clear();
+        _catalogo = catalogo;
+      });
+
+      _mostrarConfirmacion(venta);
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('$e'.replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _cobrando = false);
+    }
+  }
+
+  /// Hoja de venta registrada, con la opción de imprimir el voucher.
+  void _mostrarConfirmacion(Venta venta) {
+    final empresa = widget.session.user.empresa;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Paleta.blanco,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE8F5EC),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    size: 30,
+                    color: Color(0xFF1D7A3E),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Venta ${venta.codigo} registrada',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                    color: Paleta.texto,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${formatoMoneda(venta.total, simbolo: _simbolo)} · el stock se actualizó',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    color: Paleta.textoSuave,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                if (empresa != null)
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Paleta.primario,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => VoucherService.instance.imprimir(
+                      empresa: empresa,
+                      venta: venta,
+                    ),
+                    icon: const Icon(Icons.print, color: Paleta.blanco),
+                    label: const Text(
+                      'Imprimir voucher',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Paleta.blanco,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 10),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Paleta.borde),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(sheetContext),
+                  child: const Text(
+                    'Nueva venta',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: Paleta.textoMedio,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -295,29 +434,48 @@ class _VentaPageState extends State<VentaPage> {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: _abrirResumen,
+          onTap: _cobrando ? null : _abrirResumen,
           child: Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Resumen de la orden ($_cantidadTotal)',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Paleta.blanco,
+                if (_cobrando) ...[
+                  const Text(
+                    'Registrando venta...',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Paleta.blanco,
+                    ),
                   ),
-                ),
-                Text(
-                  formatoMoneda(_total, simbolo: _simbolo),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Paleta.blanco,
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Paleta.blanco,
+                    ),
                   ),
-                ),
+                ] else ...[
+                  Text(
+                    'Resumen de la orden ($_cantidadTotal)',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Paleta.blanco,
+                    ),
+                  ),
+                  Text(
+                    formatoMoneda(_total, simbolo: _simbolo),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Paleta.blanco,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -492,16 +650,8 @@ class _VentaPageState extends State<VentaPage> {
                           ),
                         ),
                         onPressed: () {
-                          final messenger =
-                              ScaffoldMessenger.of(sheetContext);
                           Navigator.pop(sheetContext);
-                          messenger.showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'El cobro se conectará al servidor en la siguiente etapa.',
-                              ),
-                            ),
-                          );
+                          _cobrar();
                         },
                         child: Text(
                           'Cobrar ${formatoMoneda(_total, simbolo: _simbolo)}',
