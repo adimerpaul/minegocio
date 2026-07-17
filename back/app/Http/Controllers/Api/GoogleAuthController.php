@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\GoogleTokenVerifier;
+use App\Services\WebpImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 class GoogleAuthController extends Controller
@@ -62,7 +62,7 @@ class GoogleAuthController extends Controller
         ]);
 
         return response()->json([
-            'user' => $user,
+            'user' => $user->load('empresa'),
             'token' => $user->createToken('app-movil')->plainTextToken,
             'is_new' => $user->wasRecentlyCreated,
         ]);
@@ -78,23 +78,13 @@ class GoogleAuthController extends Controller
         try {
             $binary = Http::timeout(10)->get($photoUrl)->throw()->body();
 
-            $image = @imagecreatefromstring($binary);
+            $path = WebpImage::store($binary, "avatars/user-{$user->id}.webp");
 
-            if ($image === false) {
+            if ($path === null) {
                 Log::warning('[avatar] La foto descargada no es una imagen válida', ['user_id' => $user->id]);
-
-                return null;
             }
 
-            imagepalettetotruecolor($image);
-
-            Storage::disk('public')->makeDirectory('avatars');
-            $filename = "avatars/user-{$user->id}.webp";
-
-            imagewebp($image, Storage::disk('public')->path($filename), 85);
-            imagedestroy($image);
-
-            return "/storage/{$filename}";
+            return $path;
         } catch (\Throwable $e) {
             Log::warning('[avatar] No se pudo guardar la foto: '.$e->getMessage(), ['user_id' => $user->id]);
 

@@ -6,22 +6,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/env.dart';
 import '../models/app_user.dart';
+import 'local_db.dart';
+
+/// Sesión activa: usuario (con su empresa, si la tiene) y token de API.
+class Session {
+  final AppUser user;
+  final String token;
+
+  const Session({required this.user, required this.token});
+
+  Session copyWith({AppUser? user}) =>
+      Session(user: user ?? this.user, token: token);
+}
 
 /// Resultado del login completo (Google + backend).
 class AuthResult {
-  final AppUser user;
-  final String token;
+  final Session session;
   final bool isNew;
 
-  const AuthResult({
-    required this.user,
-    required this.token,
-    required this.isNew,
-  });
+  const AuthResult({required this.session, required this.isNew});
 }
 
 /// Servicio único de autenticación: login con Google, verificación en el
-/// backend Laravel y guardado de la sesión en el teléfono.
+/// backend Laravel y guardado de la sesión en el teléfono (token en
+/// shared_preferences; usuario, empresa y copia de la foto en SQLite).
 class AuthService {
   AuthService._();
 
@@ -39,8 +47,22 @@ class AuthService {
     _initialized = true;
   }
 
+  /// Restaura la sesión guardada en el teléfono (sin pasar por Google ni el
+  /// backend). Devuelve null si no hay sesión.
+  Future<Session?> restoreSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('api_token');
+    if (token == null) return null;
+
+    final user = await LocalDb.instance.obtenerUsuario();
+    if (user == null) return null;
+
+    return Session(user: user, token: token);
+  }
+
   /// Flujo completo: login con Google → POST /api/auth/google → guarda el
-  /// token de API y el usuario en shared_preferences.
+  /// token en shared_preferences y el usuario + empresa en SQLite, con una
+  /// copia de la foto en el almacenamiento del teléfono.
   /// Devuelve `null` si el usuario cancela.
   Future<AuthResult?> signIn() async {
     await _ensureInitialized();
@@ -78,17 +100,24 @@ class AuthService {
       }
 
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final result = AuthResult(
-        user: AppUser.fromJson(json['user'] as Map<String, dynamic>),
-        token: json['token'] as String,
-        isNew: json['is_new'] as bool,
-      );
+      var user = AppUser.fromJson(json['user'] as Map<String, dynamic>);
+      final token = json['token'] as String;
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('api_token', result.token);
-      await prefs.setString('user', jsonEncode(json['user']));
+      await prefs.setString('api_token', token);
 
-      return result;
+      await LocalDb.instance.guardarSesion(user);
+
+      // Copia local de la foto para recuperarla luego sin conexión.
+      final fotoLocal = await LocalDb.instance.guardarFotoLocal(user);
+      if (fotoLocal != null) {
+        user = user.copyWith(photoLocal: fotoLocal);
+      }
+
+      return AuthResult(
+        session: Session(user: user, token: token),
+        isNew: json['is_new'] as bool,
+      );
     } catch (_) {
       // Sin backend no hay sesión: se revierte el login de Google.
       await GoogleSignIn.instance.signOut();
@@ -102,6 +131,8 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('api_token');
     await prefs.remove('user');
+
+    await LocalDb.instance.limpiar();
 
     await GoogleSignIn.instance.signOut();
   }

@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'views/login_view.dart';
+import 'config/paleta.dart';
+import 'views/root_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,9 +20,10 @@ class MiNegocioApp extends StatelessWidget {
       title: 'miNegocio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFF4632C)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Paleta.primario),
+        scaffoldBackgroundColor: Paleta.fondo,
       ),
-      home: const LoginView(),
+      home: const RootView(),
     );
   }
 }
