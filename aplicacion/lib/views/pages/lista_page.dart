@@ -31,32 +31,9 @@ class ListaPage extends StatelessWidget {
 
   const ListaPage({super.key, required this.modulo});
 
+  // Productos y categorías tienen página propia con datos reales
+  // (productos_page.dart, categorias_page.dart).
   static const Map<String, _DefModulo> _defs = {
-    'productos': _DefModulo(
-      stat1: 'Productos activos',
-      stat2: 'Con stock bajo',
-      buscador: 'Buscar por nombre, código o categoría…',
-      etiquetaNuevo: 'Nuevo producto',
-      campos: [
-        ('Código', 'P-001'),
-        ('Nombre', 'Nombre del producto'),
-        ('Categoría', 'Abarrotes'),
-        ('Precio de venta', '0,00'),
-        ('Stock inicial', '0'),
-      ],
-      vacio: 'Registra tu primer producto con el botón +.',
-    ),
-    'categorias': _DefModulo(
-      stat1: 'Categorías',
-      stat2: 'Más grande',
-      buscador: 'Buscar categoría…',
-      etiquetaNuevo: 'Nueva categoría',
-      campos: [
-        ('Nombre', 'Ej. Snacks'),
-        ('Descripción', 'Descripción breve'),
-      ],
-      vacio: 'Crea categorías para ordenar tu catálogo.',
-    ),
     'clientes': _DefModulo(
       stat1: 'Total clientes',
       stat2: 'Compras del mes',

@@ -164,33 +164,6 @@ class _LoginViewState extends State<LoginView> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Paleta.primario,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'La tienda en línea estará disponible pronto.',
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Ver la tienda en línea',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Paleta.blanco,
-                          ),
-                        ),
-                      ),
                       if (_viewModel.error != null) ...[
                         const SizedBox(height: 14),
                         Text(

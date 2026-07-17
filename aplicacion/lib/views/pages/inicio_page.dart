@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../config/formato.dart';
 import '../../config/paleta.dart';
 import '../../services/auth_service.dart';
+import '../../services/catalogo_service.dart';
 
 /// Dashboard de inicio (mockup): resumen de ventas, accesos rápidos y
-/// pedidos. Los contadores arrancan en cero hasta conectar cada módulo.
-class InicioPage extends StatelessWidget {
+/// pedidos. Productos y stock salen del catálogo real; ventas y pedidos
+/// arrancan en cero hasta conectar esos módulos.
+class InicioPage extends StatefulWidget {
   final Session session;
   final ValueChanged<String> onIrModulo;
 
@@ -15,16 +18,47 @@ class InicioPage extends StatelessWidget {
     required this.onIrModulo,
   });
 
+  @override
+  State<InicioPage> createState() => _InicioPageState();
+}
+
+class _InicioPageState extends State<InicioPage> {
   static const _meses = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
     'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
   ];
 
+  int _productos = 0;
+  int _stockCritico = 0;
+
+  ValueChanged<String> get onIrModulo => widget.onIrModulo;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarCatalogo();
+  }
+
+  Future<void> _cargarCatalogo() async {
+    try {
+      final catalogo =
+          await CatalogoService.instance.listar(widget.session.token);
+      if (!mounted) return;
+      setState(() {
+        _productos = catalogo.productos.length;
+        _stockCritico =
+            catalogo.productos.where((p) => p.stock <= 5).length;
+      });
+    } catch (_) {
+      // El dashboard no depende del catálogo; se quedan los ceros.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final hoy = DateTime.now();
     final fecha = '${hoy.day} ${_meses[hoy.month - 1]}';
-    final moneda = session.user.empresa?.moneda == 'USD' ? '\$us' : 'Bs';
+    final moneda = simboloMoneda(widget.session.user.empresa?.moneda);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
@@ -87,11 +121,11 @@ class InicioPage extends StatelessWidget {
           childAspectRatio: 1.55,
           children: [
             _kpi(Icons.schedule, '0', 'Pedidos en línea', 'pedidos'),
-            _kpi(Icons.grid_view, '0', 'Productos', 'productos'),
+            _kpi(Icons.grid_view, '$_productos', 'Productos', 'productos'),
             _kpi(Icons.south_west, '0', 'Compras pendientes', 'compras'),
             _kpi(
               Icons.warning_amber_rounded,
-              '0',
+              '$_stockCritico',
               'Stock crítico',
               'inventario',
               alerta: true,

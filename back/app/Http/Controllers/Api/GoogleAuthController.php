@@ -37,7 +37,7 @@ class GoogleAuthController extends Controller
             return response()->json(['message' => $e->getMessage()], 401);
         }
 
-        $user = User::firstOrCreate(
+        $user = User::withTrashed()->firstOrCreate(
             ['google_id' => $claims['sub']],
             [
                 'name' => $claims['name'] ?? $claims['email'] ?? 'Usuario',
@@ -46,6 +46,12 @@ class GoogleAuthController extends Controller
                 'email_verified_at' => ($claims['email_verified'] ?? false) ? now() : null,
             ],
         );
+
+        // Cuenta con borrado suave que vuelve a iniciar sesión: se restaura
+        // (el google_id es único, no se crea un duplicado).
+        if ($user->trashed()) {
+            $user->restore();
+        }
 
         if ($user->wasRecentlyCreated && filled($claims['picture'] ?? null)) {
             $localPhoto = $this->storeAvatarAsWebp($user, $claims['picture']);

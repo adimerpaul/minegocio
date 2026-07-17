@@ -145,6 +145,7 @@
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/webmozart/assert" />
       <excludeFolder url="file://$MODULE_DIR$/back/storage/app" />
       <excludeFolder url="file://$MODULE_DIR$/back/storage/framework" />
+      <excludeFolder url="file://$MODULE_DIR$/back/vendor/owen-it/laravel-auditing" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

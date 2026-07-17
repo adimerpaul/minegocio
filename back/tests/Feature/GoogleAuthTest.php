@@ -90,6 +90,27 @@ it('no duplica ni sobrescribe al usuario en logins posteriores', function () {
     expect(User::count())->toBe(1);
 });
 
+it('restaura al usuario con borrado suave cuando vuelve a iniciar sesión', function () {
+    $user = User::create([
+        'google_id' => '1122334455',
+        'name' => 'Juan Pérez',
+        'email' => 'juan@gmail.com',
+    ]);
+    $user->delete();
+
+    $this->mock(GoogleTokenVerifier::class)
+        ->shouldReceive('verify')
+        ->andReturn(fakeClaims());
+
+    $this->postJson('/api/auth/google', ['id_token' => 'token-valido'])
+        ->assertOk()
+        ->assertJsonPath('is_new', false)
+        ->assertJsonPath('user.id', $user->id);
+
+    expect($user->refresh()->trashed())->toBeFalse();
+    expect(User::withTrashed()->count())->toBe(1);
+});
+
 it('rechaza un token inválido', function () {
     $this->mock(GoogleTokenVerifier::class)
         ->shouldReceive('verify')

@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import '../config/paleta.dart';
 import '../services/auth_service.dart';
 import 'login_view.dart';
+import 'pages/categorias_page.dart';
 import 'pages/config_page.dart';
 import 'pages/inicio_page.dart';
 import 'pages/lista_page.dart';
+import 'pages/productos_page.dart';
 import 'pages/venta_page.dart';
 
 /// Shell principal del negocio (mockup ejemplo.html): header con menú,
@@ -126,7 +128,11 @@ class _HomeViewState extends State<HomeView> {
       case 'inicio':
         return InicioPage(session: _session, onIrModulo: _irModulo);
       case 'venta':
-        return VentaPage(onIrModulo: _irModulo);
+        return VentaPage(session: _session);
+      case 'productos':
+        return ProductosPage(session: _session);
+      case 'categorias':
+        return CategoriasPage(session: _session);
       case 'config':
         return ConfigPage(
           session: _session,
@@ -206,60 +212,69 @@ class _HomeViewState extends State<HomeView> {
       ('menu', Icons.menu, 'Menú'),
     ];
 
+    // SafeArea: en Android con barra de gestos/botones el sistema tapaba
+    // la barra; el inset inferior lo aporta el propio sistema.
     return Container(
       decoration: const BoxDecoration(
         color: Paleta.blanco,
         border: Border(top: BorderSide(color: Paleta.bordeSuave)),
       ),
-      padding: const EdgeInsets.fromLTRB(8, 10, 8, 18),
-      child: Row(
-        children: [
-          for (final (id, icono, label) in items)
-            Expanded(
-              child: InkWell(
-                onTap: () {
-                  if (id == 'menu') {
-                    _scaffoldKey.currentState?.openDrawer();
-                  } else {
-                    _irModulo(id);
-                  }
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: _modulo == id
-                            ? Paleta.tinte
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        icono,
-                        size: 19,
-                        color: _modulo == id
-                            ? Paleta.primario
-                            : Paleta.grisClaro,
-                      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+          child: Row(
+            children: [
+              for (final (id, icono, label) in items)
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      if (id == 'menu') {
+                        _scaffoldKey.currentState?.openDrawer();
+                      } else {
+                        _irModulo(id);
+                      }
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: _modulo == id
+                                ? Paleta.tinte
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            icono,
+                            size: 19,
+                            color: _modulo == id
+                                ? Paleta.primario
+                                : Paleta.grisClaro,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: _modulo == id
+                                ? Paleta.primario
+                                : Paleta.grisClaro,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: _modulo == id
-                            ? Paleta.primario
-                            : Paleta.grisClaro,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

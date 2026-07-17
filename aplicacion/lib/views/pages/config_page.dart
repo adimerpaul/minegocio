@@ -80,13 +80,15 @@ class _ConfigPageState extends State<ConfigPage> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+      // Padding inferior amplio para que el botón no quede oculto
+      // detrás de la barra de navegación.
+      padding: const EdgeInsets.fromLTRB(20, 6, 20, 48),
       children: [
         ListenableBuilder(
           listenable: _viewModel,
           builder: (context, _) {
             return Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Paleta.blanco,
                 borderRadius: BorderRadius.circular(16),
@@ -103,29 +105,46 @@ class _ConfigPageState extends State<ConfigPage> {
                       color: Paleta.texto,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  CampoTexto(label: 'Nombre comercial', controller: _nombre),
                   const SizedBox(height: 12),
+                  CampoTexto(
+                    label: 'Nombre comercial',
+                    controller: _nombre,
+                    denso: true,
+                  ),
+                  const SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: CampoTexto(label: 'NIT', controller: _nit),
+                        child: CampoTexto(
+                          label: 'NIT',
+                          controller: _nit,
+                          denso: true,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: CampoTexto(
                           label: 'Teléfono',
                           controller: _telefono,
+                          denso: true,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  CampoTexto(label: 'Dirección', controller: _direccion),
-                  const SizedBox(height: 12),
-                  CampoTexto(label: 'Correo', controller: _correo),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  CampoTexto(
+                    label: 'Dirección',
+                    controller: _direccion,
+                    denso: true,
+                  ),
+                  const SizedBox(height: 10),
+                  CampoTexto(
+                    label: 'Correo',
+                    controller: _correo,
+                    denso: true,
+                  ),
+                  const SizedBox(height: 10),
                   const Text(
                     'Moneda',
                     style: TextStyle(
@@ -139,7 +158,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     initialValue: _monedas.containsKey(_moneda)
                         ? _moneda
                         : 'BOB',
-                    decoration: decoracionCampo(null),
+                    decoration: decoracionCampo(null, denso: true),
                     style: const TextStyle(fontSize: 14, color: Paleta.texto),
                     items: _monedas.entries
                         .map((e) => DropdownMenuItem(
@@ -149,11 +168,11 @@ class _ConfigPageState extends State<ConfigPage> {
                         .toList(),
                     onChanged: (v) => setState(() => _moneda = v ?? 'BOB'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: Paleta.primario,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

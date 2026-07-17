@@ -8,7 +8,8 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: LoginView()));
 
     expect(find.text('Iniciar sesión con Gmail'), findsOneWidget);
-    expect(find.text('Ver la tienda en línea'), findsOneWidget);
     expect(find.text('Mi Negocio'), findsOneWidget);
+    // La tienda en línea se quitó del login por ahora.
+    expect(find.text('Ver la tienda en línea'), findsNothing);
   });
 }

@@ -12,6 +12,7 @@ function usuarioSinEmpresa(): User
 }
 
 it('crea la empresa y la vincula al usuario autenticado', function () {
+    Storage::fake('public');
     $user = usuarioSinEmpresa();
     Sanctum::actingAs($user);
 
@@ -70,6 +71,116 @@ it('exige el nombre comercial', function () {
 it('exige autenticación para crear la empresa', function () {
     $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina'])
         ->assertUnauthorized();
+});
+
+it('crea el catálogo de comida por defecto al registrar la empresa', function () {
+    Storage::fake('public');
+    $user = usuarioSinEmpresa();
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
+        ->assertCreated();
+
+    $empresa = $user->refresh()->empresa;
+
+    expect($empresa->categorias()->pluck('nombre')->all())
+        ->toBe(['Pollos', 'Extras', 'Jugos', 'Refrescos']);
+    expect($empresa->productos()->count())->toBe(16);
+
+    $pollo = $empresa->productos()->where('nombre', 'Pollo entero')->first();
+    expect($pollo->precio)->toBe(90.0)
+        ->and($pollo->codigo)->toBe('P-001')
+        ->and($pollo->imagen_path)->toBe("/storage/productos/{$empresa->id}/pollo-entero.webp");
+
+    Storage::disk('public')->assertExists("productos/{$empresa->id}/pollo-entero.webp");
+});
+
+it('devuelve el catálogo de la empresa en /api/productos', function () {
+    Storage::fake('public');
+    $user = usuarioSinEmpresa();
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
+        ->assertCreated();
+
+    $this->getJson('/api/productos')
+        ->assertOk()
+        ->assertJsonCount(4, 'categorias')
+        ->assertJsonCount(16, 'productos')
+        ->assertJsonPath('productos.0.nombre', 'Pollo entero')
+        ->assertJsonPath('productos.0.precio', 90);
+});
+
+it('responde 404 en /api/productos si la cuenta no tiene empresa', function () {
+    Sanctum::actingAs(usuarioSinEmpresa());
+
+    $this->getJson('/api/productos')->assertNotFound();
+});
+
+it('usa la foto real empaquetada del producto, no un placeholder', function () {
+    Storage::fake('public');
+    $user = usuarioSinEmpresa();
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
+        ->assertCreated();
+
+    $empresa = $user->refresh()->empresa;
+    $guardada = Storage::disk('public')->get("productos/{$empresa->id}/pollo-entero.webp");
+
+    expect($guardada)->toBe(file_get_contents(resource_path('productos/pollo-entero.webp')));
+});
+
+it('los productos y categorías usan borrado suave', function () {
+    Storage::fake('public');
+    $user = usuarioSinEmpresa();
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
+        ->assertCreated();
+
+    $empresa = $user->refresh()->empresa;
+    $producto = $empresa->productos()->first();
+    $categoria = $empresa->categorias()->first();
+
+    $producto->delete();
+    $categoria->delete();
+
+    $this->assertSoftDeleted('productos', ['id' => $producto->id]);
+    $this->assertSoftDeleted('categorias', ['id' => $categoria->id]);
+
+    // Los borrados no aparecen en el catálogo de la API.
+    $this->getJson('/api/productos')
+        ->assertOk()
+        ->assertJsonCount(3, 'categorias')
+        ->assertJsonCount(15, 'productos');
+});
+
+it('registra auditoría de los cambios de la empresa', function () {
+    // Los tests corren "en consola"; en producción las peticiones HTTP
+    // siempre se auditan.
+    config(['audit.console' => true]);
+
+    Storage::fake('public');
+    $user = usuarioSinEmpresa();
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
+        ->assertCreated();
+
+    $this->putJson('/api/empresa', ['nombre' => 'Pollos Renovados'])
+        ->assertOk();
+
+    $this->assertDatabaseHas('audits', [
+        'auditable_type' => Empresa::class,
+        'event' => 'created',
+        'user_id' => $user->id,
+    ]);
+    $this->assertDatabaseHas('audits', [
+        'auditable_type' => Empresa::class,
+        'event' => 'updated',
+        'user_id' => $user->id,
+    ]);
 });
 
 it('actualiza los datos de la empresa del usuario', function () {

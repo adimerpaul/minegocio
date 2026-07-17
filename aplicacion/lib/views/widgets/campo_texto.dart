@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../../config/paleta.dart';
 
 /// Campo de formulario con etiqueta, con el estilo del mockup.
+/// Con [denso] el campo es más compacto (pantallas con muchos campos).
 class CampoTexto extends StatelessWidget {
   final String label;
   final String? hint;
   final TextEditingController controller;
   final TextInputType? keyboardType;
+  final bool denso;
 
   const CampoTexto({
     super.key,
@@ -15,6 +17,7 @@ class CampoTexto extends StatelessWidget {
     required this.controller,
     this.hint,
     this.keyboardType,
+    this.denso = false,
   });
 
   @override
@@ -34,8 +37,8 @@ class CampoTexto extends StatelessWidget {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
-          style: const TextStyle(fontSize: 15, color: Paleta.texto),
-          decoration: decoracionCampo(hint),
+          style: TextStyle(fontSize: denso ? 14 : 15, color: Paleta.texto),
+          decoration: decoracionCampo(hint, denso: denso),
         ),
       ],
     );
@@ -43,7 +46,7 @@ class CampoTexto extends StatelessWidget {
 }
 
 /// Decoración compartida de los inputs (borde suave, foco naranja).
-InputDecoration decoracionCampo(String? hint) {
+InputDecoration decoracionCampo(String? hint, {bool denso = false}) {
   OutlineInputBorder borde(Color color) => OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: color),
@@ -51,10 +54,13 @@ InputDecoration decoracionCampo(String? hint) {
 
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: Paleta.grisClaro, fontSize: 15),
+    hintStyle: TextStyle(color: Paleta.grisClaro, fontSize: denso ? 14 : 15),
+    isDense: denso,
     filled: true,
     fillColor: Paleta.blanco,
-    contentPadding: const EdgeInsets.all(14),
+    contentPadding: denso
+        ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
+        : const EdgeInsets.all(14),
     enabledBorder: borde(Paleta.borde),
     focusedBorder: borde(Paleta.primario),
   );

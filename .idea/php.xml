@@ -152,6 +152,7 @@
       <path value="$PROJECT_DIR$/back/vendor/firebase/php-jwt" />
       <path value="$PROJECT_DIR$/back/vendor/spatie/laravel-package-tools" />
       <path value="$PROJECT_DIR$/back/vendor/spatie/laravel-translation-loader" />
+      <path value="$PROJECT_DIR$/back/vendor/owen-it/laravel-auditing" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.3">
