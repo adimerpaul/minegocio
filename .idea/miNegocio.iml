@@ -143,6 +143,8 @@
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/voku/portable-ascii" />
       <excludeFolder url="file://$MODULE_DIR$/back/vendor/webmozart/assert" />
+      <excludeFolder url="file://$MODULE_DIR$/back/storage/app" />
+      <excludeFolder url="file://$MODULE_DIR$/back/storage/framework" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

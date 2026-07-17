@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../models/google_account.dart';
+import '../models/app_user.dart';
 import '../services/auth_service.dart';
 
 /// ViewModel del login: expone el estado y orquesta el AuthService.
@@ -11,7 +11,7 @@ class LoginViewModel extends ChangeNotifier {
 
   bool loading = false;
   String? error;
-  GoogleAccount? account;
+  AppUser? account;
 
   Future<void> signIn() async {
     loading = true;
@@ -19,13 +19,15 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await _auth.signInWithGoogle();
+      final result = await _auth.signIn();
       if (result != null) {
-        account = result;
+        account = result.user;
         debugPrint('===== LOGIN GOOGLE =====');
-        debugPrint('Nombre: ${result.name}');
-        debugPrint('Correo: ${result.email}');
-        debugPrint('Foto:   ${result.photoUrl}');
+        debugPrint('Nombre: ${result.user.name}');
+        debugPrint('Correo: ${result.user.email}');
+        debugPrint('Foto:   ${result.user.photoUrl}');
+        debugPrint('Token:  ${result.token}');
+        debugPrint('Nuevo:  ${result.isNew}');
         debugPrint('========================');
       }
     } catch (e) {
