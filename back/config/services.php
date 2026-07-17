@@ -14,8 +14,9 @@ return [
     |
     */
 
-    'firebase' => [
-        'project_id' => env('FIREBASE_PROJECT_ID'),
+    'google' => [
+        // Client ID web de OAuth: debe coincidir con el serverClientId de la app.
+        'client_id' => env('GOOGLE_CLIENT_ID'),
     ],
 
     'postmark' => [

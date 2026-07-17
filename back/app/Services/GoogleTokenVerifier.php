@@ -9,16 +9,18 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Verifica un ID token de Firebase Authentication sin SDK de admin:
+ * Verifica un ID token de Google (google_sign_in en la app) sin SDK:
  * valida la firma RS256 contra los certificados públicos de Google
- * y comprueba emisor y audiencia del proyecto.
+ * y comprueba que el emisor y la audiencia correspondan a esta app.
  */
-class FirebaseTokenVerifier
+class GoogleTokenVerifier
 {
-    private const CERTS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
+    private const CERTS_URL = 'https://www.googleapis.com/oauth2/v1/certs';
+
+    private const VALID_ISSUERS = ['https://accounts.google.com', 'accounts.google.com'];
 
     /**
-     * Devuelve los claims del token (sub, email, name, picture, firebase...).
+     * Devuelve los claims del token (sub, email, name, picture...).
      *
      * @return array<string, mixed>
      *
@@ -26,22 +28,20 @@ class FirebaseTokenVerifier
      */
     public function verify(string $idToken): array
     {
-        $projectId = config('services.firebase.project_id');
+        $clientId = config('services.google.client_id');
 
-        if (blank($projectId)) {
-            throw new RuntimeException('FIREBASE_PROJECT_ID no está configurado en el .env.');
+        if (blank($clientId)) {
+            throw new RuntimeException('GOOGLE_CLIENT_ID no está configurado en el .env.');
         }
 
         try {
             $payload = (array) JWT::decode($idToken, $this->publicKeys());
         } catch (\Throwable $e) {
-            throw new RuntimeException('Token de Firebase inválido: '.$e->getMessage(), previous: $e);
+            throw new RuntimeException('Token de Google inválido: '.$e->getMessage(), previous: $e);
         }
 
-        $validIssuer = "https://securetoken.google.com/{$projectId}";
-
-        if (($payload['iss'] ?? null) !== $validIssuer || ($payload['aud'] ?? null) !== $projectId) {
-            throw new RuntimeException('El token no pertenece a este proyecto de Firebase.');
+        if (! in_array($payload['iss'] ?? null, self::VALID_ISSUERS, true) || ($payload['aud'] ?? null) !== $clientId) {
+            throw new RuntimeException('El token no pertenece a esta aplicación.');
         }
 
         if (blank($payload['sub'] ?? null)) {
@@ -58,7 +58,7 @@ class FirebaseTokenVerifier
      */
     private function publicKeys(): array
     {
-        $certs = Cache::remember('firebase.securetoken.certs', now()->addHour(), function (): array {
+        $certs = Cache::remember('google.oauth2.certs', now()->addHour(), function (): array {
             return Http::timeout(10)->get(self::CERTS_URL)->throw()->json();
         });
 

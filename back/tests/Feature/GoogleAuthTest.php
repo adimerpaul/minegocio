@@ -1,25 +1,38 @@
 <?php
 
 use App\Models\User;
-use App\Services\FirebaseTokenVerifier;
+use App\Services\GoogleTokenVerifier;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 function fakeClaims(array $overrides = []): array
 {
     return array_merge([
-        'sub' => 'firebase-uid-123',
+        'iss' => 'https://accounts.google.com',
+        'sub' => '1122334455',
         'name' => 'Juan Pérez',
         'email' => 'juan@gmail.com',
         'email_verified' => true,
         'picture' => 'https://lh3.googleusercontent.com/foto.jpg',
-        'firebase' => [
-            'identities' => ['google.com' => ['1122334455']],
-            'sign_in_provider' => 'google.com',
-        ],
     ], $overrides);
 }
 
-it('crea el usuario con sus datos de Google la primera vez', function () {
-    $this->mock(FirebaseTokenVerifier::class)
+/** PNG de 1x1 generado con GD, para simular la foto de Google. */
+function fakePngBytes(): string
+{
+    $image = imagecreatetruecolor(1, 1);
+    ob_start();
+    imagepng($image);
+    imagedestroy($image);
+
+    return ob_get_clean();
+}
+
+it('crea el usuario, guarda su foto en webp y devuelve un token la primera vez', function () {
+    Storage::fake('public');
+    Http::fake(['lh3.googleusercontent.com/*' => Http::response(fakePngBytes())]);
+
+    $this->mock(GoogleTokenVerifier::class)
         ->shouldReceive('verify')
         ->andReturn(fakeClaims());
 
@@ -28,28 +41,42 @@ it('crea el usuario con sus datos de Google la primera vez', function () {
     $response->assertOk()
         ->assertJsonPath('is_new', true)
         ->assertJsonPath('user.email', 'juan@gmail.com')
-        ->assertJsonPath('user.google_id', '1122334455')
-        ->assertJsonPath('user.photo_url', 'https://lh3.googleusercontent.com/foto.jpg');
+        ->assertJsonPath('user.google_id', '1122334455');
 
     expect($response->json('token'))->toBeString()->not->toBeEmpty();
 
+    $userId = $response->json('user.id');
+    expect($response->json('user.photo_url'))->toBe("/storage/avatars/user-{$userId}.webp");
+    Storage::disk('public')->assertExists("avatars/user-{$userId}.webp");
+
     $this->assertDatabaseHas('users', [
-        'firebase_uid' => 'firebase-uid-123',
         'google_id' => '1122334455',
         'name' => 'Juan Pérez',
     ]);
 });
 
+it('mantiene la foto de Google si la descarga falla', function () {
+    Storage::fake('public');
+    Http::fake(['lh3.googleusercontent.com/*' => Http::response(status: 500)]);
+
+    $this->mock(GoogleTokenVerifier::class)
+        ->shouldReceive('verify')
+        ->andReturn(fakeClaims());
+
+    $this->postJson('/api/auth/google', ['id_token' => 'token-valido'])
+        ->assertOk()
+        ->assertJsonPath('user.photo_url', 'https://lh3.googleusercontent.com/foto.jpg');
+});
+
 it('no duplica ni sobrescribe al usuario en logins posteriores', function () {
     User::create([
-        'firebase_uid' => 'firebase-uid-123',
         'google_id' => '1122334455',
         'name' => 'Nombre Editado',
         'email' => 'juan@gmail.com',
-        'photo_url' => 'https://ejemplo.com/otra-foto.jpg',
+        'photo_url' => '/storage/avatars/user-1.webp',
     ]);
 
-    $this->mock(FirebaseTokenVerifier::class)
+    $this->mock(GoogleTokenVerifier::class)
         ->shouldReceive('verify')
         ->andReturn(fakeClaims());
 
@@ -57,15 +84,16 @@ it('no duplica ni sobrescribe al usuario en logins posteriores', function () {
 
     $response->assertOk()
         ->assertJsonPath('is_new', false)
-        ->assertJsonPath('user.name', 'Nombre Editado');
+        ->assertJsonPath('user.name', 'Nombre Editado')
+        ->assertJsonPath('user.photo_url', '/storage/avatars/user-1.webp');
 
     expect(User::count())->toBe(1);
 });
 
 it('rechaza un token inválido', function () {
-    $this->mock(FirebaseTokenVerifier::class)
+    $this->mock(GoogleTokenVerifier::class)
         ->shouldReceive('verify')
-        ->andThrow(new RuntimeException('Token de Firebase inválido.'));
+        ->andThrow(new RuntimeException('Token de Google inválido.'));
 
     $this->postJson('/api/auth/google', ['id_token' => 'token-malo'])
         ->assertUnauthorized();

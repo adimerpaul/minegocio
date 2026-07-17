@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
-            $table->string('firebase_uid')->unique();
-            $table->string('google_id')->nullable()->index();
+            $table->string('google_id')->unique();
             $table->string('photo_url', 2048)->nullable();
             $table->rememberToken();
             $table->timestamps();

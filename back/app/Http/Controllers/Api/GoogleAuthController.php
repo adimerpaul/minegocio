@@ -4,21 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\FirebaseTokenVerifier;
+use App\Services\GoogleTokenVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 class GoogleAuthController extends Controller
 {
     /**
-     * Recibe el ID token de Firebase tras el login con Google en la app.
-     * La primera vez crea el usuario con todos sus datos (google_id, foto,
-     * nombre, correo); en logins posteriores solo devuelve el usuario
-     * existente. Siempre emite un token de API (Sanctum).
+     * Recibe el ID token de Google tras el login en la app.
+     * La primera vez crea el usuario (google_id, nombre, correo) y guarda
+     * su foto como WebP en el backend; en logins posteriores solo devuelve
+     * el usuario existente. Siempre emite un token de API (Sanctum).
      */
-    public function __invoke(Request $request, FirebaseTokenVerifier $verifier): JsonResponse
+    public function __invoke(Request $request, GoogleTokenVerifier $verifier): JsonResponse
     {
         $request->validate(['id_token' => ['required', 'string']]);
 
@@ -35,20 +37,23 @@ class GoogleAuthController extends Controller
             return response()->json(['message' => $e->getMessage()], 401);
         }
 
-        // El id de la cuenta de Google viene en identities['google.com'][0];
-        // no usar data_get porque la clave contiene un punto.
-        $googleId = $claims['firebase']['identities']['google.com'][0] ?? null;
-
         $user = User::firstOrCreate(
-            ['firebase_uid' => $claims['sub']],
+            ['google_id' => $claims['sub']],
             [
                 'name' => $claims['name'] ?? $claims['email'] ?? 'Usuario',
                 'email' => $claims['email'] ?? $claims['sub'].'@sin-correo.local',
-                'google_id' => $googleId,
                 'photo_url' => $claims['picture'] ?? null,
                 'email_verified_at' => ($claims['email_verified'] ?? false) ? now() : null,
             ],
         );
+
+        if ($user->wasRecentlyCreated && filled($claims['picture'] ?? null)) {
+            $localPhoto = $this->storeAvatarAsWebp($user, $claims['picture']);
+
+            if ($localPhoto !== null) {
+                $user->update(['photo_url' => $localPhoto]);
+            }
+        }
 
         Log::info('[auth/google] Login correcto', [
             'user_id' => $user->id,
@@ -61,5 +66,39 @@ class GoogleAuthController extends Controller
             'token' => $user->createToken('app-movil')->plainTextToken,
             'is_new' => $user->wasRecentlyCreated,
         ]);
+    }
+
+    /**
+     * Descarga la foto de Google y la guarda como WebP en el disco público.
+     * Devuelve la ruta relativa (/storage/avatars/...), o null si falla
+     * (el login no debe romperse por la foto).
+     */
+    private function storeAvatarAsWebp(User $user, string $photoUrl): ?string
+    {
+        try {
+            $binary = Http::timeout(10)->get($photoUrl)->throw()->body();
+
+            $image = @imagecreatefromstring($binary);
+
+            if ($image === false) {
+                Log::warning('[avatar] La foto descargada no es una imagen válida', ['user_id' => $user->id]);
+
+                return null;
+            }
+
+            imagepalettetotruecolor($image);
+
+            Storage::disk('public')->makeDirectory('avatars');
+            $filename = "avatars/user-{$user->id}.webp";
+
+            imagewebp($image, Storage::disk('public')->path($filename), 85);
+            imagedestroy($image);
+
+            return "/storage/{$filename}";
+        } catch (\Throwable $e) {
+            Log::warning('[avatar] No se pudo guardar la foto: '.$e->getMessage(), ['user_id' => $user->id]);
+
+            return null;
+        }
     }
 }
