@@ -11,6 +11,7 @@ import '../../services/cliente_service.dart';
 import '../../services/venta_service.dart';
 import '../../services/voucher_service.dart';
 import '../widgets/campo_texto.dart';
+import 'escanear_codigo_page.dart';
 
 /// Venta rápida (POS del mockup): buscador, chips por categoría, grilla de
 /// productos del catálogo y resumen de la orden. Cobrar registra la venta
@@ -50,10 +51,12 @@ class _VentaPageState extends State<VentaPage> {
   Future<void> _cargar() async {
     setState(() => _error = null);
     try {
-      final catalogo =
-          await CatalogoService.instance.listar(widget.session.token);
-      final clientes =
-          await ClienteService.instance.listar(widget.session.token);
+      final catalogo = await CatalogoService.instance.listar(
+        widget.session.token,
+      );
+      final clientes = await ClienteService.instance.listar(
+        widget.session.token,
+      );
       if (mounted) {
         setState(() {
           _catalogo = catalogo;
@@ -71,11 +74,15 @@ class _VentaPageState extends State<VentaPage> {
   List<Producto> get _productosFiltrados {
     final filtro = _filtro.trim().toLowerCase();
     return (_catalogo?.productos ?? [])
-        .where((p) =>
-            (_categoriaSeleccionada == null ||
-                p.categoriaId == _categoriaSeleccionada) &&
-            (filtro.isEmpty ||
-                '${p.nombre} ${p.codigo}'.toLowerCase().contains(filtro)))
+        .where(
+          (p) =>
+              (_categoriaSeleccionada == null ||
+                  p.categoriaId == _categoriaSeleccionada) &&
+              (filtro.isEmpty ||
+                  '${p.nombre} ${p.codigo} ${p.codigoBarras ?? ''}'
+                      .toLowerCase()
+                      .contains(filtro)),
+        )
         .toList();
   }
 
@@ -84,8 +91,9 @@ class _VentaPageState extends State<VentaPage> {
   double get _total {
     var suma = 0.0;
     for (final entry in _orden.entries) {
-      final producto =
-          _catalogo!.productos.firstWhere((p) => p.id == entry.key);
+      final producto = _catalogo!.productos.firstWhere(
+        (p) => p.id == entry.key,
+      );
       suma += producto.precio * entry.value;
     }
     return suma;
@@ -93,6 +101,40 @@ class _VentaPageState extends State<VentaPage> {
 
   void _agregar(Producto producto) {
     setState(() => _orden[producto.id] = (_orden[producto.id] ?? 0) + 1);
+  }
+
+  /// Abre el escáner; si el código corresponde a un producto (código de
+  /// barras/QR o código interno) lo agrega a la orden.
+  Future<void> _escanearProducto() async {
+    final codigo = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const EscanearCodigoPage()),
+    );
+    if (codigo == null || !mounted) return;
+
+    final buscado = codigo.trim().toLowerCase();
+    final producto = _catalogo!.productos
+        .where(
+          (p) =>
+              (p.codigoBarras ?? '').toLowerCase() == buscado ||
+              p.codigo.toLowerCase() == buscado,
+        )
+        .firstOrNull;
+
+    final messenger = ScaffoldMessenger.of(context);
+    if (producto == null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Ningún producto tiene el código "$codigo".')),
+      );
+      return;
+    }
+
+    _agregar(producto);
+    messenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 2),
+        content: Text('Agregado: ${producto.nombre} (x${_orden[producto.id]})'),
+      ),
+    );
   }
 
   void _quitar(Producto producto) {
@@ -121,8 +163,10 @@ class _VentaPageState extends State<VentaPage> {
       );
 
       // El stock cambió: se refresca el catálogo.
-      final catalogo = await CatalogoService.instance
-          .listar(widget.session.token, refrescar: true);
+      final catalogo = await CatalogoService.instance.listar(
+        widget.session.token,
+        refrescar: true,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -256,12 +300,33 @@ class _VentaPageState extends State<VentaPage> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
-          child: TextField(
-            onChanged: (v) => setState(() => _filtro = v),
-            style: const TextStyle(fontSize: 14, color: Paleta.texto),
-            decoration: decoracionCampo(
-              'Nombre del producto o código',
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (v) => setState(() => _filtro = v),
+                  style: const TextStyle(fontSize: 14, color: Paleta.texto),
+                  decoration: decoracionCampo('Nombre del producto o código'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Material(
+                color: Paleta.primario,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: _cobrando ? null : _escanearProducto,
+                  child: const Padding(
+                    padding: EdgeInsets.all(13),
+                    child: Icon(
+                      Icons.qr_code_scanner,
+                      size: 24,
+                      color: Paleta.blanco,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(
@@ -285,9 +350,8 @@ class _VentaPageState extends State<VentaPage> {
               childAspectRatio: 0.95,
             ),
             itemCount: _productosFiltrados.length,
-            itemBuilder: (context, i) => _tarjetaProducto(
-              _productosFiltrados[i],
-            ),
+            itemBuilder: (context, i) =>
+                _tarjetaProducto(_productosFiltrados[i]),
           ),
         ),
         if (_cantidadTotal > 0) _barraOrden(),
@@ -326,8 +390,7 @@ class _VentaPageState extends State<VentaPage> {
       child: ChoiceChip(
         label: Text(label),
         selected: activo,
-        onSelected: (_) =>
-            setState(() => _categoriaSeleccionada = categoriaId),
+        onSelected: (_) => setState(() => _categoriaSeleccionada = categoriaId),
         showCheckmark: false,
         labelStyle: TextStyle(
           fontSize: 13.5,
@@ -368,8 +431,9 @@ class _VentaPageState extends State<VentaPage> {
                 children: [
                   Expanded(
                     child: ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(14)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(14),
+                      ),
                       child: producto.imagenUrl == null
                           ? _imagenVacia()
                           : Image.network(
@@ -414,8 +478,10 @@ class _VentaPageState extends State<VentaPage> {
                 top: 8,
                 right: 8,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Paleta.primario,
                     borderRadius: BorderRadius.circular(999),
@@ -454,8 +520,7 @@ class _VentaPageState extends State<VentaPage> {
           borderRadius: BorderRadius.circular(16),
           onTap: _cobrando ? null : _abrirResumen,
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -514,8 +579,9 @@ class _VentaPageState extends State<VentaPage> {
         return StatefulBuilder(
           builder: (sheetContext, setSheetState) {
             final items = _orden.entries.map((e) {
-              final producto =
-                  _catalogo!.productos.firstWhere((p) => p.id == e.key);
+              final producto = _catalogo!.productos.firstWhere(
+                (p) => p.id == e.key,
+              );
               return (producto, e.value);
             }).toList();
 
@@ -571,8 +637,7 @@ class _VentaPageState extends State<VentaPage> {
                           children: [
                             for (final (producto, qty) in items)
                               Padding(
-                                padding:
-                                    const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(bottom: 12),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -711,8 +776,7 @@ class _VentaPageState extends State<VentaPage> {
                       FilledButton(
                         style: FilledButton.styleFrom(
                           backgroundColor: Paleta.primario,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 15),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -765,11 +829,13 @@ class _VentaPageState extends State<VentaPage> {
         return StatefulBuilder(
           builder: (sheetContext, setSheetState) {
             final visibles = _clientes
-                .where((c) =>
-                    filtro.isEmpty ||
-                    '${c.nombre} ${c.nit ?? ''} ${c.telefono ?? ''}'
-                        .toLowerCase()
-                        .contains(filtro))
+                .where(
+                  (c) =>
+                      filtro.isEmpty ||
+                      '${c.nombre} ${c.nit ?? ''} ${c.telefono ?? ''}'
+                          .toLowerCase()
+                          .contains(filtro),
+                )
                 .toList();
 
             return Padding(
@@ -792,18 +858,51 @@ class _VentaPageState extends State<VentaPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      TextField(
-                        onChanged: (v) => setSheetState(
-                          () => filtro = v.trim().toLowerCase(),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Paleta.texto,
-                        ),
-                        decoration: decoracionCampo(
-                          'Buscar por nombre, NIT o teléfono',
-                          denso: true,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              onChanged: (v) => setSheetState(
+                                () => filtro = v.trim().toLowerCase(),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Paleta.texto,
+                              ),
+                              decoration: decoracionCampo(
+                                'Buscar por nombre, NIT o teléfono',
+                                denso: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // Alta rápida: crea el cliente sin salir de la
+                          // venta y lo deja elegido.
+                          Material(
+                            color: Paleta.primario,
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () async {
+                                final nuevo = await _crearClienteRapido(
+                                  sheetContext,
+                                );
+                                if (nuevo != null && sheetContext.mounted) {
+                                  Navigator.pop(sheetContext, nuevo);
+                                }
+                              },
+                              child: const SizedBox(
+                                width: 42,
+                                height: 42,
+                                child: Icon(
+                                  Icons.person_add_alt_1,
+                                  size: 20,
+                                  color: Paleta.blanco,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       ConstrainedBox(
@@ -820,10 +919,7 @@ class _VentaPageState extends State<VentaPage> {
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 8,
                               ),
-                              onTap: () => Navigator.pop(
-                                sheetContext,
-                                cliente,
-                              ),
+                              onTap: () => Navigator.pop(sheetContext, cliente),
                               leading: Icon(
                                 activo
                                     ? Icons.radio_button_checked
@@ -856,6 +952,144 @@ class _VentaPageState extends State<VentaPage> {
                           },
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Alta rápida de cliente durante la venta: solo nombre, NIT/CI y
+  /// teléfono. Devuelve el cliente creado (que queda en la lista), o null.
+  Future<Cliente?> _crearClienteRapido(BuildContext desde) {
+    final nombre = TextEditingController();
+    final nit = TextEditingController();
+    final telefono = TextEditingController();
+
+    return showModalBottomSheet<Cliente>(
+      context: desde,
+      isScrollControlled: true,
+      backgroundColor: Paleta.blanco,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) {
+        var guardando = false;
+        String? errorSheet;
+
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            Future<void> guardar() async {
+              if (nombre.text.trim().isEmpty) {
+                setSheetState(() => errorSheet = 'El nombre es obligatorio.');
+                return;
+              }
+              setSheetState(() {
+                guardando = true;
+                errorSheet = null;
+              });
+
+              try {
+                final nuevo = await ClienteService.instance.crear(
+                  token: widget.session.token,
+                  datos: {
+                    'nombre': nombre.text.trim(),
+                    'nit': nit.text.trim(),
+                    'telefono': telefono.text.trim(),
+                  },
+                );
+                _clientes = [..._clientes, nuevo];
+                if (sheetContext.mounted) Navigator.pop(sheetContext, nuevo);
+              } catch (e) {
+                setSheetState(() {
+                  guardando = false;
+                  errorSheet = '$e'.replaceFirst('Exception: ', '');
+                });
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Nuevo cliente',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Paleta.texto,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      CampoTexto(
+                        label: 'Nombre completo',
+                        controller: nombre,
+                        denso: true,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: CampoTexto(
+                              label: 'NIT / CI',
+                              controller: nit,
+                              keyboardType: TextInputType.number,
+                              denso: true,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: CampoTexto(
+                              label: 'Teléfono',
+                              controller: telefono,
+                              keyboardType: TextInputType.phone,
+                              denso: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Paleta.primario,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: guardando ? null : guardar,
+                        child: Text(
+                          guardando ? 'Guardando...' : 'Registrar y usar',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Paleta.blanco,
+                          ),
+                        ),
+                      ),
+                      if (errorSheet != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          errorSheet!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Paleta.alertaTexto,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
