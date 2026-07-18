@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../config/formato.dart';
 import '../models/compra.dart';
@@ -93,9 +97,121 @@ class VoucherService {
     );
   }
 
+  /// Comparte el voucher de una venta por WhatsApp (u otra app del sistema).
+  Future<void> compartir({
+    required Empresa empresa,
+    required Venta venta,
+  }) {
+    return _compartirTicket(
+      empresa: empresa,
+      etiquetaCodigo: 'Recibo',
+      codigo: venta.codigo,
+      fecha: venta.fecha,
+      etiquetaTercero: 'Cliente',
+      tercero: venta.cliente ?? 'Venta en mostrador',
+      anulada: venta.anulada,
+      items: venta.items
+          .map((i) => (i.nombre, i.precio, i.cantidad, i.subtotal))
+          .toList(),
+      total: venta.total,
+      despedida: '¡Gracias por su compra!',
+    );
+  }
+
+  /// Comparte el voucher de una compra por WhatsApp (u otra app del sistema).
+  Future<void> compartirCompra({
+    required Empresa empresa,
+    required Compra compra,
+  }) {
+    return _compartirTicket(
+      empresa: empresa,
+      etiquetaCodigo: 'Compra',
+      codigo: compra.codigo,
+      fecha: compra.fecha,
+      etiquetaTercero: 'Proveedor',
+      tercero: compra.proveedor,
+      anulada: compra.anulada,
+      items: compra.items
+          .map((i) => (i.nombre, i.costo, i.cantidad, i.subtotal))
+          .toList(),
+      total: compra.total,
+      despedida: 'Comprobante interno de compra',
+    );
+  }
+
   /// Arma e imprime el ticket. Cada ítem es
   /// (nombre, precio/costo unitario, cantidad, subtotal).
   Future<void> _imprimirTicket({
+    required Empresa empresa,
+    required String etiquetaCodigo,
+    required String codigo,
+    required DateTime fecha,
+    required String etiquetaTercero,
+    required String tercero,
+    required bool anulada,
+    required List<(String, double, int, double)> items,
+    required double total,
+    required String despedida,
+  }) async {
+    final bytes = await _generarTicket(
+      empresa: empresa,
+      etiquetaCodigo: etiquetaCodigo,
+      codigo: codigo,
+      fecha: fecha,
+      etiquetaTercero: etiquetaTercero,
+      tercero: tercero,
+      anulada: anulada,
+      items: items,
+      total: total,
+      despedida: despedida,
+    );
+
+    await Printing.layoutPdf(
+      name: 'voucher-$codigo',
+      onLayout: (_) => bytes,
+    );
+  }
+
+  /// Genera el PDF, lo guarda temporalmente y abre el diálogo de compartir.
+  Future<void> _compartirTicket({
+    required Empresa empresa,
+    required String etiquetaCodigo,
+    required String codigo,
+    required DateTime fecha,
+    required String etiquetaTercero,
+    required String tercero,
+    required bool anulada,
+    required List<(String, double, int, double)> items,
+    required double total,
+    required String despedida,
+  }) async {
+    final bytes = await _generarTicket(
+      empresa: empresa,
+      etiquetaCodigo: etiquetaCodigo,
+      codigo: codigo,
+      fecha: fecha,
+      etiquetaTercero: etiquetaTercero,
+      tercero: tercero,
+      anulada: anulada,
+      items: items,
+      total: total,
+      despedida: despedida,
+    );
+
+    final dir = await getTemporaryDirectory();
+    final nombreArchivo = 'voucher-$codigo.pdf';
+    final archivo = File(p.join(dir.path, nombreArchivo));
+    await archivo.writeAsBytes(bytes, flush: true);
+
+    await Share.shareXFiles(
+      [XFile(archivo.path, mimeType: 'application/pdf')],
+      text: '$etiquetaCodigo $codigo - ${formatoMoneda(total, simbolo: simboloMoneda(empresa.moneda))}',
+      subject: '$etiquetaCodigo $codigo',
+    );
+  }
+
+  /// Arma el PDF del ticket y devuelve sus bytes.
+  Future<Uint8List> _generarTicket({
     required Empresa empresa,
     required String etiquetaCodigo,
     required String codigo,
@@ -221,9 +337,6 @@ class VoucherService {
       ),
     );
 
-    await Printing.layoutPdf(
-      name: 'voucher-$codigo',
-      onLayout: (_) => doc.save(),
-    );
+    return doc.save();
   }
 }

@@ -2,6 +2,7 @@
 
 use App\Models\Empresa;
 use App\Models\User;
+use App\Services\GoogleTokenVerifier;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -250,4 +251,43 @@ it('responde 404 al actualizar si la cuenta no tiene empresa', function () {
 
     $this->putJson('/api/empresa', ['nombre' => 'Lo que sea'])
         ->assertNotFound();
+});
+
+it('permite crear una empresa nueva tras eliminar la cuenta anterior', function () {
+    Storage::fake('public');
+
+    // Usuario original con empresa.
+    $original = User::factory()->create([
+        'google_id' => '1122334455',
+        'email' => 'juan@gmail.com',
+    ]);
+    $original->empresa()->associate(Empresa::factory()->create())->save();
+
+    // Se elimina la cuenta (soft delete).
+    $original->delete();
+
+    // El mismo Google ID inicia sesión: se crea un usuario nuevo.
+    $this->mock(GoogleTokenVerifier::class)
+        ->shouldReceive('verify')
+        ->andReturn([
+            'iss' => 'https://accounts.google.com',
+            'sub' => '1122334455',
+            'name' => 'Juan Pérez',
+            'email' => 'juan@gmail.com',
+            'email_verified' => true,
+        ]);
+
+    $login = $this->postJson('/api/auth/google', ['id_token' => 'token-valido']);
+    $login->assertOk()->assertJsonPath('is_new', true);
+
+    $nuevoUserId = $login->json('user.id');
+    expect($nuevoUserId)->not->toBe($original->id);
+
+    // El nuevo usuario puede registrar una empresa desde cero.
+    Sanctum::actingAs(User::find($nuevoUserId));
+
+    $this->postJson('/api/empresas', ['nombre' => 'Nuevo Negocio'])
+        ->assertCreated()
+        ->assertJsonPath('empresa.nombre', 'Nuevo Negocio')
+        ->assertJsonPath('user.empresa.nombre', 'Nuevo Negocio');
 });

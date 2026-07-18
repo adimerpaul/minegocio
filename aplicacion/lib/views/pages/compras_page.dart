@@ -110,7 +110,7 @@ class _ComprasPageState extends State<ComprasPage> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                if (empresa != null)
+                if (empresa != null) ...[
                   FilledButton.icon(
                     style: FilledButton.styleFrom(
                       backgroundColor: Paleta.primario,
@@ -133,6 +133,30 @@ class _ComprasPageState extends State<ComprasPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Paleta.primario),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => VoucherService.instance.compartirCompra(
+                      empresa: empresa,
+                      compra: compra,
+                    ),
+                    icon: const Icon(Icons.share, color: Paleta.primario),
+                    label: const Text(
+                      'Compartir por WhatsApp',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Paleta.primario,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
@@ -497,6 +521,33 @@ class _ComprasPageState extends State<ComprasPage> {
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         color: Paleta.blanco,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Paleta.primario),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => VoucherService.instance.compartirCompra(
+                      empresa: widget.session.user.empresa!,
+                      compra: compra,
+                    ),
+                    icon: const Icon(
+                      Icons.share,
+                      size: 18,
+                      color: Paleta.primario,
+                    ),
+                    label: const Text(
+                      'Compartir por WhatsApp',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: Paleta.primario,
                       ),
                     ),
                   ),

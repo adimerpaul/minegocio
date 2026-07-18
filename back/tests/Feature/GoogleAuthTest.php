@@ -90,7 +90,7 @@ it('no duplica ni sobrescribe al usuario en logins posteriores', function () {
     expect(User::count())->toBe(1);
 });
 
-it('restaura al usuario con borrado suave cuando vuelve a iniciar sesión', function () {
+it('crea una cuenta nueva si el usuario anterior fue eliminado (soft delete)', function () {
     $user = User::create([
         'google_id' => '1122334455',
         'name' => 'Juan Pérez',
@@ -102,13 +102,17 @@ it('restaura al usuario con borrado suave cuando vuelve a iniciar sesión', func
         ->shouldReceive('verify')
         ->andReturn(fakeClaims());
 
-    $this->postJson('/api/auth/google', ['id_token' => 'token-valido'])
-        ->assertOk()
-        ->assertJsonPath('is_new', false)
-        ->assertJsonPath('user.id', $user->id);
+    $response = $this->postJson('/api/auth/google', ['id_token' => 'token-valido']);
 
-    expect($user->refresh()->trashed())->toBeFalse();
-    expect(User::withTrashed()->count())->toBe(1);
+    $response->assertOk()
+        ->assertJsonPath('is_new', true)
+        ->assertJsonPath('user.email', 'juan@gmail.com')
+        ->assertJsonPath('user.google_id', '1122334455');
+
+    expect($response->json('user.id'))->not->toBe($user->id);
+    expect($user->fresh()->google_id)->toBe('1122334455');
+    expect(User::count())->toBe(1);
+    expect(User::withTrashed()->count())->toBe(2);
 });
 
 it('rechaza un token inválido', function () {

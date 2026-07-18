@@ -127,6 +127,141 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
     });
   }
 
+  /// Agrega un gasto libre (no está en el catálogo; no afecta el stock).
+  void _agregarGastoLibre() {
+    final nombre = TextEditingController();
+    final costo = TextEditingController();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Paleta.blanco,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) {
+        String? errorSheet;
+
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            void guardar() {
+              final nombreLimpio = nombre.text.trim();
+              if (nombreLimpio.isEmpty) {
+                setSheetState(
+                  () => errorSheet = 'Escribe un nombre para el gasto.',
+                );
+                return;
+              }
+              final costoLimpio = costo.text.trim().replaceAll(',', '.');
+              final costoNum = double.tryParse(costoLimpio);
+              if (costoNum == null || costoNum < 0) {
+                setSheetState(
+                  () => errorSheet = 'El costo no es válido.',
+                );
+                return;
+              }
+
+              setState(() {
+                _libres.add(
+                  _ItemLibre(
+                    nombre: nombreLimpio,
+                    cantidad: 1,
+                    costo: costo,
+                  ),
+                );
+              });
+              if (sheetContext.mounted) Navigator.pop(sheetContext);
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Gasto libre',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Paleta.texto,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'No está en el catálogo; no cambia el stock.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Paleta.textoSuave,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      CampoTexto(
+                        label: 'Nombre del gasto',
+                        controller: nombre,
+                        hint: 'Ej. aceite, gas, bolsas…',
+                        denso: true,
+                      ),
+                      const SizedBox(height: 12),
+                      CampoTexto(
+                        label: 'Costo unitario',
+                        controller: costo,
+                        keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                        denso: true,
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Paleta.primario,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: guardar,
+                        child: const Text(
+                          'Agregar a la compra',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Paleta.blanco,
+                          ),
+                        ),
+                      ),
+                      if (errorSheet != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          errorSheet!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Paleta.alertaTexto,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      // Solo se conserva el controller si el gasto fue agregado.
+      if (!_libres.any((l) => l.costo == costo)) {
+        costo.dispose();
+      }
+      nombre.dispose();
+    });
+  }
+
   Future<void> _registrar() async {
     if (_sinItems || _guardando) return;
 
@@ -1040,4 +1175,13 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
       },
     );
   }
+}
+
+/// Ítem libre de una compra: no está en el catálogo y no afecta el stock.
+class _ItemLibre {
+  final String nombre;
+  int cantidad;
+  final TextEditingController costo;
+
+  _ItemLibre({required this.nombre, required this.cantidad, required this.costo});
 }

@@ -184,41 +184,34 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content:
-                              Text('Podrás subir tu logo muy pronto.'),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFDFCFB),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFFD9CFC6),
-                          width: 1.5,
-                        ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDFCFB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFD9CFC6),
+                        width: 1.5,
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image_outlined,
-                              color: Paleta.grisClaro, size: 28),
-                          SizedBox(width: 10),
-                          Text(
-                            'Toca para subir tu logo',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Paleta.textoSuave,
-                            ),
+                    ),
+                    child: const Column(
+                      children: [
+                        Image(
+                          image: AssetImage('assets/images/logo_default.webp'),
+                          height: 120,
+                          fit: BoxFit.contain,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Este será el logo por defecto de tu empresa. '
+                          'Puedes cambiarlo más adelante en Configuración.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Paleta.textoSuave,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 26),

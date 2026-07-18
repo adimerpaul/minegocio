@@ -37,20 +37,19 @@ class GoogleAuthController extends Controller
             return response()->json(['message' => $e->getMessage()], 401);
         }
 
-        $user = User::withTrashed()->firstOrCreate(
-            ['google_id' => $claims['sub']],
-            [
+        // Solo se reutiliza una cuenta activa. Si fue eliminada (soft delete)
+        // se crea una cuenta nueva; la unicidad del google_id activo se controla
+        // desde el backend, no con un índice único en base de datos.
+        $user = User::where('google_id', $claims['sub'])->first();
+
+        if ($user === null) {
+            $user = User::create([
+                'google_id' => $claims['sub'],
                 'name' => $claims['name'] ?? $claims['email'] ?? 'Usuario',
                 'email' => $claims['email'] ?? $claims['sub'].'@sin-correo.local',
                 'photo_url' => $claims['picture'] ?? null,
                 'email_verified_at' => ($claims['email_verified'] ?? false) ? now() : null,
-            ],
-        );
-
-        // Cuenta con borrado suave que vuelve a iniciar sesión: se restaura
-        // (el google_id es único, no se crea un duplicado).
-        if ($user->trashed()) {
-            $user->restore();
+            ]);
         }
 
         if ($user->wasRecentlyCreated && filled($claims['picture'] ?? null)) {
