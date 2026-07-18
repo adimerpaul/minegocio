@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../config/formato.dart';
 import '../../config/paleta.dart';
@@ -10,6 +9,7 @@ import '../../models/producto.dart';
 import '../../services/auth_service.dart';
 import '../../services/producto_service.dart';
 import '../widgets/campo_texto.dart';
+import '../widgets/selector_imagen.dart';
 import 'escanear_codigo_page.dart';
 
 /// Pantalla "Editar producto": nombre, precio, stock, stock mínimo,
@@ -66,50 +66,14 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
 
   /// Pregunta de dónde sacar la foto (cámara o galería) y la carga.
   Future<void> _elegirImagen() async {
-    final origen = await showModalBottomSheet<ImageSource>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            ListTile(
-              leading: const Icon(Icons.photo_camera, color: Paleta.primario),
-              title: const Text('Tomar foto con la cámara'),
-              onTap: () => Navigator.of(context).pop(ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: Paleta.primario),
-              title: const Text('Elegir de la galería / archivos'),
-              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-    if (origen == null || !mounted) return;
-
     try {
-      final foto = await ImagePicker().pickImage(
-        source: origen,
-        maxWidth: 1200,
-        imageQuality: 85,
-      );
+      final foto = await seleccionarImagen(context);
       if (foto == null || !mounted) return;
-      setState(() => _imagen = File(foto.path));
+      setState(() => _imagen = foto);
     } catch (e) {
-      if (!mounted) return;
-      final esCamara = origen == ImageSource.camera;
-      setState(
-        () => _error = esCamara
-            ? 'No se pudo usar la cámara. Revisa que la app tenga el '
-                  'permiso de cámara en los ajustes del teléfono.'
-            : 'No se pudo abrir la galería.',
-      );
+      if (mounted) {
+        setState(() => _error = '$e'.replaceFirst('Exception: ', ''));
+      }
     }
   }
 

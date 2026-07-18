@@ -9,6 +9,7 @@ import '../models/app_user.dart';
 import 'catalogo_service.dart';
 import 'cliente_service.dart';
 import 'local_db.dart';
+import 'proveedor_service.dart';
 
 /// Sesión activa: usuario (con su empresa, si la tiene) y token de API.
 class Session {
@@ -128,8 +129,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    await _ensureInitialized();
-
+    // Primero lo local (rápido): el logout no depende de la red.
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('api_token');
     await prefs.remove('user');
@@ -137,7 +137,17 @@ class AuthService {
     await LocalDb.instance.limpiar();
     CatalogoService.instance.limpiar();
     ClienteService.instance.limpiar();
+    ProveedorService.instance.limpiar();
 
-    await GoogleSignIn.instance.signOut();
+    // Cerrar la sesión de Google habla con Play Services y puede tardar
+    // con mala conexión: se limita el tiempo y un fallo no bloquea el
+    // logout (la sesión local ya se borró y el próximo login vuelve a
+    // pasar por authenticate() de todos modos).
+    try {
+      await _ensureInitialized().timeout(const Duration(seconds: 5));
+      await GoogleSignIn.instance.signOut().timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Se ignora: no hay nada local que revertir.
+    }
   }
 }

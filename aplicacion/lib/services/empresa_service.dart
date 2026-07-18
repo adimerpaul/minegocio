@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -30,11 +31,14 @@ class EmpresaService {
     );
   }
 
-  /// PUT /api/empresa — actualiza los datos de la empresa.
+  /// PUT /api/empresa — actualiza los datos de la empresa. Con [logo] se
+  /// envía como POST multipart con `_method=PUT` (PHP no parsea multipart
+  /// en un PUT directo).
   Future<AppUser> actualizarEmpresa({
     required String token,
     required AppUser user,
     required Map<String, String?> datos,
+    File? logo,
   }) {
     return _enviar(
       metodo: 'PUT',
@@ -42,6 +46,7 @@ class EmpresaService {
       token: token,
       user: user,
       datos: datos,
+      logo: logo,
       esperado: 200,
     );
   }
@@ -53,17 +58,29 @@ class EmpresaService {
     required AppUser user,
     required Map<String, String?> datos,
     required int esperado,
+    File? logo,
   }) async {
-    final request = http.Request(metodo, uri)
-      ..headers.addAll({
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      })
-      ..body = jsonEncode(datos..removeWhere((_, v) => v == null || v.isEmpty));
+    datos.removeWhere((_, v) => v == null || v.isEmpty);
+
+    final http.BaseRequest request;
+    if (logo == null) {
+      request = http.Request(metodo, uri)
+        ..headers['Content-Type'] = 'application/json'
+        ..body = jsonEncode(datos);
+    } else {
+      request = http.MultipartRequest('POST', uri)
+        ..fields['_method'] = metodo
+        ..fields.addAll(datos.cast<String, String>())
+        ..files.add(await http.MultipartFile.fromPath('logo', logo.path));
+    }
+
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
 
     final response = await http.Response.fromStream(
-      await request.send().timeout(const Duration(seconds: 15)),
+      await request.send().timeout(const Duration(seconds: 30)),
     );
 
     if (response.statusCode != esperado) {

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Services\CatalogoInicial;
 use App\Services\ClientesIniciales;
+use App\Services\ProveedoresIniciales;
 use App\Services\WebpImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EmpresaController extends Controller
 {
@@ -42,6 +44,19 @@ class EmpresaController extends Controller
             }
         }
 
+        // Sin logo propio: se copia el logo por defecto empaquetado
+        // (resources/logos/default.webp, marca "mi negocio suite").
+        if ($empresa->logo_path === null) {
+            $origen = resource_path('logos/default.webp');
+
+            if (is_file($origen)) {
+                $archivo = "logos/empresa-{$empresa->id}.webp";
+                Storage::disk('public')->makeDirectory('logos');
+                copy($origen, Storage::disk('public')->path($archivo));
+                $empresa->update(['logo_path' => "/storage/{$archivo}"]);
+            }
+        }
+
         $user->empresa()->associate($empresa)->save();
 
         // Negocio de comidas: se crea el catálogo por defecto
@@ -51,6 +66,9 @@ class EmpresaController extends Controller
         // Cliente "S/N" (el de las ventas sin cliente) y 10 clientes
         // ficticios para arrancar la gestión de clientes.
         ClientesIniciales::crear($empresa);
+
+        // Proveedor "S/N" (el de las compras sin proveedor) y 5 ficticios.
+        ProveedoresIniciales::crear($empresa);
 
         return response()->json([
             'empresa' => $empresa->refresh(),
@@ -77,13 +95,20 @@ class EmpresaController extends Controller
         $empresa->update(collect($data)->except('logo')->all());
 
         if ($request->hasFile('logo')) {
+            // Nombre con sufijo de tiempo para que la app no muestre el
+            // logo viejo cacheado por URL; se borra el archivo anterior.
             $logo = WebpImage::store(
                 $request->file('logo')->getContent(),
-                "logos/empresa-{$empresa->id}.webp",
+                "logos/empresa-{$empresa->id}-".now()->timestamp.'.webp',
             );
 
             if ($logo !== null) {
+                $anterior = $empresa->logo_path;
                 $empresa->update(['logo_path' => $logo]);
+
+                if ($anterior !== null && str_starts_with($anterior, '/storage/')) {
+                    Storage::disk('public')->delete(substr($anterior, strlen('/storage/')));
+                }
             }
         }
 

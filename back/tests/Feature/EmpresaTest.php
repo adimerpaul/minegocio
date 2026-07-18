@@ -49,6 +49,20 @@ it('guarda el logo como webp si se envía', function () {
     Storage::disk('public')->assertExists("logos/empresa-{$empresaId}.webp");
 });
 
+it('asigna el logo por defecto si la empresa se crea sin logo', function () {
+    Storage::fake('public');
+    $user = usuarioSinEmpresa();
+    Sanctum::actingAs($user);
+
+    $response = $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina']);
+    $empresaId = $response->assertCreated()->json('empresa.id');
+
+    expect($response->json('empresa.logo_path'))
+        ->toBe("/storage/logos/empresa-{$empresaId}.webp");
+    expect(Storage::disk('public')->get("logos/empresa-{$empresaId}.webp"))
+        ->toBe(file_get_contents(resource_path('logos/default.webp')));
+});
+
 it('rechaza registrar una segunda empresa para la misma cuenta', function () {
     $user = usuarioSinEmpresa();
     $user->empresa()->associate(Empresa::factory()->create())->save();
@@ -200,6 +214,35 @@ it('actualiza los datos de la empresa del usuario', function () {
         ->assertOk()
         ->assertJsonPath('empresa.nombre', 'Comercial Andina Renovada')
         ->assertJsonPath('empresa.moneda', 'USD');
+});
+
+it('reemplaza el logo al actualizar y borra el archivo anterior', function () {
+    Storage::fake('public');
+    $user = usuarioSinEmpresa();
+    Sanctum::actingAs($user);
+
+    $this->post('/api/empresas', [
+        'nombre' => 'Comercial Andina',
+        'logo' => UploadedFile::fake()->image('logo.png'),
+    ], ['Accept' => 'application/json'])->assertCreated();
+
+    $empresa = $user->refresh()->empresa;
+    $anterior = substr($empresa->logo_path, strlen('/storage/'));
+    Storage::disk('public')->assertExists($anterior);
+
+    // multipart con _method=PUT, como lo envía la app.
+    $response = $this->post('/api/empresa', [
+        '_method' => 'PUT',
+        'nombre' => 'Comercial Andina',
+        'logo' => UploadedFile::fake()->image('nuevo.png'),
+    ], ['Accept' => 'application/json']);
+
+    $logo = $response->assertOk()->json('empresa.logo_path');
+
+    expect($logo)->toStartWith("/storage/logos/empresa-{$empresa->id}-")
+        ->and($logo)->toEndWith('.webp');
+    Storage::disk('public')->assertExists(substr($logo, strlen('/storage/')));
+    Storage::disk('public')->assertMissing($anterior);
 });
 
 it('responde 404 al actualizar si la cuenta no tiene empresa', function () {

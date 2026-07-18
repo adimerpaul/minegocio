@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../config/paleta.dart';
 import '../../services/auth_service.dart';
 import '../../viewmodels/empresa_viewmodel.dart';
 import '../widgets/campo_texto.dart';
+import '../widgets/selector_imagen.dart';
 
 /// Configuración de empresa: edita los datos reales contra el backend
 /// (PUT /api/empresa) y muestra el estado de la tienda en línea.
@@ -30,6 +33,7 @@ class _ConfigPageState extends State<ConfigPage> {
   late final TextEditingController _direccion;
   late final TextEditingController _correo;
   late String _moneda;
+  File? _logo; // logo nuevo elegido, aún sin guardar
 
   static const _monedas = {
     'BOB': 'BOB — Boliviano (Bs)',
@@ -58,6 +62,19 @@ class _ConfigPageState extends State<ConfigPage> {
     super.dispose();
   }
 
+  Future<void> _elegirLogo() async {
+    try {
+      final logo = await seleccionarImagen(context);
+      if (logo == null || !mounted) return;
+      setState(() => _logo = logo);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$e'.replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
   Future<void> _guardar() async {
     final user = await _viewModel.actualizar(widget.session, {
       'nombre': _nombre.text.trim(),
@@ -66,15 +83,69 @@ class _ConfigPageState extends State<ConfigPage> {
       'direccion': _direccion.text.trim(),
       'correo': _correo.text.trim(),
       'moneda': _moneda,
-    });
+    }, logo: _logo);
     if (!mounted) return;
 
     if (user != null) {
+      setState(() => _logo = null); // ya quedó guardado en el backend
       widget.onSessionActualizada(widget.session.copyWith(user: user));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cambios guardados.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Cambios guardados.')));
     }
+  }
+
+  /// Logo actual (o el recién elegido) con el botón para cambiarlo.
+  Widget _logoWidget() {
+    const lado = 96.0;
+    final logoUrl = widget.session.user.empresa?.logoUrl;
+
+    Widget imagen;
+    if (_logo != null) {
+      imagen = Image.file(_logo!, width: lado, height: lado, fit: BoxFit.cover);
+    } else if (logoUrl != null) {
+      imagen = Image.network(
+        logoUrl,
+        width: lado,
+        height: lado,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _sinLogo(lado),
+      );
+    } else {
+      imagen = _sinLogo(lado);
+    }
+
+    return Stack(
+      children: [
+        ClipRRect(borderRadius: BorderRadius.circular(16), child: imagen),
+        Positioned(
+          right: 2,
+          bottom: 2,
+          child: Material(
+            color: Paleta.primario,
+            borderRadius: BorderRadius.circular(999),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: _viewModel.loading ? null : _elegirLogo,
+              child: const Padding(
+                padding: EdgeInsets.all(7),
+                child: Icon(Icons.photo_camera, size: 17, color: Paleta.blanco),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _sinLogo(double lado) {
+    return Container(
+      width: lado,
+      height: lado,
+      color: Paleta.tinte,
+      alignment: Alignment.center,
+      child: const Icon(Icons.storefront, size: 36, color: Color(0xFFC2410C)),
+    );
   }
 
   @override
@@ -106,6 +177,8 @@ class _ConfigPageState extends State<ConfigPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  Center(child: _logoWidget()),
+                  const SizedBox(height: 14),
                   CampoTexto(
                     label: 'Nombre comercial',
                     controller: _nombre,
@@ -139,11 +212,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     denso: true,
                   ),
                   const SizedBox(height: 10),
-                  CampoTexto(
-                    label: 'Correo',
-                    controller: _correo,
-                    denso: true,
-                  ),
+                  CampoTexto(label: 'Correo', controller: _correo, denso: true),
                   const SizedBox(height: 10),
                   const Text(
                     'Moneda',
@@ -161,10 +230,12 @@ class _ConfigPageState extends State<ConfigPage> {
                     decoration: decoracionCampo(null, denso: true),
                     style: const TextStyle(fontSize: 14, color: Paleta.texto),
                     items: _monedas.entries
-                        .map((e) => DropdownMenuItem(
-                              value: e.key,
-                              child: Text(e.value),
-                            ))
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e.key,
+                            child: Text(e.value),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() => _moneda = v ?? 'BOB'),
                   ),
@@ -179,9 +250,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     ),
                     onPressed: _viewModel.loading ? null : _guardar,
                     child: Text(
-                      _viewModel.loading
-                          ? 'Guardando...'
-                          : 'Guardar cambios',
+                      _viewModel.loading ? 'Guardando...' : 'Guardar cambios',
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,

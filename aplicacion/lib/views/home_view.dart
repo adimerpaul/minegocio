@@ -7,10 +7,12 @@ import '../services/auth_service.dart';
 import 'login_view.dart';
 import 'pages/categorias_page.dart';
 import 'pages/clientes_page.dart';
+import 'pages/compras_page.dart';
 import 'pages/config_page.dart';
 import 'pages/inicio_page.dart';
 import 'pages/lista_page.dart';
 import 'pages/productos_page.dart';
+import 'pages/proveedores_page.dart';
 import 'pages/venta_page.dart';
 import 'pages/ventas_page.dart';
 
@@ -48,7 +50,14 @@ class _HomeViewState extends State<HomeView> {
     ('Menús de caja', ['venta', 'ventas', 'pedidos', 'inventario']),
     (
       'Menús de administración',
-      ['productos', 'categorias', 'compras', 'clientes', 'proveedores', 'config'],
+      [
+        'productos',
+        'categorias',
+        'compras',
+        'clientes',
+        'proveedores',
+        'config',
+      ],
     ),
   ];
 
@@ -89,6 +98,40 @@ class _HomeViewState extends State<HomeView> {
       ),
     );
     if (confirmado != true || !mounted) return;
+
+    // Diálogo de carga mientras se cierra la sesión; lo quita el
+    // pushAndRemoveUntil de abajo junto con el resto de las rutas.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Dialog(
+          backgroundColor: Paleta.blanco,
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    color: Paleta.primario,
+                    strokeWidth: 2.5,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Text(
+                  'Cerrando sesión…',
+                  style: TextStyle(fontSize: 14.5, color: Paleta.texto),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
 
     await AuthService.instance.signOut();
     if (!mounted) return;
@@ -143,6 +186,10 @@ class _HomeViewState extends State<HomeView> {
         return CategoriasPage(session: _session);
       case 'clientes':
         return ClientesPage(session: _session);
+      case 'proveedores':
+        return ProveedoresPage(session: _session);
+      case 'compras':
+        return ComprasPage(session: _session);
       case 'config':
         return ConfigPage(
           session: _session,
