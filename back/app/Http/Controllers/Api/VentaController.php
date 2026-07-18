@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\Venta;
 use Illuminate\Http\JsonResponse;
@@ -52,12 +53,27 @@ class VentaController extends Controller
 
         $data = $request->validate([
             'cliente' => ['nullable', 'string', 'max:255'],
+            'cliente_id' => ['nullable', 'integer'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.producto_id' => ['required', 'integer'],
             'items.*.cantidad' => ['required', 'integer', 'min:1'],
         ]);
 
-        $venta = DB::transaction(function () use ($data, $empresa, $user) {
+        // Cliente de la venta: el elegido (debe ser de la empresa) o el
+        // "S/N" por defecto. Su nombre se congela en la columna `cliente`.
+        if (isset($data['cliente_id'])) {
+            $cliente = $empresa->clientes()->find($data['cliente_id']);
+
+            if ($cliente === null) {
+                throw ValidationException::withMessages([
+                    'cliente_id' => ['El cliente no existe en tu empresa.'],
+                ]);
+            }
+        } else {
+            $cliente = Cliente::porDefecto($empresa);
+        }
+
+        $venta = DB::transaction(function () use ($data, $empresa, $user, $cliente) {
             $cantidades = collect($data['items'])
                 ->groupBy('producto_id')
                 ->map(fn ($items) => $items->sum('cantidad'));
@@ -105,7 +121,8 @@ class VentaController extends Controller
             $venta = $empresa->ventas()->create([
                 'user_id' => $user->id,
                 'codigo' => sprintf('V-%04d', $numero),
-                'cliente' => $data['cliente'] ?? null,
+                'cliente' => $data['cliente'] ?? $cliente->nombre,
+                'cliente_id' => $cliente->id,
                 'total' => round($total, 2),
                 'estado' => 'completada',
             ]);

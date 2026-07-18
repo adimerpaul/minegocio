@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Cámara: foto de productos (image_picker) y escáner QR (mobile_scanner). -->
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application
         android:label="minegocio"
         android:name="${applicationName}"

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Services\CatalogoInicial;
+use App\Services\ClientesIniciales;
 use App\Services\WebpImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -46,6 +47,10 @@ class EmpresaController extends Controller
         // Negocio de comidas: se crea el catálogo por defecto
         // (Pollos, Extras, Jugos, Refrescos) con imágenes placeholder.
         CatalogoInicial::crear($empresa);
+
+        // Cliente "S/N" (el de las ventas sin cliente) y 10 clientes
+        // ficticios para arrancar la gestión de clientes.
+        ClientesIniciales::crear($empresa);
 
         return response()->json([
             'empresa' => $empresa->refresh(),

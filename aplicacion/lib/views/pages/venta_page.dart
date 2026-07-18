@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../config/formato.dart';
 import '../../config/paleta.dart';
+import '../../models/cliente.dart';
 import '../../models/producto.dart';
 import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/cliente_service.dart';
 import '../../services/venta_service.dart';
 import '../../services/voucher_service.dart';
 import '../widgets/campo_texto.dart';
@@ -31,6 +33,12 @@ class _VentaPageState extends State<VentaPage> {
   final Map<int, int> _orden = {}; // productoId → cantidad
   bool _cobrando = false;
 
+  List<Cliente> _clientes = [];
+  Cliente? _cliente; // cliente de la venta; por defecto el S/N
+
+  Cliente? get _clienteDefault =>
+      _clientes.where((c) => c.esDefault).firstOrNull ?? _clientes.firstOrNull;
+
   String get _simbolo => simboloMoneda(widget.session.user.empresa?.moneda);
 
   @override
@@ -44,7 +52,15 @@ class _VentaPageState extends State<VentaPage> {
     try {
       final catalogo =
           await CatalogoService.instance.listar(widget.session.token);
-      if (mounted) setState(() => _catalogo = catalogo);
+      final clientes =
+          await ClienteService.instance.listar(widget.session.token);
+      if (mounted) {
+        setState(() {
+          _catalogo = catalogo;
+          _clientes = clientes;
+          _cliente ??= _clienteDefault;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _error = '$e'.replaceFirst('Exception: ', ''));
@@ -101,6 +117,7 @@ class _VentaPageState extends State<VentaPage> {
       final venta = await VentaService.instance.crear(
         token: widget.session.token,
         orden: Map.of(_orden),
+        clienteId: _cliente?.id,
       );
 
       // El stock cambió: se refresca el catálogo.
@@ -111,6 +128,7 @@ class _VentaPageState extends State<VentaPage> {
       setState(() {
         _orden.clear();
         _catalogo = catalogo;
+        _cliente = _clienteDefault; // la próxima venta vuelve al S/N
       });
 
       _mostrarConfirmacion(venta);
@@ -617,6 +635,56 @@ class _VentaPageState extends State<VentaPage> {
                         ),
                       ),
                       const Divider(color: Paleta.bordeSuave),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () async {
+                          final elegido = await _elegirCliente(sheetContext);
+                          if (elegido != null) {
+                            _cliente = elegido;
+                            refrescar();
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.person_outline,
+                                size: 19,
+                                color: Paleta.textoMedio,
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Cliente',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Paleta.textoSuave,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _cliente?.etiqueta ?? 'S/N (sin nombre)',
+                                  textAlign: TextAlign.right,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Paleta.texto,
+                                  ),
+                                ),
+                              ),
+                              const Icon(
+                                Icons.expand_more,
+                                size: 19,
+                                color: Paleta.grisClaro,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Divider(color: Paleta.bordeSuave),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Row(
@@ -664,6 +732,132 @@ class _VentaPageState extends State<VentaPage> {
                       ),
                     ],
                   ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Hoja para elegir el cliente de la venta (S/N primero, con buscador).
+  /// Devuelve el elegido, o null si se cierra sin elegir.
+  Future<Cliente?> _elegirCliente(BuildContext desde) async {
+    // Por si la lista cambió desde Gestión de clientes.
+    try {
+      _clientes = await ClienteService.instance.listar(widget.session.token);
+    } catch (_) {
+      // Se usa la lista que ya se tenía.
+    }
+    if (!desde.mounted) return null;
+
+    return showModalBottomSheet<Cliente>(
+      context: desde,
+      isScrollControlled: true,
+      backgroundColor: Paleta.blanco,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) {
+        var filtro = '';
+
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            final visibles = _clientes
+                .where((c) =>
+                    filtro.isEmpty ||
+                    '${c.nombre} ${c.nit ?? ''} ${c.telefono ?? ''}'
+                        .toLowerCase()
+                        .contains(filtro))
+                .toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Cliente de la venta',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Paleta.texto,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        onChanged: (v) => setSheetState(
+                          () => filtro = v.trim().toLowerCase(),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Paleta.texto,
+                        ),
+                        decoration: decoracionCampo(
+                          'Buscar por nombre, NIT o teléfono',
+                          denso: true,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 340),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: visibles.length,
+                          itemBuilder: (context, i) {
+                            final cliente = visibles[i];
+                            final activo = cliente.id == _cliente?.id;
+
+                            return ListTile(
+                              dense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              onTap: () => Navigator.pop(
+                                sheetContext,
+                                cliente,
+                              ),
+                              leading: Icon(
+                                activo
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_off,
+                                size: 20,
+                                color: activo
+                                    ? Paleta.primario
+                                    : Paleta.grisClaro,
+                              ),
+                              title: Text(
+                                cliente.etiqueta,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: activo
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: Paleta.texto,
+                                ),
+                              ),
+                              subtitle: (cliente.telefono?.isNotEmpty ?? false)
+                                  ? Text(
+                                      'Cel. ${cliente.telefono}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Paleta.textoSuave,
+                                      ),
+                                    )
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

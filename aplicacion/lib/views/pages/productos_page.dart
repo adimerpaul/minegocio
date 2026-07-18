@@ -6,6 +6,7 @@ import '../../models/producto.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
 import '../widgets/campo_texto.dart';
+import 'producto_editar_page.dart';
 
 /// Gestión de productos: stats, buscador y la lista real del catálogo.
 class ProductosPage extends StatefulWidget {
@@ -33,14 +34,31 @@ class _ProductosPageState extends State<ProductosPage> {
   Future<void> _cargar() async {
     setState(() => _error = null);
     try {
-      final catalogo =
-          await CatalogoService.instance.listar(widget.session.token);
+      final catalogo = await CatalogoService.instance.listar(
+        widget.session.token,
+      );
       if (mounted) setState(() => _catalogo = catalogo);
     } catch (e) {
       if (mounted) {
         setState(() => _error = '$e'.replaceFirst('Exception: ', ''));
       }
     }
+  }
+
+  /// Abre "Editar producto"; al volver con cambios recarga la lista
+  /// (la caché del catálogo ya viene refrescada por ProductoService).
+  Future<void> _editar(Producto producto) async {
+    final actualizado = await Navigator.of(context).push<Producto>(
+      MaterialPageRoute(
+        builder: (_) => ProductoEditarPage(
+          session: widget.session,
+          producto: producto,
+          categorias: _catalogo!.categorias,
+        ),
+      ),
+    );
+
+    if (actualizado != null && mounted) _cargar();
   }
 
   String _nombreCategoria(int? id) {
@@ -82,11 +100,14 @@ class _ProductosPageState extends State<ProductosPage> {
 
     final filtro = _filtro.trim().toLowerCase();
     final productos = _catalogo!.productos
-        .where((p) =>
-            filtro.isEmpty ||
-            '${p.nombre} ${p.codigo} ${_nombreCategoria(p.categoriaId)}'
-                .toLowerCase()
-                .contains(filtro))
+        .where(
+          (p) =>
+              filtro.isEmpty ||
+              '${p.nombre} ${p.codigo} ${p.codigoBarras ?? ''} '
+                      '${_nombreCategoria(p.categoriaId)}'
+                  .toLowerCase()
+                  .contains(filtro),
+        )
         .toList();
     final stockBajo = _catalogo!.productos.where((p) => p.stockBajo).length;
 
@@ -172,111 +193,118 @@ class _ProductosPageState extends State<ProductosPage> {
   }
 
   Widget _tarjeta(Producto producto) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Paleta.blanco,
+    return Material(
+      color: Paleta.blanco,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Paleta.bordeSuave),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: SizedBox(
-              width: 44,
-              height: 44,
-              child: producto.imagenUrl == null
-                  ? Container(
-                      color: Paleta.tinte,
-                      alignment: Alignment.center,
-                      child: Text(
-                        producto.nombre.characters.first.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFC2410C),
-                        ),
-                      ),
-                    )
-                  : Image.network(
-                      producto.imagenUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        color: Paleta.tinte,
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.fastfood,
-                          size: 18,
-                          color: Color(0xFFC2410C),
-                        ),
-                      ),
-                    ),
-            ),
+        onTap: () => _editar(producto),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Paleta.bordeSuave),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  producto.nombre,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w600,
-                    color: Paleta.texto,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${producto.codigo} · ${_nombreCategoria(producto.categoriaId)} · stock ${producto.stock} · mín ${producto.stockMinimo}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Paleta.textoSuave,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
             children: [
-              Text(
-                formatoMoneda(producto.precio, simbolo: _simbolo),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Paleta.texto,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: producto.imagenUrl == null
+                      ? Container(
+                          color: Paleta.tinte,
+                          alignment: Alignment.center,
+                          child: Text(
+                            producto.nombre.characters.first.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFC2410C),
+                            ),
+                          ),
+                        )
+                      : Image.network(
+                          producto.imagenUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Container(
+                            color: Paleta.tinte,
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.fastfood,
+                              size: 18,
+                              color: Color(0xFFC2410C),
+                            ),
+                          ),
+                        ),
                 ),
               ),
-              if (producto.stockBajo)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 9,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Paleta.alertaFondo,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: const Text(
-                    'Stock bajo',
-                    style: TextStyle(
-                      fontSize: 10.5,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      producto.nombre,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: Paleta.texto,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${producto.codigo} · ${_nombreCategoria(producto.categoriaId)} · stock ${producto.stock} · mín ${producto.stockMinimo}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Paleta.textoSuave,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    formatoMoneda(producto.precio, simbolo: _simbolo),
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Paleta.alertaTexto,
+                      color: Paleta.texto,
                     ),
                   ),
-                ),
+                  if (producto.stockBajo)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Paleta.alertaFondo,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'Stock bajo',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: Paleta.alertaTexto,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

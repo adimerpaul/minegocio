@@ -4,6 +4,7 @@ import '../config/env.dart';
 class Producto {
   final int id;
   final String codigo;
+  final String? codigoBarras;
   final String nombre;
   final double precio;
   final int stock;
@@ -14,6 +15,7 @@ class Producto {
   const Producto({
     required this.id,
     required this.codigo,
+    this.codigoBarras,
     required this.nombre,
     required this.precio,
     required this.stock,
@@ -31,6 +33,7 @@ class Producto {
     return Producto(
       id: json['id'] as int,
       codigo: json['codigo'] as String,
+      codigoBarras: json['codigo_barras'] as String?,
       nombre: json['nombre'] as String,
       precio: (json['precio'] as num).toDouble(),
       stock: (json['stock'] as num).toInt(),

@@ -34,10 +34,12 @@ class VentaService {
   }
 
   /// POST /api/ventas — registra la venta y descuenta el stock.
-  /// [orden] es productoId → cantidad.
+  /// [orden] es productoId → cantidad. Sin [clienteId] el backend usa el
+  /// cliente S/N (sin nombre) de la empresa.
   Future<Venta> crear({
     required String token,
     required Map<int, int> orden,
+    int? clienteId,
     String? cliente,
   }) async {
     final response = await http
@@ -49,6 +51,7 @@ class VentaService {
             'Authorization': 'Bearer $token',
           },
           body: jsonEncode({
+            'cliente_id': ?clienteId,
             if (cliente != null && cliente.isNotEmpty) 'cliente': cliente,
             'items': orden.entries
                 .map((e) => {'producto_id': e.key, 'cantidad': e.value})

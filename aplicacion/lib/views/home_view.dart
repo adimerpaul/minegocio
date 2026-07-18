@@ -6,6 +6,7 @@ import '../config/paleta.dart';
 import '../services/auth_service.dart';
 import 'login_view.dart';
 import 'pages/categorias_page.dart';
+import 'pages/clientes_page.dart';
 import 'pages/config_page.dart';
 import 'pages/inicio_page.dart';
 import 'pages/lista_page.dart';
@@ -120,7 +121,11 @@ class _HomeViewState extends State<HomeView> {
           ],
         ),
       ),
-      bottomNavigationBar: _barraInferior(),
+      // Con el teclado abierto (p. ej. formulario de Configuración) la barra
+      // subía junto con el teclado y se sobreponía al contenido; se oculta.
+      bottomNavigationBar: MediaQuery.viewInsetsOf(context).bottom > 0
+          ? null
+          : _barraInferior(),
     );
   }
 
@@ -136,6 +141,8 @@ class _HomeViewState extends State<HomeView> {
         return ProductosPage(session: _session);
       case 'categorias':
         return CategoriasPage(session: _session);
+      case 'clientes':
+        return ClientesPage(session: _session);
       case 'config':
         return ConfigPage(
           session: _session,
@@ -293,7 +300,12 @@ class _HomeViewState extends State<HomeView> {
         children: [
           Container(
             color: Paleta.tinte,
-            padding: const EdgeInsets.fromLTRB(20, 52, 20, 18),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              MediaQuery.paddingOf(context).top + 10,
+              8,
+              12,
+            ),
             child: Row(
               children: [
                 _avatar(),
@@ -338,11 +350,11 @@ class _HomeViewState extends State<HomeView> {
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 20),
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
               children: [
                 for (final (seccion, ids) in _secciones) ...[
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 6),
+                    padding: const EdgeInsets.fromLTRB(10, 12, 10, 4),
                     child: Text(
                       seccion.toUpperCase(),
                       style: const TextStyle(
@@ -406,28 +418,28 @@ class _HomeViewState extends State<HomeView> {
         borderRadius: BorderRadius.circular(12),
         onTap: () => _irModulo(id),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: activo ? Paleta.primario : const Color(0xFFF4F0EC),
-                  borderRadius: BorderRadius.circular(11),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   icono,
-                  size: 18,
+                  size: 17,
                   color: activo ? Paleta.blanco : Paleta.textoSuave,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   titulo,
                   style: TextStyle(
-                    fontSize: 14.5,
+                    fontSize: 14,
                     fontWeight: activo ? FontWeight.w700 : FontWeight.w500,
                     color: activo ? Paleta.primarioOscuro : Paleta.texto,
                   ),

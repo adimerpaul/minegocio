@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
-#[Fillable(['empresa_id', 'user_id', 'codigo', 'cliente', 'total', 'estado'])]
+#[Fillable(['empresa_id', 'user_id', 'codigo', 'cliente', 'cliente_id', 'total', 'estado'])]
 class Venta extends Model implements AuditableContract
 {
     use Auditable, SoftDeletes;

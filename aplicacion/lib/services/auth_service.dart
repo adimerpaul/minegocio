@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/env.dart';
 import '../models/app_user.dart';
 import 'catalogo_service.dart';
+import 'cliente_service.dart';
 import 'local_db.dart';
 
 /// Sesión activa: usuario (con su empresa, si la tiene) y token de API.
@@ -135,6 +136,7 @@ class AuthService {
 
     await LocalDb.instance.limpiar();
     CatalogoService.instance.limpiar();
+    ClienteService.instance.limpiar();
 
     await GoogleSignIn.instance.signOut();
   }
