@@ -11,6 +11,7 @@ use App\Services\WebpImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class EmpresaController extends Controller
 {
@@ -29,7 +30,7 @@ class EmpresaController extends Controller
             ], 409);
         }
 
-        $data = $this->validated($request);
+        $data = $this->validated($request, null);
 
         $empresa = Empresa::create(collect($data)->except('logo')->all());
 
@@ -90,7 +91,7 @@ class EmpresaController extends Controller
             ], 404);
         }
 
-        $data = $this->validated($request);
+        $data = $this->validated($request, $empresa);
 
         $empresa->update(collect($data)->except('logo')->all());
 
@@ -119,21 +120,91 @@ class EmpresaController extends Controller
     }
 
     /**
+     * Verifica si un slug de tienda está disponible. Ignora el ID propio de
+     * la empresa cuando se actualiza.
+     */
+    public function slugDisponible(Request $request, ?Empresa $empresa = null): JsonResponse
+    {
+        $slug = $this->normalizarSlug((string) $request->route('slug'));
+
+        if (strlen($slug) < 3) {
+            return response()->json([
+                'disponible' => false,
+                'slug' => $slug,
+                'mensaje' => 'El nombre de tienda debe tener al menos 3 caracteres válidos.',
+            ]);
+        }
+
+        $query = Empresa::where('slug_tienda', $slug);
+        if ($empresa !== null) {
+            $query->where('id', '!=', $empresa->id);
+        }
+
+        $disponible = ! $query->exists();
+
+        return response()->json([
+            'disponible' => $disponible,
+            'slug' => $slug,
+            'mensaje' => $disponible
+                ? 'El nombre de tienda está disponible.'
+                : 'Ese nombre de tienda ya está en uso. Elige otro.',
+        ]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
-    private function validated(Request $request): array
+    private function validated(Request $request, ?Empresa $empresaActual): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
             'nit' => ['nullable', 'string', 'max:30'],
             'telefono' => ['nullable', 'string', 'max:30'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'correo' => ['nullable', 'email', 'max:255'],
             'moneda' => ['nullable', 'string', 'in:BOB,USD,PEN'],
+            'slug_tienda' => ['required', 'string', 'min:3', 'max:50', 'regex:/^[a-z0-9-]+$/'],
             'logo' => ['nullable', 'image', 'max:4096'],
-        ], [], [
+        ], [
+            'slug_tienda.regex' => 'El nombre de tienda solo puede contener letras minúsculas sin ñ, números y guiones.',
+        ], [
             'nombre' => 'nombre comercial',
             'correo' => 'correo de la empresa',
+            'slug_tienda' => 'nombre de la tienda',
         ]);
+
+        $data['slug_tienda'] = $this->normalizarSlug($data['slug_tienda']);
+
+        $query = Empresa::where('slug_tienda', $data['slug_tienda']);
+        if ($empresaActual !== null) {
+            $query->where('id', '!=', $empresaActual->id);
+        }
+
+        if ($query->exists()) {
+            throw ValidationException::withMessages([
+                'slug_tienda' => 'Ese nombre de tienda ya está en uso. Elige otro.',
+            ]);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Normaliza un texto para usarlo como slug de tienda: minúsculas, sin ñ,
+     * sin tildes, sin espacios y solo letras, números y guiones.
+     */
+    private function normalizarSlug(string $valor): string
+    {
+        $slug = mb_strtolower($valor, 'UTF-8');
+        $slug = str_replace('ñ', 'n', $slug);
+        $slug = str_replace(
+            ['á', 'é', 'í', 'ó', 'ú', 'ü', 'à', 'è', 'ì', 'ò', 'ù'],
+            ['a', 'e', 'i', 'o', 'u', 'u', 'a', 'e', 'i', 'o', 'u'],
+            $slug,
+        );
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+        $slug = trim($slug, '-');
+
+        return $slug;
     }
 }

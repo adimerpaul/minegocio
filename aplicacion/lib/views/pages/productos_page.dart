@@ -8,11 +8,21 @@ import '../../services/catalogo_service.dart';
 import '../widgets/campo_texto.dart';
 import 'producto_editar_page.dart';
 
-/// Gestión de productos: stats, buscador y la lista real del catálogo.
+/// Gestión de productos: stats, buscador, filtro por categoría y la lista real del catálogo.
+///
+/// Si se abre desde [CategoriasPage], [categoriaInicial] precarga el filtro y
+/// [mostrarAppBar] presenta una app bar con botón de retroceso.
 class ProductosPage extends StatefulWidget {
   final Session session;
+  final int? categoriaInicial;
+  final bool mostrarAppBar;
 
-  const ProductosPage({super.key, required this.session});
+  const ProductosPage({
+    super.key,
+    required this.session,
+    this.categoriaInicial,
+    this.mostrarAppBar = false,
+  });
 
   @override
   State<ProductosPage> createState() => _ProductosPageState();
@@ -22,12 +32,14 @@ class _ProductosPageState extends State<ProductosPage> {
   Catalogo? _catalogo;
   String? _error;
   String _filtro = '';
+  int? _categoriaId;
 
   String get _simbolo => simboloMoneda(widget.session.user.empresa?.moneda);
 
   @override
   void initState() {
     super.initState();
+    _categoriaId = widget.categoriaInicial;
     _cargar();
   }
 
@@ -102,16 +114,17 @@ class _ProductosPageState extends State<ProductosPage> {
     final productos = _catalogo!.productos
         .where(
           (p) =>
-              filtro.isEmpty ||
-              '${p.nombre} ${p.codigo} ${p.codigoBarras ?? ''} '
-                      '${_nombreCategoria(p.categoriaId)}'
-                  .toLowerCase()
-                  .contains(filtro),
+              (_categoriaId == null || p.categoriaId == _categoriaId) &&
+              (filtro.isEmpty ||
+                  '${p.nombre} ${p.codigo} ${p.codigoBarras ?? ''} '
+                          '${_nombreCategoria(p.categoriaId)}'
+                      .toLowerCase()
+                      .contains(filtro)),
         )
         .toList();
     final stockBajo = _catalogo!.productos.where((p) => p.stockBajo).length;
 
-    return Column(
+    final contenido = Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
@@ -138,6 +151,40 @@ class _ProductosPageState extends State<ProductosPage> {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 2),
+          child: InputDecorator(
+            decoration: decoracionCampo('Filtrar por categoría', denso: true),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int?>(
+                value: _categoriaId,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Paleta.texto,
+                  size: 20,
+                ),
+                style: const TextStyle(fontSize: 13.5, color: Paleta.texto),
+                hint: const Text(
+                  'Todas las categorías',
+                  style: TextStyle(fontSize: 13.5, color: Paleta.texto),
+                ),
+                items: [
+                  const DropdownMenuItem<int?>(
+                    value: null,
+                    child: Text('Todas las categorías'),
+                  ),
+                  for (final c in _catalogo!.categorias)
+                    DropdownMenuItem<int?>(
+                      value: c.id,
+                      child: Text(c.nombre),
+                    ),
+                ],
+                onChanged: (v) => setState(() => _categoriaId = v),
+              ),
+            ),
+          ),
+        ),
         Expanded(
           child: productos.isEmpty
               ? const Center(
@@ -154,6 +201,26 @@ class _ProductosPageState extends State<ProductosPage> {
                 ),
         ),
       ],
+    );
+
+    if (!widget.mostrarAppBar) return contenido;
+
+    return Scaffold(
+      backgroundColor: Paleta.fondo,
+      appBar: AppBar(
+        backgroundColor: Paleta.fondo,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Paleta.texto),
+        title: const Text(
+          'Productos por categoría',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: Paleta.texto,
+          ),
+        ),
+      ),
+      body: SafeArea(child: contenido),
     );
   }
 

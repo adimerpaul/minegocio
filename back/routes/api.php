@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/empresas', [EmpresaController::class, 'store']);
     Route::put('/empresa', [EmpresaController::class, 'update']);
+    Route::get('/empresas/slug-disponible/{slug}', [EmpresaController::class, 'slugDisponible']);
     Route::get('/productos', [ProductoController::class, 'index']);
     Route::put('/productos/{id}', [ProductoController::class, 'update']);
     Route::get('/clientes', [ClienteController::class, 'index']);
