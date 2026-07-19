@@ -3,7 +3,7 @@
     <!-- Cámara: foto de productos (image_picker) y escáner QR (mobile_scanner). -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <application
-        android:label="minegocio"
+        android:label="Mi Negocio"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">

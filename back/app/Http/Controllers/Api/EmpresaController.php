@@ -163,27 +163,35 @@ class EmpresaController extends Controller
             'direccion' => ['nullable', 'string', 'max:255'],
             'correo' => ['nullable', 'email', 'max:255'],
             'moneda' => ['nullable', 'string', 'in:BOB,USD,PEN'],
-            'slug_tienda' => ['required', 'string', 'min:3', 'max:50', 'regex:/^[a-z0-9-]+$/'],
+            'slug_tienda' => $empresaActual === null
+                ? ['required', 'string', 'max:50']
+                : ['sometimes', 'string', 'max:50'],
             'logo' => ['nullable', 'image', 'max:4096'],
-        ], [
-            'slug_tienda.regex' => 'El nombre de tienda solo puede contener letras minúsculas sin ñ, números y guiones.',
-        ], [
+        ], [], [
             'nombre' => 'nombre comercial',
             'correo' => 'correo de la empresa',
             'slug_tienda' => 'nombre de la tienda',
         ]);
 
-        $data['slug_tienda'] = $this->normalizarSlug($data['slug_tienda']);
+        if (array_key_exists('slug_tienda', $data)) {
+            $data['slug_tienda'] = $this->normalizarSlug($data['slug_tienda']);
 
-        $query = Empresa::where('slug_tienda', $data['slug_tienda']);
-        if ($empresaActual !== null) {
-            $query->where('id', '!=', $empresaActual->id);
-        }
+            if (strlen($data['slug_tienda']) < 3) {
+                throw ValidationException::withMessages([
+                    'slug_tienda' => 'El nombre de tienda debe tener al menos 3 caracteres válidos.',
+                ]);
+            }
 
-        if ($query->exists()) {
-            throw ValidationException::withMessages([
-                'slug_tienda' => 'Ese nombre de tienda ya está en uso. Elige otro.',
-            ]);
+            $query = Empresa::where('slug_tienda', $data['slug_tienda']);
+            if ($empresaActual !== null) {
+                $query->where('id', '!=', $empresaActual->id);
+            }
+
+            if ($query->exists()) {
+                throw ValidationException::withMessages([
+                    'slug_tienda' => 'Ese nombre de tienda ya está en uso. Elige otro.',
+                ]);
+            }
         }
 
         return $data;

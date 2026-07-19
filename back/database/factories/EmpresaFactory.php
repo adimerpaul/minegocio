@@ -19,6 +19,7 @@ class EmpresaFactory extends Factory
     {
         return [
             'nombre' => fake()->company(),
+            'slug_tienda' => fake()->unique()->slug(2),
             'nit' => (string) fake()->numberBetween(1000000, 999999999),
             'telefono' => fake()->phoneNumber(),
             'direccion' => fake()->address(),

@@ -19,34 +19,45 @@ class LocalDb {
 
   Database? _db;
 
+  Future<void> _crearTablas(Database db) async {
+    await db.execute('''
+      CREATE TABLE usuario(
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        photo_url TEXT,
+        photo_local TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE empresa(
+        id INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        nit TEXT,
+        telefono TEXT,
+        direccion TEXT,
+        correo TEXT,
+        moneda TEXT NOT NULL DEFAULT 'BOB',
+        logo_url TEXT,
+        slug_tienda TEXT
+      )
+    ''');
+  }
+
   Future<Database> get _database async {
     if (_db != null) return _db!;
 
     _db = await openDatabase(
       p.join(await getDatabasesPath(), 'minegocio.db'),
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE usuario(
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            photo_url TEXT,
-            photo_local TEXT
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE empresa(
-            id INTEGER PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            nit TEXT,
-            telefono TEXT,
-            direccion TEXT,
-            correo TEXT,
-            moneda TEXT NOT NULL DEFAULT 'BOB',
-            logo_url TEXT
-          )
-        ''');
+        await _crearTablas(db);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // Durante el desarrollo se recrean las tablas al cambiar el schema.
+        await db.execute('DROP TABLE IF EXISTS usuario');
+        await db.execute('DROP TABLE IF EXISTS empresa');
+        await _crearTablas(db);
       },
     );
 

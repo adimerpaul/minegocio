@@ -203,10 +203,12 @@ class VoucherService {
     final archivo = File(p.join(dir.path, nombreArchivo));
     await archivo.writeAsBytes(bytes, flush: true);
 
-    await Share.shareXFiles(
-      [XFile(archivo.path, mimeType: 'application/pdf')],
-      text: '$etiquetaCodigo $codigo - ${formatoMoneda(total, simbolo: simboloMoneda(empresa.moneda))}',
-      subject: '$etiquetaCodigo $codigo',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(archivo.path, mimeType: 'application/pdf')],
+        text: '$etiquetaCodigo $codigo - ${formatoMoneda(total, simbolo: simboloMoneda(empresa.moneda))}',
+        subject: '$etiquetaCodigo $codigo',
+      ),
     );
   }
 

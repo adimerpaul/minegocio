@@ -28,6 +28,7 @@ class _ConfigPageState extends State<ConfigPage> {
   final EmpresaViewModel _viewModel = EmpresaViewModel();
 
   late final TextEditingController _nombre;
+  late final TextEditingController _slugTienda;
   late final TextEditingController _nit;
   late final TextEditingController _telefono;
   late final TextEditingController _direccion;
@@ -46,6 +47,7 @@ class _ConfigPageState extends State<ConfigPage> {
     super.initState();
     final empresa = widget.session.user.empresa;
     _nombre = TextEditingController(text: empresa?.nombre ?? '');
+    _slugTienda = TextEditingController(text: empresa?.slugTienda ?? '');
     _nit = TextEditingController(text: empresa?.nit ?? '');
     _telefono = TextEditingController(text: empresa?.telefono ?? '');
     _direccion = TextEditingController(text: empresa?.direccion ?? '');
@@ -56,7 +58,7 @@ class _ConfigPageState extends State<ConfigPage> {
   @override
   void dispose() {
     _viewModel.dispose();
-    for (final c in [_nombre, _nit, _telefono, _direccion, _correo]) {
+    for (final c in [_nombre, _slugTienda, _nit, _telefono, _direccion, _correo]) {
       c.dispose();
     }
     super.dispose();
@@ -75,9 +77,37 @@ class _ConfigPageState extends State<ConfigPage> {
     }
   }
 
+  String _normalizarSlug(String valor) {
+    return valor
+        .toLowerCase()
+        .replaceAll('ñ', 'n')
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAllMapped(RegExp(r'[^a-z0-9]+'), (m) => '-')
+        .trim()
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+  }
+
   Future<void> _guardar() async {
+    final slug = _normalizarSlug(_slugTienda.text.trim());
+    if (slug.length < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'El nombre de tienda debe tener al menos 3 caracteres válidos.',
+          ),
+        ),
+      );
+      return;
+    }
+
     final user = await _viewModel.actualizar(widget.session, {
       'nombre': _nombre.text.trim(),
+      'slug_tienda': slug,
       'nit': _nit.text.trim(),
       'telefono': _telefono.text.trim(),
       'direccion': _direccion.text.trim(),
@@ -185,6 +215,24 @@ class _ConfigPageState extends State<ConfigPage> {
                     denso: true,
                   ),
                   const SizedBox(height: 10),
+                  CampoTexto(
+                    label: 'Nombre de tu tienda en línea',
+                    controller: _slugTienda,
+                    denso: true,
+                  ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Solo minúsculas, números y guiones. '
+                      'URL: tu-dominio.com/tienda/${_normalizarSlug(_slugTienda.text)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Paleta.textoSuave,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -282,10 +330,10 @@ class _ConfigPageState extends State<ConfigPage> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Paleta.bordeSuave),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Tienda en línea',
                 style: TextStyle(
                   fontSize: 15,
@@ -293,11 +341,14 @@ class _ConfigPageState extends State<ConfigPage> {
                   color: Paleta.texto,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'Tu catálogo público estará disponible en una próxima etapa: '
-                'tus clientes podrán ver tus productos y hacer pedidos.',
-                style: TextStyle(
+                widget.session.user.empresa?.slugTienda != null
+                    ? 'Tu tienda está disponible en:\n'
+                        'tu-dominio.com/tienda/${widget.session.user.empresa!.slugTienda}'
+                    : 'Define un nombre de tienda para activar tu catálogo público. '
+                        'Tus clientes podrán ver tus productos y hacer pedidos.',
+                style: const TextStyle(
                   fontSize: 13,
                   color: Paleta.textoSuave,
                   height: 1.5,

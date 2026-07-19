@@ -15,9 +15,7 @@ class TiendaController extends Controller
     {
         $empresa = Empresa::where('slug_tienda', $this->normalizarSlug($slug))
             ->with(['productos' => function ($query) {
-                $query->whereNull('deleted_at')
-                    ->where('stock', '>', 0)
-                    ->orderBy('nombre');
+                $query->whereNull('deleted_at')->orderBy('nombre');
             }, 'categorias' => function ($query) {
                 $query->whereNull('deleted_at')->orderBy('nombre');
             }])

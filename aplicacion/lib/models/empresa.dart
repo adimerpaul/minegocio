@@ -10,6 +10,7 @@ class Empresa {
   final String? correo;
   final String moneda;
   final String? logoUrl;
+  final String? slugTienda;
 
   const Empresa({
     required this.id,
@@ -20,6 +21,7 @@ class Empresa {
     this.correo,
     this.moneda = 'BOB',
     this.logoUrl,
+    this.slugTienda,
   });
 
   factory Empresa.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class Empresa {
       direccion: json['direccion'] as String?,
       correo: json['correo'] as String?,
       moneda: (json['moneda'] as String?) ?? 'BOB',
+      slugTienda: json['slug_tienda'] as String?,
       // El back guarda el logo como ruta relativa (/storage/logos/...).
       logoUrl: logo == null || logo.startsWith('http')
           ? logo
@@ -50,6 +53,7 @@ class Empresa {
         'correo': correo,
         'moneda': moneda,
         'logo_url': logoUrl,
+        'slug_tienda': slugTienda,
       };
 
   factory Empresa.fromDb(Map<String, Object?> row) => Empresa(
@@ -61,5 +65,6 @@ class Empresa {
         correo: row['correo'] as String?,
         moneda: (row['moneda'] as String?) ?? 'BOB',
         logoUrl: row['logo_url'] as String?,
+        slugTienda: row['slug_tienda'] as String?,
       );
 }

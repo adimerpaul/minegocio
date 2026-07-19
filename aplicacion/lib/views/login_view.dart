@@ -49,22 +49,10 @@ class _LoginViewState extends State<LoginView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: Paleta.primario,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'M',
-                        style: TextStyle(
-                          color: Paleta.blanco,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                    Image.asset(
+                      'assets/images/logo_default.webp',
+                      width: 96,
+                      height: 96,
                     ),
                     const SizedBox(height: 16),
                     const Text(
