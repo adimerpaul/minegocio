@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'config/paleta.dart';
+import 'services/idioma_service.dart';
 import 'views/root_view.dart';
 
 Future<void> main() async {
@@ -21,6 +22,7 @@ Future<void> main() async {
   );
 
   await dotenv.load(fileName: kReleaseMode ? '.env.production' : '.env');
+  await IdiomaService.instance.inicializar();
   runApp(const MiNegocioApp());
 }
 
@@ -29,14 +31,18 @@ class MiNegocioApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'miNegocio',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Paleta.primario),
-        scaffoldBackgroundColor: Paleta.fondo,
+    // Al cambiar de idioma se reconstruye toda la app.
+    return ListenableBuilder(
+      listenable: IdiomaService.instance,
+      builder: (context, _) => MaterialApp(
+        title: 'miNegocio',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Paleta.primario),
+          scaffoldBackgroundColor: Paleta.fondo,
+        ),
+        home: const RootView(),
       ),
-      home: const RootView(),
     );
   }
 }

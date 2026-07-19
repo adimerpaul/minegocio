@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../config/paleta.dart';
+import '../../services/idioma_service.dart';
 
 /// Escáner de códigos QR y de barras con la cámara. Al detectar el primer
 /// código hace pop devolviendo su valor (String).
@@ -40,9 +41,9 @@ class _EscanearCodigoPageState extends State<EscanearCodigoPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          'Escanear código',
-          style: TextStyle(
+        title: Text(
+          tr('escaner.titulo'),
+          style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -55,7 +56,7 @@ class _EscanearCodigoPageState extends State<EscanearCodigoPage> {
           IconButton(
             onPressed: () => _controller.toggleTorch(),
             icon: const Icon(Icons.flashlight_on, color: Colors.white),
-            tooltip: 'Linterna',
+            tooltip: tr('escaner.linterna'),
           ),
         ],
       ),
@@ -70,9 +71,8 @@ class _EscanearCodigoPageState extends State<EscanearCodigoPage> {
                 padding: const EdgeInsets.all(24),
                 child: Text(
                   error.errorCode == MobileScannerErrorCode.permissionDenied
-                      ? 'Sin permiso de cámara. Actívalo en los ajustes '
-                            'del teléfono para escanear códigos.'
-                      : 'No se pudo abrir la cámara.',
+                      ? tr('escaner.sin_permiso')
+                      : tr('escaner.sin_camara'),
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
@@ -95,7 +95,7 @@ class _EscanearCodigoPageState extends State<EscanearCodigoPage> {
             left: 24,
             right: 24,
             child: Text(
-              'Apunta la cámara al código QR o de barras',
+              tr('escaner.apunta'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

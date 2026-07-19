@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../config/paleta.dart';
+import '../services/idioma_service.dart';
 import '../viewmodels/login_viewmodel.dart';
 import 'home_view.dart';
 import 'registro_empresa_view.dart';
+import 'widgets/selector_idioma.dart';
 
 /// Pantalla de login (diseño del mockup ejemplo.html: fondo oscuro y
 /// hoja inferior clara con las acciones).
@@ -18,7 +20,21 @@ class _LoginViewState extends State<LoginView> {
   final LoginViewModel _viewModel = LoginViewModel();
 
   @override
+  void initState() {
+    super.initState();
+    // El selector de idioma se abre desde esta pantalla: hay que redibujarla
+    // al instante cuando cambia (la reconstrucción de MaterialApp no llega
+    // hasta aquí porque los widgets const y las rutas no se reconstruyen).
+    IdiomaService.instance.addListener(_idiomaCambiado);
+  }
+
+  void _idiomaCambiado() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    IdiomaService.instance.removeListener(_idiomaCambiado);
     _viewModel.dispose();
     super.dispose();
   }
@@ -45,7 +61,23 @@ class _LoginViewState extends State<LoginView> {
           Expanded(
             child: SafeArea(
               bottom: false,
-              child: Center(
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8, right: 8),
+                      child: IconButton(
+                        onPressed: () => mostrarSelectorIdioma(context),
+                        icon: const Icon(
+                          Icons.language,
+                          color: Paleta.textoSuave,
+                        ),
+                        tooltip: tr('comun.idioma'),
+                      ),
+                    ),
+                  ),
+                  Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -55,9 +87,9 @@ class _LoginViewState extends State<LoginView> {
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Mi Negocio',
-                      style: TextStyle(
+                    Text(
+                      tr('app.nombre'),
+                      style: const TextStyle(
                         color: Paleta.texto,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -65,12 +97,12 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const SizedBox(
+                    SizedBox(
                       width: 280,
                       child: Text(
-                        'Tu negocio y tu tienda en línea, desde el celular.',
+                        tr('login.eslogan'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Paleta.textoSuave,
                           fontSize: 15,
                           height: 1.5,
@@ -79,6 +111,8 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ],
                 ),
+              ),
+                ],
               ),
             ),
           ),
@@ -141,8 +175,8 @@ class _LoginViewState extends State<LoginView> {
                             const SizedBox(width: 10),
                             Text(
                               _viewModel.loading
-                                  ? 'Iniciando sesión...'
-                                  : 'Iniciar sesión con Gmail',
+                                  ? tr('login.iniciando')
+                                  : tr('login.con_gmail'),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,

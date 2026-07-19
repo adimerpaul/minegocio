@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/env.dart';
 import '../models/proveedor.dart';
+import 'idioma_service.dart';
 
 /// Servicio de gestión de proveedores, con caché en memoria para no repetir
 /// la descarga al cambiar de módulo (se limpia al cerrar sesión).
@@ -36,7 +37,7 @@ class ProveedorService {
 
     if (response.statusCode != 200) {
       throw Exception(
-        'No se pudieron cargar los proveedores (${response.statusCode}).',
+        trp('error.cargar_proveedores', {'codigo': '${response.statusCode}'}),
       );
     }
 
@@ -130,6 +131,6 @@ class ProveedorService {
       // Cuerpo no JSON: mensaje genérico.
     }
 
-    return 'El servidor respondió ${response.statusCode}.';
+    return trp('error.servidor', {'codigo': '${response.statusCode}'});
   }
 }

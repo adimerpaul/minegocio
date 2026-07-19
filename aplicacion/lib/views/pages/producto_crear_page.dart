@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import '../../config/formato.dart';
 import '../../config/paleta.dart';
 import '../../models/categoria.dart';
-import '../../models/producto.dart';
 import '../../services/auth_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/producto_service.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/selector_imagen.dart';
@@ -108,9 +108,9 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
     return Scaffold(
       backgroundColor: Paleta.fondo,
       appBar: AppBar(
-        title: const Text(
-          'Nuevo producto',
-          style: TextStyle(
+        title: Text(
+          tr('productos.nuevo'),
+          style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -147,13 +147,13 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                   ),
                   const SizedBox(height: 14),
                 ],
-                _etiqueta('Nombre'),
+                _etiqueta(tr('productos.nombre')),
                 TextFormField(
                   controller: _nombre,
                   style: const TextStyle(fontSize: 15, color: Paleta.texto),
-                  decoration: decoracionCampo('Nombre del producto'),
+                  decoration: decoracionCampo(tr('productos.nombre_hint')),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'El nombre es obligatorio'
+                      ? tr('clientes.nombre_obligatorio')
                       : null,
                 ),
                 const SizedBox(height: 14),
@@ -164,7 +164,7 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _etiqueta('Precio ($simbolo)'),
+                          _etiqueta('${tr('productos.precio')} ($simbolo)'),
                           TextFormField(
                             controller: _precio,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -178,7 +178,7 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                             validator: (v) {
                               final n = _numero(v);
                               return (n == null || n < 0)
-                                  ? 'Precio inválido'
+                                  ? tr('productos.precio_invalido')
                                   : null;
                             },
                           ),
@@ -190,7 +190,7 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _etiqueta('Stock'),
+                          _etiqueta(tr('productos.stock_label')),
                           TextFormField(
                             controller: _stock,
                             keyboardType: TextInputType.number,
@@ -202,7 +202,7 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                             validator: (v) {
                               final n = int.tryParse((v ?? '').trim());
                               return (n == null || n < 0)
-                                  ? 'Stock inválido'
+                                  ? tr('productos.stock_invalido')
                                   : null;
                             },
                           ),
@@ -212,7 +212,7 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                _etiqueta('Stock mínimo (alerta de stock bajo)'),
+                _etiqueta(tr('productos.stock_minimo')),
                 TextFormField(
                   controller: _stockMinimo,
                   keyboardType: TextInputType.number,
@@ -220,11 +220,13 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                   decoration: decoracionCampo('5'),
                   validator: (v) {
                     final n = int.tryParse((v ?? '').trim());
-                    return (n == null || n < 0) ? 'Valor inválido' : null;
+                    return (n == null || n < 0)
+                        ? tr('productos.valor_invalido')
+                        : null;
                   },
                 ),
                 const SizedBox(height: 14),
-                _etiqueta('Código QR / de barras'),
+                _etiqueta(tr('productos.codigo_qr')),
                 Row(
                   children: [
                     Expanded(
@@ -235,7 +237,7 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                           color: Paleta.texto,
                         ),
                         decoration: decoracionCampo(
-                          'Escanea o escribe el código',
+                          tr('productos.codigo_hint'),
                         ),
                       ),
                     ),
@@ -259,26 +261,36 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                _etiqueta('Categoría'),
-                DropdownButtonFormField<int?>(
-                  value: _categoriaId,
-                  items: [
-                    const DropdownMenuItem<int?>(
-                      value: null,
-                      child: Text('Sin categoría'),
-                    ),
-                    ...widget.categorias.map(
-                      (c) => DropdownMenuItem<int?>(
-                        value: c.id,
-                        child: Text(c.nombre),
-                      ),
-                    ),
-                  ],
-                  onChanged: _guardando
-                      ? null
-                      : (v) => setState(() => _categoriaId = v),
-                  style: const TextStyle(fontSize: 15, color: Paleta.texto),
+                _etiqueta(tr('productos.categoria')),
+                InputDecorator(
                   decoration: decoracionCampo(null),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int?>(
+                      value: _categoriaId,
+                      isExpanded: true,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Paleta.texto,
+                      ),
+                      style: const TextStyle(fontSize: 15, color: Paleta.texto),
+                      hint: Text(tr('productos.sin_categoria')),
+                      items: [
+                        DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text(tr('productos.sin_categoria')),
+                        ),
+                        ...widget.categorias.map(
+                          (c) => DropdownMenuItem<int?>(
+                            value: c.id,
+                            child: Text(c.nombre),
+                          ),
+                        ),
+                      ],
+                      onChanged: _guardando
+                          ? null
+                          : (v) => setState(() => _categoriaId = v),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
@@ -300,9 +312,9 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Crear producto',
-                          style: TextStyle(
+                      : Text(
+                          tr('productos.crear'),
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
@@ -320,9 +332,9 @@ class _ProductoCrearPageState extends State<ProductoCrearPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(
+                  child: Text(
+                    tr('comun.cancelar'),
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,

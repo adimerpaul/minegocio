@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/env.dart';
 import '../models/compra.dart';
+import 'idioma_service.dart';
 
 /// Ítem por registrar en una compra: un producto del catálogo
 /// ([productoId], aumenta stock) o un gasto libre (solo [nombre]:
@@ -42,7 +43,7 @@ class CompraService {
 
     if (response.statusCode != 200) {
       throw Exception(
-        'No se pudieron cargar las compras (${response.statusCode}).',
+        trp('error.cargar_compras', {'codigo': '${response.statusCode}'}),
       );
     }
 
@@ -126,6 +127,6 @@ class CompraService {
       // Cuerpo no JSON: mensaje genérico.
     }
 
-    return 'El servidor respondió ${response.statusCode}.';
+    return trp('error.servidor', {'codigo': '${response.statusCode}'});
   }
 }

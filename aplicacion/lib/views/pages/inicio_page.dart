@@ -5,6 +5,7 @@ import '../../config/paleta.dart';
 import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/venta_service.dart';
 
 /// Dashboard de inicio (mockup): ventas de hoy y de la semana reales,
@@ -24,7 +25,7 @@ class InicioPage extends StatefulWidget {
 }
 
 class _InicioPageState extends State<InicioPage> {
-  static const _letrasDia = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  List<String> get _letrasDia => tr('inicio.dias_letras').split(',');
 
   int _productos = 0;
   int _stockCritico = 0;
@@ -94,7 +95,7 @@ class _InicioPageState extends State<InicioPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ventas de hoy · ${hoy.day} ${_mesCorto(hoy)}',
+                  '${tr('inicio.ventas_hoy')} · ${hoy.day} ${_mesCorto(hoy)}',
                   style: const TextStyle(
                     fontSize: 12.5,
                     color: Color(0xFFB3A89F),
@@ -121,7 +122,7 @@ class _InicioPageState extends State<InicioPage> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    '${ventasHoy.length} ${ventasHoy.length == 1 ? 'venta' : 'ventas'}',
+                    '${ventasHoy.length} ${ventasHoy.length == 1 ? tr('inicio.venta_singular') : tr('inicio.venta_plural')}',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -137,12 +138,13 @@ class _InicioPageState extends State<InicioPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: _kpi(Icons.schedule, '0', 'Pedidos en línea', 'pedidos'),
+                child: _kpi(
+                    Icons.schedule, '0', tr('inicio.pedidos_linea'), 'pedidos'),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child:
-                    _kpi(Icons.grid_view, '$_productos', 'Productos', 'productos'),
+                child: _kpi(Icons.grid_view, '$_productos',
+                    tr('inicio.productos'), 'productos'),
               ),
             ],
           ),
@@ -154,7 +156,7 @@ class _InicioPageState extends State<InicioPage> {
                 child: _kpi(
                   Icons.north_east,
                   '${_ventas.length}',
-                  'Ventas registradas',
+                  tr('inicio.ventas_registradas'),
                   'ventas',
                 ),
               ),
@@ -163,7 +165,7 @@ class _InicioPageState extends State<InicioPage> {
                 child: _kpi(
                   Icons.warning_amber_rounded,
                   '$_stockCritico',
-                  'Stock crítico',
+                  tr('inicio.stock_critico'),
                   'inventario',
                   alerta: true,
                 ),
@@ -172,15 +174,16 @@ class _InicioPageState extends State<InicioPage> {
           ),
           const SizedBox(height: 16),
           _tarjeta(
-            titulo: 'Ventas de la semana',
+            titulo: tr('inicio.ventas_semana'),
             trailing: formatoMoneda(totalSemana, simbolo: _simbolo),
             child: totalSemana == 0
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Text(
-                      'Aún no registraste ventas esta semana. Usa Venta rápida para empezar.',
+                      tr('inicio.sin_ventas_semana'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: Paleta.textoSuave),
+                      style: const TextStyle(
+                          fontSize: 13, color: Paleta.textoSuave),
                     ),
                   )
                 : Padding(
@@ -190,15 +193,15 @@ class _InicioPageState extends State<InicioPage> {
           ),
           const SizedBox(height: 16),
           _tarjeta(
-            titulo: 'Pedidos en línea',
-            accion: 'Ver todos ›',
+            titulo: tr('inicio.pedidos_linea'),
+            accion: tr('inicio.ver_todos'),
             onAccion: () => widget.onIrModulo('pedidos'),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(
-                'Sin pedidos todavía. Llegarán desde tu tienda en línea.',
+                tr('inicio.sin_pedidos'),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: Paleta.textoSuave),
+                style: const TextStyle(fontSize: 13, color: Paleta.textoSuave),
               ),
             ),
           ),
@@ -207,10 +210,8 @@ class _InicioPageState extends State<InicioPage> {
     );
   }
 
-  String _mesCorto(DateTime d) => const [
-        'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-        'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
-      ][d.month - 1];
+  String _mesCorto(DateTime d) =>
+      tr('inicio.meses_cortos').split(',')[d.month - 1];
 
   Widget _graficoSemana(List<(DateTime, double)> dias) {
     final maximo =

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../services/auth_service.dart';
+import '../services/idioma_service.dart';
 
 /// ViewModel del login: expone el estado y orquesta el AuthService.
 class LoginViewModel extends ChangeNotifier {
@@ -21,7 +22,7 @@ class LoginViewModel extends ChangeNotifier {
       final result = await _auth.signIn();
       return result?.session;
     } catch (e) {
-      error = 'No se pudo iniciar sesión: $e';
+      error = '${tr('login.error')}: $e';
       debugPrint('Error de login: $e');
       return null;
     } finally {

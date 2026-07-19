@@ -8,6 +8,7 @@ import '../config/env.dart';
 import '../models/app_user.dart';
 import 'catalogo_service.dart';
 import 'cliente_service.dart';
+import 'idioma_service.dart';
 import 'local_db.dart';
 import 'proveedor_service.dart';
 
@@ -81,7 +82,7 @@ class AuthService {
     final idToken = googleAccount.authentication.idToken;
     if (idToken == null) {
       await GoogleSignIn.instance.signOut();
-      throw Exception('Google no devolvió el ID token.');
+      throw Exception(tr('error.google_id_token'));
     }
 
     try {
@@ -98,7 +99,10 @@ class AuthService {
 
       if (response.statusCode != 200) {
         throw Exception(
-          'El backend respondió ${response.statusCode}: ${response.body}',
+          trp('error.backend', {
+            'codigo': '${response.statusCode}',
+            'mensaje': response.body,
+          }),
         );
       }
 

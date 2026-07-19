@@ -6,6 +6,7 @@ import '../../models/compra.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
 import '../../services/compra_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/voucher_service.dart';
 import 'nueva_compra_page.dart';
 
@@ -92,7 +93,7 @@ class _ComprasPageState extends State<ComprasPage> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Compra ${compra.codigo} registrada',
+                  trp('compras.registrada', {'codigo': compra.codigo}),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 19,
@@ -102,7 +103,7 @@ class _ComprasPageState extends State<ComprasPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${formatoMoneda(compra.total, simbolo: _simbolo)} · el stock aumentó',
+                  '${formatoMoneda(compra.total, simbolo: _simbolo)} · ${tr('compras.stock_aumento')}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 13.5,
@@ -124,9 +125,9 @@ class _ComprasPageState extends State<ComprasPage> {
                       compra: compra,
                     ),
                     icon: const Icon(Icons.print, color: Paleta.blanco),
-                    label: const Text(
-                      'Imprimir voucher',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.imprimir'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Paleta.blanco,
@@ -147,9 +148,9 @@ class _ComprasPageState extends State<ComprasPage> {
                       compra: compra,
                     ),
                     icon: const Icon(Icons.share, color: Paleta.primario),
-                    label: const Text(
-                      'Compartir por WhatsApp',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.compartir_whatsapp'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Paleta.primario,
@@ -167,9 +168,9 @@ class _ComprasPageState extends State<ComprasPage> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(sheetContext),
-                  child: const Text(
-                    'Listo',
-                    style: TextStyle(
+                  child: Text(
+                    tr('comun.listo'),
+                    style: const TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,
@@ -188,22 +189,21 @@ class _ComprasPageState extends State<ComprasPage> {
     final confirmado = await showDialog<bool>(
       context: sheetContext,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Anular compra'),
+        title: Text(tr('compras.anular')),
         content: Text(
-          'Se anulará ${compra.codigo} y el stock de sus productos '
-          'volverá a bajar. ¿Continuar?',
+          trp('compras.anular_confirmar', {'codigo': compra.codigo}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancelar'),
+            child: Text(tr('comun.cancelar')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Paleta.alertaTexto,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Anular'),
+            child: Text(tr('ventas.anular_boton')),
           ),
         ],
       ),
@@ -225,7 +225,9 @@ class _ComprasPageState extends State<ComprasPage> {
 
       if (sheetContext.mounted) Navigator.pop(sheetContext);
       messenger.showSnackBar(
-        SnackBar(content: Text('Compra ${compra.codigo} anulada.')),
+        SnackBar(
+            content:
+                Text(trp('compras.anulada_ok', {'codigo': compra.codigo}))),
       );
       await _cargar();
     } catch (e) {
@@ -250,9 +252,9 @@ class _ComprasPageState extends State<ComprasPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -280,9 +282,9 @@ class _ComprasPageState extends State<ComprasPage> {
             onPressed: _nuevaCompra,
             icon: const Icon(Icons.add_shopping_cart,
                 size: 19, color: Paleta.blanco),
-            label: const Text(
-              'Registrar compra',
-              style: TextStyle(
+            label: Text(
+              tr('compras.registrar'),
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: Paleta.blanco,
@@ -292,12 +294,12 @@ class _ComprasPageState extends State<ComprasPage> {
         ),
         Expanded(
           child: _compras!.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'Aún no registraste compras.\n'
-                    'Cada compra aumenta el stock de tus productos.',
+                    tr('compras.vacio'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13.5, color: Paleta.textoSuave),
+                    style: const TextStyle(
+                        fontSize: 13.5, color: Paleta.textoSuave),
                   ),
                 )
               : RefreshIndicator(
@@ -355,9 +357,9 @@ class _ComprasPageState extends State<ComprasPage> {
                               color: const Color(0xFFFDE8E8),
                               borderRadius: BorderRadius.circular(999),
                             ),
-                            child: const Text(
-                              'Anulada',
-                              style: TextStyle(
+                            child: Text(
+                              tr('ventas.anulada'),
+                              style: const TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
                                 color: Paleta.alertaTexto,
@@ -369,7 +371,7 @@ class _ComprasPageState extends State<ComprasPage> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${compra.proveedor} · ${compra.cantidadItems} ítems '
+                      '${compra.proveedor} · ${compra.cantidadItems} ${tr('ventas.items')} '
                       '· ${formatoFecha(compra.fecha)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -415,7 +417,7 @@ class _ComprasPageState extends State<ComprasPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Compra ${compra.codigo}',
+                  '${tr('compras.compra')} ${compra.codigo}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -425,7 +427,7 @@ class _ComprasPageState extends State<ComprasPage> {
                 const SizedBox(height: 2),
                 Text(
                   '${compra.proveedor} · ${formatoFecha(compra.fecha)}'
-                  '${compra.anulada ? ' · ANULADA' : ''}',
+                  '${compra.anulada ? ' · ${tr('ventas.anulada').toUpperCase()}' : ''}',
                   style: TextStyle(
                     fontSize: 13,
                     color: compra.anulada
@@ -478,9 +480,9 @@ class _ComprasPageState extends State<ComprasPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Total',
-                        style: TextStyle(
+                      Text(
+                        tr('comun.total'),
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Paleta.textoSuave,
                         ),
@@ -515,9 +517,9 @@ class _ComprasPageState extends State<ComprasPage> {
                       size: 18,
                       color: Paleta.blanco,
                     ),
-                    label: const Text(
-                      'Imprimir voucher',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.imprimir'),
+                      style: const TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         color: Paleta.blanco,
@@ -542,9 +544,9 @@ class _ComprasPageState extends State<ComprasPage> {
                       size: 18,
                       color: Paleta.primario,
                     ),
-                    label: const Text(
-                      'Compartir por WhatsApp',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.compartir_whatsapp'),
+                      style: const TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         color: Paleta.primario,
@@ -568,9 +570,9 @@ class _ComprasPageState extends State<ComprasPage> {
                       size: 18,
                       color: Paleta.alertaTexto,
                     ),
-                    label: const Text(
-                      'Anular compra',
-                      style: TextStyle(
+                    label: Text(
+                      tr('compras.anular'),
+                      style: const TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         color: Paleta.alertaTexto,

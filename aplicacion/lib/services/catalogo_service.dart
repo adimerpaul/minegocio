@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../config/env.dart';
 import '../models/categoria.dart';
 import '../models/producto.dart';
+import 'idioma_service.dart';
 
 /// Catálogo de la empresa: categorías y productos.
 class Catalogo {
@@ -35,8 +36,9 @@ class CatalogoService {
     ).timeout(const Duration(seconds: 15));
 
     if (response.statusCode != 200) {
-      throw Exception('No se pudo cargar el catálogo '
-          '(${response.statusCode}).');
+      throw Exception(
+        trp('error.cargar_catalogo', {'codigo': '${response.statusCode}'}),
+      );
     }
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../config/paleta.dart';
 import '../services/auth_service.dart';
+import '../services/idioma_service.dart';
 import 'login_view.dart';
 import 'pages/categorias_page.dart';
 import 'pages/clientes_page.dart';
@@ -34,23 +35,43 @@ class _HomeViewState extends State<HomeView> {
   late Session _session = widget.session;
   String _modulo = 'inicio';
 
-  static const Map<String, (String, IconData)> _modulos = {
-    'venta': ('Venta rápida', Icons.bolt),
-    'ventas': ('Ventas', Icons.north_east),
-    'pedidos': ('Mercado en línea', Icons.schedule),
-    'inventario': ('Estado del inventario', Icons.swap_vert),
-    'productos': ('Gestión de productos', Icons.grid_view),
-    'categorias': ('Categorías', Icons.category_outlined),
-    'compras': ('Compras', Icons.south_west),
-    'clientes': ('Gestión de clientes', Icons.person_outline),
-    'proveedores': ('Proveedores', Icons.local_shipping_outlined),
-    'config': ('Configuración de empresa', Icons.settings_outlined),
-  };
+  @override
+  void initState() {
+    super.initState();
+    // El selector de idioma se abre desde Configuración (dentro de este
+    // shell): hay que redibujar todo el shell al instante cuando cambia
+    // (la reconstrucción de MaterialApp no llega hasta aquí porque los
+    // widgets const y las rutas no se reconstruyen).
+    IdiomaService.instance.addListener(_idiomaCambiado);
+  }
+
+  void _idiomaCambiado() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    IdiomaService.instance.removeListener(_idiomaCambiado);
+    super.dispose();
+  }
+
+  Map<String, (String, IconData)> get _modulos => {
+        'venta': (tr('menu.venta'), Icons.bolt),
+        'ventas': (tr('menu.ventas'), Icons.north_east),
+        'pedidos': (tr('menu.pedidos'), Icons.schedule),
+        'inventario': (tr('menu.inventario'), Icons.swap_vert),
+        'productos': (tr('menu.productos'), Icons.grid_view),
+        'categorias': (tr('menu.categorias'), Icons.category_outlined),
+        'compras': (tr('menu.compras'), Icons.south_west),
+        'clientes': (tr('menu.clientes'), Icons.person_outline),
+        'proveedores': (tr('menu.proveedores'), Icons.local_shipping_outlined),
+        'config': (tr('menu.config'), Icons.settings_outlined),
+      };
 
   static const List<(String, List<String>)> _secciones = [
-    ('Menús de caja', ['venta', 'ventas', 'pedidos', 'inventario']),
+    ('menu.seccion_caja', ['venta', 'ventas', 'pedidos', 'inventario']),
     (
-      'Menús de administración',
+      'menu.seccion_admin',
       [
         'productos',
         'categorias',
@@ -64,12 +85,12 @@ class _HomeViewState extends State<HomeView> {
 
   String get _titulo {
     if (_modulo == 'inicio') {
-      return 'Hola, ${_session.user.name.split(' ').first}';
+      return trp('inicio.hola', {'nombre': _session.user.name.split(' ').first});
     }
-    if (_modulo == 'venta') return 'Venta rápida';
-    if (_modulo == 'config') return 'Configuración';
-    if (_modulo == 'pedidos') return 'Pedidos en línea';
-    return _modulos[_modulo]?.$1 ?? 'Mi Negocio';
+    if (_modulo == 'venta') return tr('menu.venta');
+    if (_modulo == 'config') return tr('menu.config_corto');
+    if (_modulo == 'pedidos') return tr('pedidos.titulo');
+    return _modulos[_modulo]?.$1 ?? tr('app.nombre');
   }
 
   void _irModulo(String modulo) {
@@ -81,19 +102,17 @@ class _HomeViewState extends State<HomeView> {
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cerrar sesión'),
-        content: const Text(
-          'Tus datos locales se borrarán de este teléfono. ¿Continuar?',
-        ),
+        title: Text(tr('sesion.cerrar')),
+        content: Text(tr('sesion.confirmar')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(tr('comun.cancelar')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Paleta.primario),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Cerrar sesión'),
+            child: Text(tr('sesion.cerrar')),
           ),
         ],
       ),
@@ -105,16 +124,16 @@ class _HomeViewState extends State<HomeView> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const PopScope(
+      builder: (_) => PopScope(
         canPop: false,
         child: Dialog(
           backgroundColor: Paleta.blanco,
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
@@ -122,10 +141,10 @@ class _HomeViewState extends State<HomeView> {
                     strokeWidth: 2.5,
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Text(
-                  'Cerrando sesión…',
-                  style: TextStyle(fontSize: 14.5, color: Paleta.texto),
+                  tr('sesion.cerrando'),
+                  style: const TextStyle(fontSize: 14.5, color: Paleta.texto),
                 ),
               ],
             ),
@@ -145,9 +164,7 @@ class _HomeViewState extends State<HomeView> {
 
   void _tiendaPendiente() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('La tienda en línea estará disponible pronto.'),
-      ),
+      SnackBar(content: Text(tr('menu.tienda_pronto'))),
     );
   }
 
@@ -265,11 +282,11 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _barraInferior() {
-    const items = [
-      ('inicio', Icons.home_outlined, 'Inicio'),
-      ('venta', Icons.bolt, 'Venta rápida'),
-      ('pedidos', Icons.schedule, 'Pedidos'),
-      ('menu', Icons.menu, 'Menú'),
+    final items = [
+      ('inicio', Icons.home_outlined, tr('menu.inicio')),
+      ('venta', Icons.bolt, tr('menu.venta')),
+      ('pedidos', Icons.schedule, tr('menu.pedidos_corto')),
+      ('menu', Icons.menu, tr('menu.menu')),
     ];
 
     // SafeArea: en Android con barra de gestos/botones el sistema tapaba
@@ -375,7 +392,7 @@ class _HomeViewState extends State<HomeView> {
                         ),
                       ),
                       Text(
-                        'Administrador · ${empresa?.nombre ?? user.email}',
+                        '${tr('menu.administrador')} · ${empresa?.nombre ?? user.email}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -388,7 +405,7 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 IconButton(
                   onPressed: _cerrarSesion,
-                  tooltip: 'Cerrar sesión',
+                  tooltip: tr('sesion.cerrar'),
                   icon: const Icon(
                     Icons.power_settings_new,
                     color: Paleta.primarioOscuro,
@@ -406,7 +423,7 @@ class _HomeViewState extends State<HomeView> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 12, 10, 4),
                     child: Text(
-                      seccion.toUpperCase(),
+                      tr(seccion).toUpperCase(),
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w700,

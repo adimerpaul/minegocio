@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../config/env.dart';
 import '../models/categoria.dart';
 import 'catalogo_service.dart';
+import 'idioma_service.dart';
 
 /// Servicio de gestión de categorías (crear, editar, eliminar) contra la API.
 class CategoriaService {
@@ -25,7 +26,7 @@ class CategoriaService {
       ..headers.addAll({
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
-      ])
+      })
       ..fields.addAll(datos);
 
     if (imagen != null) {
@@ -62,7 +63,7 @@ class CategoriaService {
       ..headers.addAll({
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
-      ])
+      })
       ..fields['_method'] = 'PUT'
       ..fields.addAll(datos);
 
@@ -117,6 +118,6 @@ class CategoriaService {
     } catch (_) {
       // cuerpo no JSON
     }
-    return 'No se pudo guardar la categoría (${response.statusCode}).';
+    return trp('error.guardar_categoria', {'codigo': '${response.statusCode}'});
   }
 }

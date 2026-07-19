@@ -6,6 +6,7 @@ import '../../config/paleta.dart';
 import '../../models/categoria.dart';
 import '../../services/auth_service.dart';
 import '../../services/categoria_service.dart';
+import '../../services/idioma_service.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/selector_imagen.dart';
 
@@ -103,7 +104,7 @@ class _CategoriaEditarPageState extends State<CategoriaEditarPage> {
       backgroundColor: Paleta.fondo,
       appBar: AppBar(
         title: Text(
-          _esNueva ? 'Nueva categoría' : 'Editar categoría',
+          _esNueva ? tr('categorias.nueva') : tr('categorias.editar'),
           style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -142,13 +143,13 @@ class _CategoriaEditarPageState extends State<CategoriaEditarPage> {
                   const SizedBox(height: 14),
                 ],
                 CampoTexto(
-                  label: 'Nombre',
+                  label: tr('productos.nombre'),
                   controller: _nombre,
                   denso: true,
                 ),
                 const SizedBox(height: 14),
                 CampoTexto(
-                  label: 'Descripción (opcional)',
+                  label: tr('categorias.descripcion'),
                   controller: _descripcion,
                   denso: true,
                 ),
@@ -173,7 +174,9 @@ class _CategoriaEditarPageState extends State<CategoriaEditarPage> {
                           ),
                         )
                       : Text(
-                          _esNueva ? 'Crear categoría' : 'Guardar cambios',
+                          _esNueva
+                              ? tr('categorias.crear')
+                              : tr('config.guardar'),
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -192,9 +195,9 @@ class _CategoriaEditarPageState extends State<CategoriaEditarPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(
+                  child: Text(
+                    tr('comun.cancelar'),
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,

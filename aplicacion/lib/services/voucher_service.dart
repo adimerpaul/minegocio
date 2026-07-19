@@ -14,6 +14,7 @@ import '../config/formato.dart';
 import '../models/compra.dart';
 import '../models/empresa.dart';
 import '../models/venta.dart';
+import 'idioma_service.dart';
 
 /// Genera e imprime el voucher de una venta o de una compra (ticket de
 /// 80 mm) con los datos de la empresa. Usa el diálogo de impresión del
@@ -62,17 +63,17 @@ class VoucherService {
   }) {
     return _imprimirTicket(
       empresa: empresa,
-      etiquetaCodigo: 'Recibo',
+      etiquetaCodigo: tr('voucher.recibo'),
       codigo: venta.codigo,
       fecha: venta.fecha,
-      etiquetaTercero: 'Cliente',
-      tercero: venta.cliente ?? 'Venta en mostrador',
+      etiquetaTercero: tr('voucher.cliente'),
+      tercero: venta.cliente ?? tr('voucher.venta_mostrador'),
       anulada: venta.anulada,
       items: venta.items
           .map((i) => (i.nombre, i.precio, i.cantidad, i.subtotal))
           .toList(),
       total: venta.total,
-      despedida: '¡Gracias por su compra!',
+      despedida: tr('voucher.gracias'),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../config/paleta.dart';
+import '../../services/idioma_service.dart';
 import '../widgets/campo_texto.dart';
 
 /// Definición visual de un módulo de gestión (mockup "Módulo de gestión"):
@@ -31,83 +32,32 @@ class ListaPage extends StatelessWidget {
 
   const ListaPage({super.key, required this.modulo});
 
-  // Productos, categorías y ventas tienen página propia con datos reales
-  // (productos_page.dart, categorias_page.dart, ventas_page.dart).
-  static const Map<String, _DefModulo> _defs = {
-    'clientes': _DefModulo(
-      stat1: 'Total clientes',
-      stat2: 'Compras del mes',
-      buscador: 'Buscar por nombre o teléfono…',
-      etiquetaNuevo: 'Nuevo cliente',
-      campos: [
-        ('Nombre completo', 'Nombre del cliente'),
-        ('CI / NIT', '1234567'),
-        ('Teléfono', '+591 …'),
-        ('Correo', 'cliente@gmail.com'),
-      ],
-      vacio: 'Todavía no registraste clientes.',
-    ),
-    'proveedores': _DefModulo(
-      stat1: 'Proveedores',
-      stat2: 'Por pagar',
-      buscador: 'Buscar proveedor…',
-      etiquetaNuevo: 'Nuevo proveedor',
-      campos: [
-        ('Razón social', 'Nombre del proveedor'),
-        ('Persona de contacto', 'Nombre'),
-        ('Teléfono', '+591 …'),
-        ('Rubro', 'Ej. Abarrotes'),
-      ],
-      vacio: 'Todavía no registraste proveedores.',
-    ),
-    'compras': _DefModulo(
-      stat1: 'Compras del mes',
-      stat2: 'Órdenes pendientes',
-      buscador: 'Buscar por número o proveedor…',
-      etiquetaNuevo: 'Nueva compra',
-      campos: [
-        ('Proveedor', 'Seleccionar proveedor'),
-        ('Fecha', '17/07/2026'),
-        ('Producto', 'Buscar producto'),
-        ('Cantidad', '0'),
-      ],
-      vacio: 'Aquí verás tus órdenes de compra.',
-    ),
-    'inventario': _DefModulo(
-      stat1: 'Unidades en stock',
-      stat2: 'Stock crítico',
-      buscador: 'Buscar por producto…',
-      etiquetaNuevo: 'Registrar movimiento',
-      campos: [
-        ('Producto', 'Buscar producto'),
-        ('Tipo', 'Entrada / Salida / Ajuste'),
-        ('Cantidad', '0'),
-        ('Motivo', 'Ej. reposición, merma'),
-      ],
-      vacio: 'Los movimientos de inventario aparecerán aquí.',
-    ),
-    'pedidos': _DefModulo(
-      stat1: 'Pendientes',
-      stat2: 'Entregados este mes',
-      buscador: 'Buscar por número o cliente…',
-      etiquetaNuevo: 'Registrar pedido',
-      campos: [
-        ('Cliente', 'Nombre del cliente'),
-        ('Teléfono', '+591 …'),
-        ('Dirección de entrega', 'Calle y número'),
-      ],
-      vacio: 'Los pedidos de tu tienda en línea aparecerán aquí.',
-    ),
-  };
+  // Los demás módulos (clientes, proveedores, compras, inventario, etc.)
+  // ya tienen página propia con datos reales; aquí solo queda "pedidos"
+  // hasta que se conecte con el backend.
+  Map<String, _DefModulo> get _defs => {
+        'pedidos': _DefModulo(
+          stat1: tr('pedidos.pendientes'),
+          stat2: tr('pedidos.entregados'),
+          buscador: tr('ventas.buscar'),
+          etiquetaNuevo: tr('pedidos.registrar'),
+          campos: [
+            (tr('venta.cliente'), tr('clientes.nombre')),
+            (tr('registro.telefono'), tr('registro.telefono_hint')),
+            (tr('pedidos.direccion'), tr('pedidos.direccion_hint')),
+          ],
+          vacio: tr('pedidos.vacio'),
+        ),
+      };
 
   @override
   Widget build(BuildContext context) {
     final def = _defs[modulo];
     if (def == null) {
-      return const Center(
+      return Center(
         child: Text(
-          'Módulo en construcción.',
-          style: TextStyle(color: Paleta.textoSuave),
+          tr('comun.en_construccion'),
+          style: const TextStyle(color: Paleta.textoSuave),
         ),
       );
     }
@@ -270,9 +220,9 @@ class ListaPage extends StatelessWidget {
                         ),
                       ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'Cancelar',
-                        style: TextStyle(
+                      child: Text(
+                        tr('comun.cancelar'),
+                        style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600,
                           color: Paleta.textoMedio,
@@ -294,16 +244,14 @@ class ListaPage extends StatelessWidget {
                         final messenger = ScaffoldMessenger.of(context);
                         Navigator.pop(context);
                         messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Este módulo se conectará al servidor en la siguiente etapa.',
-                            ),
+                          SnackBar(
+                            content: Text(tr('comun.proxima_etapa')),
                           ),
                         );
                       },
-                      child: const Text(
-                        'Guardar',
-                        style: TextStyle(
+                      child: Text(
+                        tr('comun.guardar'),
+                        style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600,
                           color: Paleta.blanco,

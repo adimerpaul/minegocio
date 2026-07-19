@@ -8,6 +8,7 @@ import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
 import '../../services/cliente_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/venta_service.dart';
 import '../../services/voucher_service.dart';
 import '../widgets/campo_texto.dart';
@@ -123,7 +124,7 @@ class _VentaPageState extends State<VentaPage> {
     final messenger = ScaffoldMessenger.of(context);
     if (producto == null) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Ningún producto tiene el código "$codigo".')),
+        SnackBar(content: Text(trp('venta.codigo_no_encontrado', {'codigo': codigo}))),
       );
       return;
     }
@@ -132,7 +133,10 @@ class _VentaPageState extends State<VentaPage> {
     messenger.showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 2),
-        content: Text('Agregado: ${producto.nombre} (x${_orden[producto.id]})'),
+        content: Text(trp('venta.agregado', {
+          'nombre': producto.nombre,
+          'cantidad': '${_orden[producto.id]}',
+        })),
       ),
     );
   }
@@ -219,7 +223,7 @@ class _VentaPageState extends State<VentaPage> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Venta ${venta.codigo} registrada',
+                  trp('venta.registrada', {'codigo': venta.codigo}),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 19,
@@ -229,7 +233,7 @@ class _VentaPageState extends State<VentaPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${formatoMoneda(venta.total, simbolo: _simbolo)} · el stock se actualizó',
+                  '${formatoMoneda(venta.total, simbolo: _simbolo)} · ${tr('venta.stock_actualizado')}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 13.5,
@@ -251,9 +255,9 @@ class _VentaPageState extends State<VentaPage> {
                       venta: venta,
                     ),
                     icon: const Icon(Icons.print, color: Paleta.blanco),
-                    label: const Text(
-                      'Imprimir voucher',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.imprimir'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Paleta.blanco,
@@ -274,9 +278,9 @@ class _VentaPageState extends State<VentaPage> {
                       venta: venta,
                     ),
                     icon: const Icon(Icons.share, color: Paleta.primario),
-                    label: const Text(
-                      'Compartir por WhatsApp',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.compartir_whatsapp'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Paleta.primario,
@@ -294,9 +298,9 @@ class _VentaPageState extends State<VentaPage> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(sheetContext),
-                  child: const Text(
-                    'Nueva venta',
-                    style: TextStyle(
+                  child: Text(
+                    tr('venta.nueva'),
+                    style: const TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,
@@ -330,7 +334,7 @@ class _VentaPageState extends State<VentaPage> {
                 child: TextField(
                   onChanged: (v) => setState(() => _filtro = v),
                   style: const TextStyle(fontSize: 14, color: Paleta.texto),
-                  decoration: decoracionCampo('Nombre del producto o código'),
+                  decoration: decoracionCampo(tr('venta.buscador')),
                 ),
               ),
               const SizedBox(width: 10),
@@ -359,7 +363,7 @@ class _VentaPageState extends State<VentaPage> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
             children: [
-              _chip('Todos', null),
+              _chip(tr('venta.todos'), null),
               for (final c in _catalogo!.categorias) _chip(c.nombre, c.id),
             ],
           ),
@@ -396,9 +400,9 @@ class _VentaPageState extends State<VentaPage> {
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: _cargar,
-            child: const Text(
-              'Reintentar',
-              style: TextStyle(color: Paleta.primario),
+            child: Text(
+              tr('comun.reintentar'),
+              style: const TextStyle(color: Paleta.primario),
             ),
           ),
         ],
@@ -549,9 +553,9 @@ class _VentaPageState extends State<VentaPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 if (_cobrando) ...[
-                  const Text(
-                    'Registrando venta...',
-                    style: TextStyle(
+                  Text(
+                    tr('venta.registrando'),
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Paleta.blanco,
@@ -567,7 +571,7 @@ class _VentaPageState extends State<VentaPage> {
                   ),
                 ] else ...[
                   Text(
-                    'Resumen de la orden ($_cantidadTotal)',
+                    '${tr('venta.resumen')} ($_cantidadTotal)',
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -632,9 +636,9 @@ class _VentaPageState extends State<VentaPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Resumen de la orden',
-                      style: TextStyle(
+                    Text(
+                      tr('venta.resumen'),
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Paleta.texto,
@@ -642,12 +646,12 @@ class _VentaPageState extends State<VentaPage> {
                     ),
                     const SizedBox(height: 14),
                     if (items.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Text(
-                          'Toca los productos para agregarlos a la orden.',
+                          tr('venta.toca_productos'),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
                             color: Paleta.textoSuave,
                           ),
@@ -680,7 +684,7 @@ class _VentaPageState extends State<VentaPage> {
                                             ),
                                           ),
                                           Text(
-                                            '${formatoMoneda(producto.precio, simbolo: _simbolo)} c/u',
+                                            '${formatoMoneda(producto.precio, simbolo: _simbolo)} ${tr('venta.cu')}',
                                             style: const TextStyle(
                                               fontSize: 12.5,
                                               color: Paleta.textoSuave,
@@ -743,9 +747,9 @@ class _VentaPageState extends State<VentaPage> {
                                 color: Paleta.textoMedio,
                               ),
                               const SizedBox(width: 8),
-                              const Text(
-                                'Cliente',
-                                style: TextStyle(
+                              Text(
+                                tr('venta.cliente'),
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Paleta.textoSuave,
                                 ),
@@ -753,7 +757,7 @@ class _VentaPageState extends State<VentaPage> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  _cliente?.etiqueta ?? 'S/N (sin nombre)',
+                                  _cliente?.etiqueta ?? tr('venta.sin_nombre'),
                                   textAlign: TextAlign.right,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -779,9 +783,9 @@ class _VentaPageState extends State<VentaPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Total a cobrar',
-                              style: TextStyle(
+                            Text(
+                              tr('venta.total_cobrar'),
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: Paleta.textoSuave,
                               ),
@@ -810,7 +814,7 @@ class _VentaPageState extends State<VentaPage> {
                           _cobrar();
                         },
                         child: Text(
-                          'Cobrar ${formatoMoneda(_total, simbolo: _simbolo)}',
+                          '${tr('venta.cobrar')} ${formatoMoneda(_total, simbolo: _simbolo)}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -873,9 +877,9 @@ class _VentaPageState extends State<VentaPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Cliente de la venta',
-                        style: TextStyle(
+                      Text(
+                        tr('venta.cliente_titulo'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Paleta.texto,
@@ -894,7 +898,7 @@ class _VentaPageState extends State<VentaPage> {
                                 color: Paleta.texto,
                               ),
                               decoration: decoracionCampo(
-                                'Buscar por nombre, NIT o teléfono',
+                                tr('venta.buscar_cliente'),
                                 denso: true,
                               ),
                             ),
@@ -965,7 +969,7 @@ class _VentaPageState extends State<VentaPage> {
                               ),
                               subtitle: (cliente.telefono?.isNotEmpty ?? false)
                                   ? Text(
-                                      'Cel. ${cliente.telefono}',
+                                      '${tr('comun.cel')} ${cliente.telefono}',
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: Paleta.textoSuave,
@@ -1009,7 +1013,8 @@ class _VentaPageState extends State<VentaPage> {
           builder: (sheetContext, setSheetState) {
             Future<void> guardar() async {
               if (nombre.text.trim().isEmpty) {
-                setSheetState(() => errorSheet = 'El nombre es obligatorio.');
+                setSheetState(
+                    () => errorSheet = tr('clientes.nombre_obligatorio'));
                 return;
               }
               setSheetState(() {
@@ -1047,9 +1052,9 @@ class _VentaPageState extends State<VentaPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Nuevo cliente',
-                        style: TextStyle(
+                      Text(
+                        tr('clientes.nuevo'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Paleta.texto,
@@ -1057,7 +1062,7 @@ class _VentaPageState extends State<VentaPage> {
                       ),
                       const SizedBox(height: 14),
                       CampoTexto(
-                        label: 'Nombre completo',
+                        label: tr('clientes.nombre'),
                         controller: nombre,
                         denso: true,
                       ),
@@ -1067,7 +1072,7 @@ class _VentaPageState extends State<VentaPage> {
                         children: [
                           Expanded(
                             child: CampoTexto(
-                              label: 'NIT / CI',
+                              label: tr('clientes.nit_ci'),
                               controller: nit,
                               keyboardType: TextInputType.number,
                               denso: true,
@@ -1076,7 +1081,7 @@ class _VentaPageState extends State<VentaPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: CampoTexto(
-                              label: 'Teléfono',
+                              label: tr('registro.telefono'),
                               controller: telefono,
                               keyboardType: TextInputType.phone,
                               denso: true,
@@ -1095,7 +1100,9 @@ class _VentaPageState extends State<VentaPage> {
                         ),
                         onPressed: guardando ? null : guardar,
                         child: Text(
-                          guardando ? 'Guardando...' : 'Registrar y usar',
+                          guardando
+                              ? tr('config.guardando')
+                              : tr('venta.registrar_usar'),
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,

@@ -4,6 +4,7 @@ import '../../config/paleta.dart';
 import '../../models/producto.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/idioma_service.dart';
 import '../widgets/campo_texto.dart';
 import 'producto_editar_page.dart';
 
@@ -61,7 +62,7 @@ class _InventarioPageState extends State<InventarioPage> {
     for (final c in _catalogo!.categorias) {
       if (c.id == id) return c.nombre;
     }
-    return 'Sin categoría';
+    return tr('productos.sin_categoria');
   }
 
   /// Devuelve los productos con stock crítico, ordenados del más crítico al menos.
@@ -96,9 +97,9 @@ class _InventarioPageState extends State<InventarioPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -122,7 +123,7 @@ class _InventarioPageState extends State<InventarioPage> {
             children: [
               Expanded(
                 child: _stat(
-                  'Stock crítico',
+                  tr('inicio.stock_critico'),
                   '${criticos.length}',
                   alerta: true,
                 ),
@@ -130,7 +131,7 @@ class _InventarioPageState extends State<InventarioPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _stat(
-                  'Unidades restantes',
+                  tr('inventario.unidades'),
                   '$unidadesCriticas',
                 ),
               ),
@@ -142,19 +143,18 @@ class _InventarioPageState extends State<InventarioPage> {
           child: TextField(
             onChanged: (v) => setState(() => _filtro = v),
             style: const TextStyle(fontSize: 14, color: Paleta.texto),
-            decoration: decoracionCampo('Buscar producto crítico…'),
+            decoration: decoracionCampo(tr('inventario.buscar')),
           ),
         ),
         Expanded(
           child: criticos.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
-                      'No hay productos con stock crítico. '
-                      'Todo el inventario está bien abastecido.',
+                      tr('inventario.vacio'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Paleta.textoSuave,
                         height: 1.5,
@@ -302,7 +302,7 @@ class _InventarioPageState extends State<InventarioPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${producto.stock} unidad${producto.stock == 1 ? '' : 'es'} · mín ${producto.stockMinimo}',
+                      '${producto.stock} ${producto.stock == 1 ? tr('inventario.unidad') : tr('inventario.unidades_min')} · ${tr('productos.min')} ${producto.stockMinimo}',
                       style: const TextStyle(
                         fontSize: 11.5,
                         color: Paleta.textoSuave,
@@ -319,7 +319,9 @@ class _InventarioPageState extends State<InventarioPage> {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  producto.stock == 0 ? 'Agotado' : 'Crítico',
+                  producto.stock == 0
+                      ? tr('inventario.agotado')
+                      : tr('inventario.critico'),
                   style: const TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w700,

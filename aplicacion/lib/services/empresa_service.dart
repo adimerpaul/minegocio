@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/env.dart';
 import '../models/app_user.dart';
+import 'idioma_service.dart';
 import 'local_db.dart';
 
 /// Servicio HTTP de la empresa: registro (pantalla "Registra tu empresa")
@@ -112,6 +113,6 @@ class EmpresaService {
       // Cuerpo no JSON: se usa el mensaje genérico.
     }
 
-    return 'El servidor respondió ${response.statusCode}.';
+    return trp('error.servidor', {'codigo': '${response.statusCode}'});
   }
 }

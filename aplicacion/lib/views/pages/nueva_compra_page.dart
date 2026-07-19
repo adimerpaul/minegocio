@@ -8,6 +8,7 @@ import '../../models/proveedor.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
 import '../../services/compra_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/proveedor_service.dart';
 import '../widgets/campo_texto.dart';
 
@@ -148,7 +149,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
               final nombreLimpio = nombre.text.trim();
               if (nombreLimpio.isEmpty) {
                 setSheetState(
-                  () => errorSheet = 'Escribe un nombre para el gasto.',
+                  () => errorSheet = tr('compras.gasto_nombre_obligatorio'),
                 );
                 return;
               }
@@ -156,7 +157,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
               final costoNum = double.tryParse(costoLimpio);
               if (costoNum == null || costoNum < 0) {
                 setSheetState(
-                  () => errorSheet = 'El costo no es válido.',
+                  () => errorSheet = tr('compras.costo_invalido'),
                 );
                 return;
               }
@@ -184,32 +185,32 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Gasto libre',
-                        style: TextStyle(
+                      Text(
+                        tr('compras.gasto_libre'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Paleta.texto,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'No está en el catálogo; no cambia el stock.',
-                        style: TextStyle(
+                      Text(
+                        tr('compras.gasto_nota'),
+                        style: const TextStyle(
                           fontSize: 13,
                           color: Paleta.textoSuave,
                         ),
                       ),
                       const SizedBox(height: 14),
                       CampoTexto(
-                        label: 'Nombre del gasto',
+                        label: tr('compras.gasto_nombre'),
                         controller: nombre,
-                        hint: 'Ej. aceite, gas, bolsas…',
+                        hint: tr('compras.gasto_hint'),
                         denso: true,
                       ),
                       const SizedBox(height: 12),
                       CampoTexto(
-                        label: 'Costo unitario',
+                        label: tr('compras.costo_unitario'),
                         controller: costo,
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
@@ -225,9 +226,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                           ),
                         ),
                         onPressed: guardar,
-                        child: const Text(
-                          'Agregar a la compra',
-                          style: TextStyle(
+                        child: Text(
+                          tr('compras.agregar_a_compra'),
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: Paleta.blanco,
@@ -272,7 +273,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
         final producto =
             _catalogo!.productos.firstWhere((p) => p.id == productoId);
         messenger.showSnackBar(
-          SnackBar(content: Text('Costo inválido en ${producto.nombre}.')),
+          SnackBar(
+              content: Text(trp(
+                  'compras.costo_invalido_en', {'nombre': producto.nombre}))),
         );
         return;
       }
@@ -280,7 +283,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
     for (final libre in _libres) {
       if (_costoLibre(libre) == null) {
         messenger.showSnackBar(
-          SnackBar(content: Text('Costo inválido en ${libre.nombre}.')),
+          SnackBar(
+              content: Text(
+                  trp('compras.costo_invalido_en', {'nombre': libre.nombre}))),
         );
         return;
       }
@@ -330,9 +335,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
         backgroundColor: Paleta.fondo,
         surfaceTintColor: Colors.transparent,
         foregroundColor: Paleta.texto,
-        title: const Text(
-          'Nueva compra',
-          style: TextStyle(
+        title: Text(
+          tr('compras.nueva'),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Paleta.texto,
@@ -357,9 +362,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -395,9 +400,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                 ),
                 onPressed: _abrirBuscadorProductos,
                 icon: const Icon(Icons.add, size: 19, color: Paleta.primario),
-                label: const Text(
-                  'Agregar producto',
-                  style: TextStyle(
+                label: Text(
+                  tr('compras.agregar_producto'),
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Paleta.primario,
@@ -409,12 +414,12 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
         ),
         Expanded(
           child: _sinItems
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'Agrega productos del catálogo (aumentan el stock)\n'
-                    'o gastos libres como aceite, gas o bolsas.',
+                    tr('compras.vacio_nueva'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13.5, color: Paleta.textoSuave),
+                    style: const TextStyle(
+                        fontSize: 13.5, color: Paleta.textoSuave),
                   ),
                 )
               : ListView.separated(
@@ -452,14 +457,14 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                 color: Paleta.textoMedio,
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Proveedor',
-                style: TextStyle(fontSize: 14, color: Paleta.textoSuave),
+              Text(
+                tr('compras.proveedor'),
+                style: const TextStyle(fontSize: 14, color: Paleta.textoSuave),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  _proveedor?.etiqueta ?? 'S/N (sin proveedor)',
+                  _proveedor?.etiqueta ?? tr('compras.sin_proveedor'),
                   textAlign: TextAlign.right,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -607,9 +612,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                         color: Paleta.tinte,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
-                        'Gasto',
-                        style: TextStyle(
+                      child: Text(
+                        tr('compras.gasto'),
+                        style: const TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
                           color: Paleta.primarioOscuro,
@@ -703,7 +708,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _guardando ? 'Registrando compra...' : 'Registrar compra',
+                  _guardando
+                      ? tr('compras.registrando')
+                      : tr('compras.registrar'),
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -769,9 +776,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Agregar producto',
-                        style: TextStyle(
+                      Text(
+                        tr('compras.agregar_producto'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Paleta.texto,
@@ -787,7 +794,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                           color: Paleta.texto,
                         ),
                         decoration: decoracionCampo(
-                          'Nombre del producto o código',
+                          tr('venta.buscador'),
                           denso: true,
                         ),
                       ),
@@ -806,17 +813,17 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                           size: 20,
                           color: Paleta.primario,
                         ),
-                        title: const Text(
-                          'Gasto libre (aceite, gas, bolsas…)',
-                          style: TextStyle(
+                        title: Text(
+                          tr('compras.gasto_libre_item'),
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Paleta.primario,
                           ),
                         ),
-                        subtitle: const Text(
-                          'No está en el catálogo; no cambia el stock',
-                          style: TextStyle(
+                        subtitle: Text(
+                          tr('compras.gasto_nota'),
+                          style: const TextStyle(
                             fontSize: 12,
                             color: Paleta.textoSuave,
                           ),
@@ -855,7 +862,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                                 ),
                               ),
                               subtitle: Text(
-                                'Stock: ${producto.stock} · vende a '
+                                '${tr('productos.stock_label')}: ${producto.stock} · ${tr('compras.vende_a')} '
                                 '${formatoMoneda(producto.precio, simbolo: _simbolo)}',
                                 style: const TextStyle(
                                   fontSize: 12,
@@ -920,9 +927,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Proveedor de la compra',
-                        style: TextStyle(
+                      Text(
+                        tr('compras.proveedor_titulo'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Paleta.texto,
@@ -941,7 +948,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                                 color: Paleta.texto,
                               ),
                               decoration: decoracionCampo(
-                                'Buscar por nombre, NIT o teléfono',
+                                tr('venta.buscar_cliente'),
                                 denso: true,
                               ),
                             ),
@@ -1013,7 +1020,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                               subtitle: (proveedor.telefono?.isNotEmpty ??
                                       false)
                                   ? Text(
-                                      'Cel. ${proveedor.telefono}',
+                                      '${tr('comun.cel')} ${proveedor.telefono}',
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: Paleta.textoSuave,
@@ -1060,7 +1067,8 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
           builder: (sheetContext, setSheetState) {
             Future<void> guardar() async {
               if (nombre.text.trim().isEmpty) {
-                setSheetState(() => errorSheet = 'El nombre es obligatorio.');
+                setSheetState(
+                    () => errorSheet = tr('clientes.nombre_obligatorio'));
                 return;
               }
               setSheetState(() {
@@ -1098,9 +1106,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Nuevo proveedor',
-                        style: TextStyle(
+                      Text(
+                        tr('proveedores.nuevo'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Paleta.texto,
@@ -1108,7 +1116,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                       ),
                       const SizedBox(height: 14),
                       CampoTexto(
-                        label: 'Nombre o razón social',
+                        label: tr('proveedores.razon_social'),
                         controller: nombre,
                         denso: true,
                       ),
@@ -1118,7 +1126,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                         children: [
                           Expanded(
                             child: CampoTexto(
-                              label: 'NIT',
+                              label: tr('registro.nit'),
                               controller: nit,
                               keyboardType: TextInputType.number,
                               denso: true,
@@ -1127,7 +1135,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: CampoTexto(
-                              label: 'Teléfono',
+                              label: tr('registro.telefono'),
                               controller: telefono,
                               keyboardType: TextInputType.phone,
                               denso: true,
@@ -1146,7 +1154,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                         ),
                         onPressed: guardando ? null : guardar,
                         child: Text(
-                          guardando ? 'Guardando...' : 'Registrar y usar',
+                          guardando
+                              ? tr('config.guardando')
+                              : tr('venta.registrar_usar'),
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,

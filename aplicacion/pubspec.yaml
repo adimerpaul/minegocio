@@ -97,6 +97,7 @@ flutter:
     - assets/images/logo_default.webp
     - assets/images/icono_app.png
     - assets/images/logo_splash.png
+    - assets/i18n/es.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

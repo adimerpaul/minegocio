@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/env.dart';
 import '../models/venta.dart';
+import 'idioma_service.dart';
 
 /// Servicio de ventas: registrar desde el punto de venta y listar.
 class VentaService {
@@ -22,8 +23,9 @@ class VentaService {
     ).timeout(const Duration(seconds: 15));
 
     if (response.statusCode != 200) {
-      throw Exception('No se pudieron cargar las ventas '
-          '(${response.statusCode}).');
+      throw Exception(
+        trp('error.cargar_ventas', {'codigo': '${response.statusCode}'}),
+      );
     }
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -102,6 +104,6 @@ class VentaService {
       // Cuerpo no JSON: mensaje genérico.
     }
 
-    return 'El servidor respondió ${response.statusCode}.';
+    return trp('error.servidor', {'codigo': '${response.statusCode}'});
   }
 }

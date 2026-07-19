@@ -7,6 +7,7 @@ import '../../config/paleta.dart';
 import '../../models/categoria.dart';
 import '../../models/producto.dart';
 import '../../services/auth_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/producto_service.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/selector_imagen.dart';
@@ -130,7 +131,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
       backgroundColor: Paleta.fondo,
       appBar: AppBar(
         title: Text(
-          'Editar ${widget.producto.codigo}',
+          '${tr('productos.editar')} ${widget.producto.codigo}',
           style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -168,13 +169,13 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                   ),
                   const SizedBox(height: 14),
                 ],
-                _etiqueta('Nombre'),
+                _etiqueta(tr('productos.nombre')),
                 TextFormField(
                   controller: _nombre,
                   style: const TextStyle(fontSize: 15, color: Paleta.texto),
-                  decoration: decoracionCampo('Nombre del producto'),
+                  decoration: decoracionCampo(tr('productos.nombre_hint')),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'El nombre es obligatorio'
+                      ? tr('clientes.nombre_obligatorio')
                       : null,
                 ),
                 const SizedBox(height: 14),
@@ -185,7 +186,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _etiqueta('Precio ($simbolo)'),
+                          _etiqueta('${tr('productos.precio')} ($simbolo)'),
                           TextFormField(
                             controller: _precio,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -199,7 +200,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                             validator: (v) {
                               final n = _numero(v);
                               return (n == null || n < 0)
-                                  ? 'Precio inválido'
+                                  ? tr('productos.precio_invalido')
                                   : null;
                             },
                           ),
@@ -211,7 +212,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _etiqueta('Stock'),
+                          _etiqueta(tr('productos.stock_label')),
                           TextFormField(
                             controller: _stock,
                             keyboardType: TextInputType.number,
@@ -223,7 +224,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                             validator: (v) {
                               final n = int.tryParse((v ?? '').trim());
                               return (n == null || n < 0)
-                                  ? 'Stock inválido'
+                                  ? tr('productos.stock_invalido')
                                   : null;
                             },
                           ),
@@ -233,7 +234,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                _etiqueta('Stock mínimo (alerta de stock bajo)'),
+                _etiqueta(tr('productos.stock_minimo')),
                 TextFormField(
                   controller: _stockMinimo,
                   keyboardType: TextInputType.number,
@@ -241,11 +242,13 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                   decoration: decoracionCampo('5'),
                   validator: (v) {
                     final n = int.tryParse((v ?? '').trim());
-                    return (n == null || n < 0) ? 'Valor inválido' : null;
+                    return (n == null || n < 0)
+                        ? tr('productos.valor_invalido')
+                        : null;
                   },
                 ),
                 const SizedBox(height: 14),
-                _etiqueta('Código QR / de barras'),
+                _etiqueta(tr('productos.codigo_qr')),
                 Row(
                   children: [
                     Expanded(
@@ -256,7 +259,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                           color: Paleta.texto,
                         ),
                         decoration: decoracionCampo(
-                          'Escanea o escribe el código',
+                          tr('productos.codigo_hint'),
                         ),
                       ),
                     ),
@@ -280,13 +283,13 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                _etiqueta('Categoría'),
+                _etiqueta(tr('productos.categoria')),
                 DropdownButtonFormField<int?>(
                   initialValue: _categoriaId,
                   items: [
-                    const DropdownMenuItem<int?>(
+                    DropdownMenuItem<int?>(
                       value: null,
-                      child: Text('Sin categoría'),
+                      child: Text(tr('productos.sin_categoria')),
                     ),
                     ...widget.categorias.map(
                       (c) => DropdownMenuItem<int?>(
@@ -321,9 +324,9 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Guardar cambios',
-                          style: TextStyle(
+                      : Text(
+                          tr('config.guardar'),
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
@@ -341,9 +344,9 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(
+                  child: Text(
+                    tr('comun.cancelar'),
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,

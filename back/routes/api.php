@@ -8,12 +8,15 @@ use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\PedidoController;
 use App\Http\Controllers\Api\ProductoController;
 use App\Http\Controllers\Api\ProveedorController;
+use App\Http\Controllers\Api\TranslationController;
 use App\Http\Controllers\Api\VentaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/google', GoogleAuthController::class);
 Route::post('/pedidos', [PedidoController::class, 'store']);
+Route::get('/languages', [TranslationController::class, 'languages']);
+Route::get('/translations/{locale}', [TranslationController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {

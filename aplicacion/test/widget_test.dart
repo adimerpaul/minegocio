@@ -7,8 +7,10 @@ void main() {
   testWidgets('muestra las acciones del login', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: LoginView()));
 
-    expect(find.text('Iniciar sesión con Gmail'), findsOneWidget);
-    expect(find.text('Mi Negocio'), findsOneWidget);
+    // En pruebas IdiomaService no carga el JSON empaquetado, por lo que
+    // el widget muestra las claves de traducción en lugar del texto final.
+    expect(find.text('login.con_gmail'), findsOneWidget);
+    expect(find.text('app.nombre'), findsOneWidget);
     // La tienda en línea se quitó del login por ahora.
     expect(find.text('Ver la tienda en línea'), findsNothing);
   });

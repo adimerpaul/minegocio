@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../config/env.dart';
 import '../models/producto.dart';
 import 'catalogo_service.dart';
+import 'idioma_service.dart';
 
 /// Servicio de gestión de productos (actualización contra la API).
 class ProductoService {
@@ -70,7 +71,7 @@ class ProductoService {
       ..headers.addAll({
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
-      ])
+      })
       ..fields.addAll(datos);
 
     if (imagen != null) {
@@ -103,6 +104,6 @@ class ProductoService {
     } catch (_) {
       // cuerpo no JSON: se usa el mensaje genérico
     }
-    return 'No se pudo guardar el producto (${response.statusCode}).';
+    return trp('error.guardar_producto', {'codigo': '${response.statusCode}'});
   }
 }

@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import '../../config/env.dart';
 import '../../config/paleta.dart';
 import '../../services/auth_service.dart';
+import '../../services/idioma_service.dart';
 import '../../viewmodels/empresa_viewmodel.dart';
 import '../widgets/campo_texto.dart';
+import '../widgets/selector_idioma.dart';
 import '../widgets/selector_imagen.dart';
 
 /// Configuración de empresa: edita los datos reales contra el backend
@@ -36,10 +38,10 @@ class _ConfigPageState extends State<ConfigPage> {
   late String _moneda;
   File? _logo; // logo nuevo elegido, aún sin guardar
 
-  static const _monedas = {
-    'BOB': 'BOB — Boliviano (Bs)',
-    'USD': 'USD — Dólar (\$us)',
-    'PEN': 'PEN — Sol (S/.)',
+  final _monedas = {
+    'BOB': tr('moneda.BOB'),
+    'USD': tr('moneda.USD'),
+    'PEN': tr('moneda.PEN'),
   };
 
   @override
@@ -92,7 +94,7 @@ class _ConfigPageState extends State<ConfigPage> {
       widget.onSessionActualizada(widget.session.copyWith(user: user));
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Cambios guardados.')));
+      ).showSnackBar(SnackBar(content: Text(tr('config.guardado'))));
     }
   }
 
@@ -169,9 +171,9 @@ class _ConfigPageState extends State<ConfigPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Datos de la empresa',
-                    style: TextStyle(
+                  Text(
+                    tr('config.datos'),
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: Paleta.texto,
@@ -181,7 +183,7 @@ class _ConfigPageState extends State<ConfigPage> {
                   Center(child: _logoWidget()),
                   const SizedBox(height: 14),
                   CampoTexto(
-                    label: 'Nombre comercial',
+                    label: tr('registro.nombre_comercial'),
                     controller: _nombre,
                     denso: true,
                   ),
@@ -191,7 +193,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     children: [
                       Expanded(
                         child: CampoTexto(
-                          label: 'NIT',
+                          label: tr('registro.nit'),
                           controller: _nit,
                           denso: true,
                         ),
@@ -199,7 +201,7 @@ class _ConfigPageState extends State<ConfigPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: CampoTexto(
-                          label: 'Teléfono',
+                          label: tr('registro.telefono'),
                           controller: _telefono,
                           denso: true,
                         ),
@@ -208,16 +210,19 @@ class _ConfigPageState extends State<ConfigPage> {
                   ),
                   const SizedBox(height: 10),
                   CampoTexto(
-                    label: 'Dirección',
+                    label: tr('registro.direccion'),
                     controller: _direccion,
                     denso: true,
                   ),
                   const SizedBox(height: 10),
-                  CampoTexto(label: 'Correo', controller: _correo, denso: true),
+                  CampoTexto(
+                      label: tr('config.correo'),
+                      controller: _correo,
+                      denso: true),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Moneda',
-                    style: TextStyle(
+                  Text(
+                    tr('config.moneda'),
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,
@@ -251,7 +256,9 @@ class _ConfigPageState extends State<ConfigPage> {
                     ),
                     onPressed: _viewModel.loading ? null : _guardar,
                     child: Text(
-                      _viewModel.loading ? 'Guardando...' : 'Guardar cambios',
+                      _viewModel.loading
+                          ? tr('config.guardando')
+                          : tr('config.guardar'),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -276,6 +283,43 @@ class _ConfigPageState extends State<ConfigPage> {
           },
         ),
         const SizedBox(height: 16),
+        // Material (no Container) para que el ListTile pinte su fondo y el
+        // efecto de toque; con un DecoratedBox encima Flutter lo reclama.
+        Material(
+          color: Paleta.blanco,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Paleta.bordeSuave),
+          ),
+          child: ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            leading: const Icon(Icons.language, color: Paleta.primario),
+            title: Text(
+              tr('comun.idioma'),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Paleta.texto,
+              ),
+            ),
+            subtitle: Text(
+              tr('config.idioma_nota'),
+              style: const TextStyle(fontSize: 12.5, color: Paleta.textoSuave),
+            ),
+            trailing: Text(
+              IdiomaService.instance.codigo.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Paleta.primarioOscuro,
+              ),
+            ),
+            onTap: () => mostrarSelectorIdioma(context),
+          ),
+        ),
+        const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -286,9 +330,9 @@ class _ConfigPageState extends State<ConfigPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Tienda en línea',
-                style: TextStyle(
+              Text(
+                tr('config.tienda'),
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: Paleta.texto,
@@ -297,9 +341,8 @@ class _ConfigPageState extends State<ConfigPage> {
               const SizedBox(height: 4),
               Text(
                 widget.session.user.empresa?.slugTienda != null
-                    ? 'Tu tienda se genera automáticamente desde el nombre de tu empresa.'
-                    : 'Guarda el nombre comercial para activar tu catálogo público. '
-                        'Tus clientes podrán ver tus productos y hacer pedidos.',
+                    ? tr('config.tienda_activa')
+                    : tr('config.tienda_inactiva'),
                 style: const TextStyle(
                   fontSize: 13,
                   color: Paleta.textoSuave,

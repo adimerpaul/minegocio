@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../config/paleta.dart';
 import '../services/auth_service.dart';
+import '../services/idioma_service.dart';
 import '../viewmodels/empresa_viewmodel.dart';
 import 'home_view.dart';
 import 'widgets/campo_texto.dart';
@@ -27,10 +28,10 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
   final _correo = TextEditingController();
   String _moneda = 'BOB';
 
-  static const _monedas = {
-    'BOB': 'BOB — Boliviano (Bs)',
-    'USD': 'USD — Dólar (\$us)',
-    'PEN': 'PEN — Sol (S/.)',
+  final _monedas = {
+    'BOB': tr('moneda.BOB'),
+    'USD': tr('moneda.USD'),
+    'PEN': tr('moneda.PEN'),
   };
 
   @override
@@ -45,7 +46,7 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
   Future<void> _crearEmpresa() async {
     if (_nombre.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El nombre comercial es obligatorio.')),
+        SnackBar(content: Text(tr('registro.nombre_obligatorio'))),
       );
       return;
     }
@@ -81,9 +82,9 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'CUENTA VERIFICADA CON GMAIL',
-                    style: TextStyle(
+                  Text(
+                    tr('registro.cuenta_verificada'),
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Paleta.primario,
@@ -91,9 +92,9 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Registra tu empresa',
-                    style: TextStyle(
+                  Text(
+                    tr('registro.titulo'),
+                    style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.5,
@@ -101,10 +102,9 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Tu cuenta no está vinculada a ninguna empresa. '
-                    'Completa estos datos para comenzar.',
-                    style: TextStyle(
+                  Text(
+                    tr('registro.subtitulo'),
+                    style: const TextStyle(
                       fontSize: 14,
                       color: Paleta.textoSuave,
                       height: 1.5,
@@ -112,8 +112,8 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                   ),
                   const SizedBox(height: 26),
                   CampoTexto(
-                    label: 'Nombre comercial',
-                    hint: 'Ej. Comercial Andina',
+                    label: tr('registro.nombre_comercial'),
+                    hint: tr('registro.nombre_hint'),
                     controller: _nombre,
                   ),
                   const SizedBox(height: 16),
@@ -122,8 +122,8 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                     children: [
                       Expanded(
                         child: CampoTexto(
-                          label: 'NIT',
-                          hint: '1023456019',
+                          label: tr('registro.nit'),
+                          hint: tr('registro.nit_hint'),
                           controller: _nit,
                           keyboardType: TextInputType.number,
                         ),
@@ -131,8 +131,8 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: CampoTexto(
-                          label: 'Teléfono',
-                          hint: '+591 700 12345',
+                          label: tr('registro.telefono'),
+                          hint: tr('registro.telefono_hint'),
                           controller: _telefono,
                           keyboardType: TextInputType.phone,
                         ),
@@ -141,21 +141,21 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                   ),
                   const SizedBox(height: 16),
                   CampoTexto(
-                    label: 'Dirección',
-                    hint: 'Av. América #245, Cochabamba',
+                    label: tr('registro.direccion'),
+                    hint: tr('registro.direccion_hint'),
                     controller: _direccion,
                   ),
                   const SizedBox(height: 16),
                   CampoTexto(
-                    label: 'Correo de la empresa',
-                    hint: 'ventas@empresa.bo',
+                    label: tr('registro.correo'),
+                    hint: tr('registro.correo_hint'),
                     controller: _correo,
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Moneda principal',
-                    style: TextStyle(
+                  Text(
+                    tr('registro.moneda'),
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,
@@ -175,9 +175,9 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                     onChanged: (v) => setState(() => _moneda = v ?? 'BOB'),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Logo',
-                    style: TextStyle(
+                  Text(
+                    tr('registro.logo'),
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,
@@ -194,19 +194,18 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                         width: 1.5,
                       ),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
-                        Image(
+                        const Image(
                           image: AssetImage('assets/images/logo_default.webp'),
                           height: 120,
                           fit: BoxFit.contain,
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(
-                          'Este será el logo por defecto de tu empresa. '
-                          'Puedes cambiarlo más adelante en Configuración.',
+                          tr('registro.logo_nota'),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 13,
                             color: Paleta.textoSuave,
                           ),
@@ -226,8 +225,8 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                     onPressed: _viewModel.loading ? null : _crearEmpresa,
                     child: Text(
                       _viewModel.loading
-                          ? 'Creando empresa...'
-                          : 'Crear empresa y entrar',
+                          ? tr('registro.creando')
+                          : tr('registro.crear'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

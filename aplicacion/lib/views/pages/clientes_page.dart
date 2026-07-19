@@ -4,6 +4,7 @@ import '../../config/paleta.dart';
 import '../../models/cliente.dart';
 import '../../services/auth_service.dart';
 import '../../services/cliente_service.dart';
+import '../../services/idioma_service.dart';
 import '../widgets/campo_texto.dart';
 
 /// Gestión de clientes: buscador, listado (el S/N primero), alta, edición
@@ -67,9 +68,9 @@ class _ClientesPageState extends State<ClientesPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -92,7 +93,7 @@ class _ClientesPageState extends State<ClientesPage> {
                 child: TextField(
                   onChanged: (v) => setState(() => _filtro = v),
                   style: const TextStyle(fontSize: 14, color: Paleta.texto),
-                  decoration: decoracionCampo('Nombre, NIT o teléfono'),
+                  decoration: decoracionCampo(tr('clientes.buscar')),
                 ),
               ),
               const SizedBox(width: 10),
@@ -134,8 +135,10 @@ class _ClientesPageState extends State<ClientesPage> {
 
   Widget _tarjetaCliente(Cliente cliente) {
     final detalle = [
-      if (cliente.telefono?.isNotEmpty ?? false) 'Cel. ${cliente.telefono}',
-      if (cliente.nit?.isNotEmpty ?? false) 'NIT ${cliente.nit}',
+      if (cliente.telefono?.isNotEmpty ?? false)
+        '${tr('comun.cel')} ${cliente.telefono}',
+      if (cliente.nit?.isNotEmpty ?? false)
+        '${tr('registro.nit')} ${cliente.nit}',
     ].join(' · ');
 
     return Material(
@@ -145,12 +148,7 @@ class _ClientesPageState extends State<ClientesPage> {
         borderRadius: BorderRadius.circular(14),
         onTap: cliente.esDefault
             ? () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'S/N es el cliente de las ventas sin nombre; '
-                      'no se puede editar.',
-                    ),
-                  ),
+                  SnackBar(content: Text(tr('clientes.default_no_editable'))),
                 )
             : () => _abrirFormulario(cliente),
         child: Container(
@@ -209,9 +207,9 @@ class _ClientesPageState extends State<ClientesPage> {
                     color: Paleta.tinte,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text(
-                    'Por defecto',
-                    style: TextStyle(
+                  child: Text(
+                    tr('clientes.por_defecto'),
+                    style: const TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
                       color: Paleta.primarioOscuro,
@@ -264,7 +262,8 @@ class _ClientesPageState extends State<ClientesPage> {
           builder: (sheetContext, setSheetState) {
             Future<void> guardar() async {
               if (nombre.text.trim().isEmpty) {
-                setSheetState(() => errorSheet = 'El nombre es obligatorio.');
+                setSheetState(
+                    () => errorSheet = tr('clientes.nombre_obligatorio'));
                 return;
               }
               setSheetState(() {
@@ -307,20 +306,20 @@ class _ClientesPageState extends State<ClientesPage> {
               final confirmado = await showDialog<bool>(
                 context: sheetContext,
                 builder: (dialogContext) => AlertDialog(
-                  title: const Text('Borrar cliente'),
-                  content: Text('¿Borrar a ${cliente!.nombre}? Sus ventas '
-                      'registradas no se pierden.'),
+                  title: Text(tr('clientes.borrar')),
+                  content: Text(trp(
+                      'clientes.borrar_confirmar', {'nombre': cliente!.nombre})),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext, false),
-                      child: const Text('Cancelar'),
+                      child: Text(tr('comun.cancelar')),
                     ),
                     FilledButton(
                       style: FilledButton.styleFrom(
                         backgroundColor: Paleta.alertaTexto,
                       ),
                       onPressed: () => Navigator.pop(dialogContext, true),
-                      child: const Text('Borrar'),
+                      child: Text(tr('comun.borrar')),
                     ),
                   ],
                 ),
@@ -360,7 +359,9 @@ class _ClientesPageState extends State<ClientesPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        cliente == null ? 'Nuevo cliente' : 'Editar cliente',
+                        cliente == null
+                            ? tr('clientes.nuevo')
+                            : tr('clientes.editar'),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -369,7 +370,7 @@ class _ClientesPageState extends State<ClientesPage> {
                       ),
                       const SizedBox(height: 14),
                       CampoTexto(
-                        label: 'Nombre completo',
+                        label: tr('clientes.nombre'),
                         controller: nombre,
                         denso: true,
                       ),
@@ -379,7 +380,7 @@ class _ClientesPageState extends State<ClientesPage> {
                         children: [
                           Expanded(
                             child: CampoTexto(
-                              label: 'NIT / CI',
+                              label: tr('clientes.nit_ci'),
                               controller: nit,
                               keyboardType: TextInputType.number,
                               denso: true,
@@ -388,7 +389,7 @@ class _ClientesPageState extends State<ClientesPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: CampoTexto(
-                              label: 'Teléfono',
+                              label: tr('registro.telefono'),
                               controller: telefono,
                               keyboardType: TextInputType.phone,
                               denso: true,
@@ -398,14 +399,14 @@ class _ClientesPageState extends State<ClientesPage> {
                       ),
                       const SizedBox(height: 10),
                       CampoTexto(
-                        label: 'Correo',
+                        label: tr('config.correo'),
                         controller: correo,
                         keyboardType: TextInputType.emailAddress,
                         denso: true,
                       ),
                       const SizedBox(height: 10),
                       CampoTexto(
-                        label: 'Dirección',
+                        label: tr('registro.direccion'),
                         controller: direccion,
                         denso: true,
                       ),
@@ -421,10 +422,10 @@ class _ClientesPageState extends State<ClientesPage> {
                         onPressed: guardando ? null : guardar,
                         child: Text(
                           guardando
-                              ? 'Guardando...'
+                              ? tr('config.guardando')
                               : (cliente == null
-                                  ? 'Registrar cliente'
-                                  : 'Guardar cambios'),
+                                  ? tr('clientes.registrar')
+                                  : tr('config.guardar')),
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -436,9 +437,9 @@ class _ClientesPageState extends State<ClientesPage> {
                         const SizedBox(height: 6),
                         TextButton(
                           onPressed: guardando ? null : borrar,
-                          child: const Text(
-                            'Borrar cliente',
-                            style: TextStyle(
+                          child: Text(
+                            tr('clientes.borrar'),
+                            style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w600,
                               color: Paleta.alertaTexto,

@@ -5,6 +5,7 @@ import '../../config/paleta.dart';
 import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/venta_service.dart';
 import '../../services/voucher_service.dart';
 import '../widgets/campo_texto.dart';
@@ -59,9 +60,9 @@ class _VentasPageState extends State<VentasPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -91,7 +92,7 @@ class _VentasPageState extends State<VentasPage> {
     final ventas = _ventas!
         .where((v) =>
             filtro.isEmpty ||
-            '${v.codigo} ${v.cliente ?? 'venta en mostrador'}'
+            '${v.codigo} ${v.cliente ?? tr('ventas.mostrador')}'
                 .toLowerCase()
                 .contains(filtro))
         .toList();
@@ -104,14 +105,14 @@ class _VentasPageState extends State<VentasPage> {
             children: [
               Expanded(
                 child: _stat(
-                  'Ventas de hoy',
+                  tr('inicio.ventas_hoy'),
                   formatoMoneda(hoy, simbolo: _simbolo),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _stat(
-                  'Ventas del mes',
+                  tr('ventas.mes'),
                   formatoMoneda(mes, simbolo: _simbolo),
                 ),
               ),
@@ -123,7 +124,7 @@ class _VentasPageState extends State<VentasPage> {
           child: TextField(
             onChanged: (v) => setState(() => _filtro = v),
             style: const TextStyle(fontSize: 14, color: Paleta.texto),
-            decoration: decoracionCampo('Buscar por número o cliente…'),
+            decoration: decoracionCampo(tr('ventas.buscar')),
           ),
         ),
         Expanded(
@@ -132,16 +133,16 @@ class _VentasPageState extends State<VentasPage> {
             onRefresh: _cargar,
             child: ventas.isEmpty
                 ? ListView(
-                    children: const [
+                    children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 30,
                           vertical: 60,
                         ),
                         child: Text(
-                          'Todavía no hay ventas. Regístralas desde Venta rápida.',
+                          tr('ventas.vacio'),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
                             color: Paleta.textoSuave,
                             height: 1.5,
@@ -236,7 +237,7 @@ class _VentasPageState extends State<VentasPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      venta.cliente ?? 'Venta en mostrador',
+                      venta.cliente ?? tr('ventas.mostrador'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -247,7 +248,7 @@ class _VentasPageState extends State<VentasPage> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${venta.codigo} · ${formatoFecha(venta.fecha)} · ${venta.cantidadItems} ítems',
+                      '${venta.codigo} · ${formatoFecha(venta.fecha)} · ${venta.cantidadItems} ${tr('ventas.items')}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -283,9 +284,9 @@ class _VentasPageState extends State<VentasPage> {
                         color: Paleta.alertaFondo,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
-                        'Anulada',
-                        style: TextStyle(
+                      child: Text(
+                        tr('ventas.anulada'),
+                        style: const TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
                           color: Paleta.alertaTexto,
@@ -334,7 +335,7 @@ class _VentasPageState extends State<VentasPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Venta ${venta.codigo}',
+                        '${tr('ventas.venta')} ${venta.codigo}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -352,9 +353,9 @@ class _VentasPageState extends State<VentasPage> {
                           color: Paleta.alertaFondo,
                           borderRadius: BorderRadius.circular(999),
                         ),
-                        child: const Text(
-                          'Anulada',
-                          style: TextStyle(
+                        child: Text(
+                          tr('ventas.anulada'),
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: Paleta.alertaTexto,
@@ -365,7 +366,7 @@ class _VentasPageState extends State<VentasPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${venta.cliente ?? 'Venta en mostrador'} · ${formatoFecha(venta.fecha)}',
+                  '${venta.cliente ?? tr('ventas.mostrador')} · ${formatoFecha(venta.fecha)}',
                   style: const TextStyle(
                     fontSize: 13,
                     color: Paleta.textoSuave,
@@ -405,9 +406,9 @@ class _VentasPageState extends State<VentasPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Total',
-                        style: TextStyle(
+                      Text(
+                        tr('comun.total'),
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Paleta.textoSuave,
                         ),
@@ -438,9 +439,9 @@ class _VentasPageState extends State<VentasPage> {
                       venta: venta,
                     ),
                     icon: const Icon(Icons.print, color: Paleta.blanco),
-                    label: const Text(
-                      'Imprimir voucher',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.imprimir'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Paleta.blanco,
@@ -461,9 +462,9 @@ class _VentasPageState extends State<VentasPage> {
                       venta: venta,
                     ),
                     icon: const Icon(Icons.share, color: Paleta.primario),
-                    label: const Text(
-                      'Compartir por WhatsApp',
-                      style: TextStyle(
+                    label: Text(
+                      tr('venta.compartir_whatsapp'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Paleta.primario,
@@ -490,9 +491,9 @@ class _VentasPageState extends State<VentasPage> {
                       size: 18,
                       color: Paleta.alertaTexto,
                     ),
-                    label: const Text(
-                      'Anular venta',
-                      style: TextStyle(
+                    label: Text(
+                      tr('ventas.anular'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Paleta.alertaTexto,
@@ -512,22 +513,19 @@ class _VentasPageState extends State<VentasPage> {
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Anular ${venta.codigo}'),
-        content: const Text(
-          'Los productos de esta venta volverán al inventario. '
-          'Esta acción no se puede deshacer. ¿Continuar?',
-        ),
+        title: Text('${tr('ventas.anular_boton')} ${venta.codigo}'),
+        content: Text(tr('ventas.anular_confirmar')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(tr('comun.cancelar')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Paleta.alertaTexto,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Anular'),
+            child: Text(tr('ventas.anular_boton')),
           ),
         ],
       ),
@@ -548,9 +546,7 @@ class _VentasPageState extends State<VentasPage> {
 
       messenger.showSnackBar(
         SnackBar(
-          content: Text(
-            'Venta ${venta.codigo} anulada. El stock volvió al inventario.',
-          ),
+          content: Text(trp('ventas.anulada_ok', {'codigo': venta.codigo})),
         ),
       );
 

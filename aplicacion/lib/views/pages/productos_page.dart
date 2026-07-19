@@ -5,7 +5,9 @@ import '../../config/paleta.dart';
 import '../../models/producto.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/idioma_service.dart';
 import '../widgets/campo_texto.dart';
+import 'producto_crear_page.dart';
 import 'producto_editar_page.dart';
 
 /// Gestión de productos: stats, buscador, filtro por categoría y la lista real del catálogo.
@@ -73,11 +75,24 @@ class _ProductosPageState extends State<ProductosPage> {
     if (actualizado != null && mounted) _cargar();
   }
 
+  Future<void> _crear() async {
+    final creado = await Navigator.of(context).push<Producto>(
+      MaterialPageRoute(
+        builder: (_) => ProductoCrearPage(
+          session: widget.session,
+          categorias: _catalogo!.categorias,
+        ),
+      ),
+    );
+
+    if (creado != null && mounted) _cargar();
+  }
+
   String _nombreCategoria(int? id) {
     for (final c in _catalogo!.categorias) {
       if (c.id == id) return c.nombre;
     }
-    return 'Sin categoría';
+    return tr('productos.sin_categoria');
   }
 
   @override
@@ -95,9 +110,9 @@ class _ProductosPageState extends State<ProductosPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -132,12 +147,12 @@ class _ProductosPageState extends State<ProductosPage> {
             children: [
               Expanded(
                 child: _stat(
-                  'Productos activos',
+                  tr('productos.activos'),
                   '${_catalogo!.productos.length}',
                 ),
               ),
               const SizedBox(width: 12),
-              Expanded(child: _stat('Con stock bajo', '$stockBajo')),
+              Expanded(child: _stat(tr('productos.stock_bajo_stat'), '$stockBajo')),
             ],
           ),
         ),
@@ -146,15 +161,14 @@ class _ProductosPageState extends State<ProductosPage> {
           child: TextField(
             onChanged: (v) => setState(() => _filtro = v),
             style: const TextStyle(fontSize: 14, color: Paleta.texto),
-            decoration: decoracionCampo(
-              'Buscar por nombre, código o categoría…',
-            ),
+            decoration: decoracionCampo(tr('productos.buscar')),
           ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 2),
           child: InputDecorator(
-            decoration: decoracionCampo('Filtrar por categoría', denso: true),
+            decoration:
+                decoracionCampo(tr('productos.filtrar_categoria'), denso: true),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<int?>(
                 value: _categoriaId,
@@ -165,14 +179,14 @@ class _ProductosPageState extends State<ProductosPage> {
                   size: 20,
                 ),
                 style: const TextStyle(fontSize: 13.5, color: Paleta.texto),
-                hint: const Text(
-                  'Todas las categorías',
-                  style: TextStyle(fontSize: 13.5, color: Paleta.texto),
+                hint: Text(
+                  tr('productos.todas_categorias'),
+                  style: const TextStyle(fontSize: 13.5, color: Paleta.texto),
                 ),
                 items: [
-                  const DropdownMenuItem<int?>(
+                  DropdownMenuItem<int?>(
                     value: null,
-                    child: Text('Todas las categorías'),
+                    child: Text(tr('productos.todas_categorias')),
                   ),
                   for (final c in _catalogo!.categorias)
                     DropdownMenuItem<int?>(
@@ -187,10 +201,11 @@ class _ProductosPageState extends State<ProductosPage> {
         ),
         Expanded(
           child: productos.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'Sin resultados para tu búsqueda.',
-                    style: TextStyle(fontSize: 14, color: Paleta.textoSuave),
+                    tr('comun.sin_resultados'),
+                    style: const TextStyle(
+                        fontSize: 14, color: Paleta.textoSuave),
                   ),
                 )
               : ListView.separated(
@@ -203,7 +218,26 @@ class _ProductosPageState extends State<ProductosPage> {
       ],
     );
 
-    if (!widget.mostrarAppBar) return contenido;
+    final botonCrear = FloatingActionButton.extended(
+      onPressed: _crear,
+      backgroundColor: Paleta.primario,
+      icon: const Icon(Icons.add, color: Paleta.blanco),
+      label: Text(
+        tr('productos.fab'),
+        style: const TextStyle(
+          color: Paleta.blanco,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    if (!widget.mostrarAppBar) {
+      return Scaffold(
+        backgroundColor: Paleta.fondo,
+        floatingActionButton: botonCrear,
+        body: SafeArea(child: contenido),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Paleta.fondo,
@@ -211,15 +245,16 @@ class _ProductosPageState extends State<ProductosPage> {
         backgroundColor: Paleta.fondo,
         elevation: 0,
         iconTheme: const IconThemeData(color: Paleta.texto),
-        title: const Text(
-          'Productos por categoría',
-          style: TextStyle(
+        title: Text(
+          tr('productos.por_categoria'),
+          style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
             color: Paleta.texto,
           ),
         ),
       ),
+      floatingActionButton: botonCrear,
       body: SafeArea(child: contenido),
     );
   }
@@ -324,7 +359,7 @@ class _ProductosPageState extends State<ProductosPage> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${producto.codigo} · ${_nombreCategoria(producto.categoriaId)} · stock ${producto.stock} · mín ${producto.stockMinimo}',
+                      '${producto.codigo} · ${_nombreCategoria(producto.categoriaId)} · ${tr('productos.stock')} ${producto.stock} · ${tr('productos.min')} ${producto.stockMinimo}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -358,9 +393,9 @@ class _ProductosPageState extends State<ProductosPage> {
                         color: Paleta.alertaFondo,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
-                        'Stock bajo',
-                        style: TextStyle(
+                      child: Text(
+                        tr('productos.stock_bajo'),
+                        style: const TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
                           color: Paleta.alertaTexto,

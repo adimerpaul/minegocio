@@ -10,6 +10,34 @@ use Laravel\Sanctum\Sanctum;
 // usuarioConCatalogo() está definido en VentaTest.php (Pest comparte los
 // helpers de archivo entre tests de Feature).
 
+it('crea un producto en la empresa autenticada', function () {
+    $user = usuarioConCatalogo();
+    $empresa = $user->empresa;
+    $categoria = $empresa->categorias()->first();
+
+    $this->postJson('/api/productos', [
+        'nombre' => 'Pollo broaster',
+        'precio' => 85,
+        'stock' => 20,
+        'stock_minimo' => 5,
+        'codigo_barras' => '1234567890123',
+        'categoria_id' => $categoria->id,
+    ])
+        ->assertCreated()
+        ->assertJsonPath('producto.nombre', 'Pollo broaster')
+        ->assertJsonPath('producto.precio', 85)
+        ->assertJsonPath('producto.stock', 20)
+        ->assertJsonPath('producto.categoria_id', $categoria->id);
+
+    $this->assertDatabaseHas('productos', [
+        'empresa_id' => $empresa->id,
+        'nombre' => 'Pollo broaster',
+    ]);
+
+    $creado = $empresa->productos()->where('nombre', 'Pollo broaster')->first();
+    expect($creado->codigo)->toMatch('/^P-\d{3}$/');
+});
+
 it('actualiza los datos de un producto', function () {
     $user = usuarioConCatalogo();
     $empresa = $user->empresa;

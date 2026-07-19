@@ -5,6 +5,7 @@ import '../../models/categoria.dart';
 import '../../services/auth_service.dart';
 import '../../services/categoria_service.dart';
 import '../../services/catalogo_service.dart';
+import '../../services/idioma_service.dart';
 import 'categoria_editar_page.dart';
 import 'productos_page.dart';
 
@@ -79,17 +80,18 @@ class _CategoriasPageState extends State<CategoriasPage> {
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar categoría'),
-        content: Text('¿Eliminar "${categoria.nombre}"? Los productos asociados no se borrarán, pero perderán esta categoría.'),
+        title: Text(tr('categorias.eliminar_titulo')),
+        content: Text(
+            trp('categorias.eliminar_confirmar', {'nombre': categoria.nombre})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(tr('comun.cancelar')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Paleta.primario),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar'),
+            child: Text(tr('comun.eliminar')),
           ),
         ],
       ),
@@ -128,9 +130,9 @@ class _CategoriasPageState extends State<CategoriasPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -149,9 +151,9 @@ class _CategoriasPageState extends State<CategoriasPage> {
         onPressed: _crear,
         backgroundColor: Paleta.primario,
         icon: const Icon(Icons.add, color: Paleta.blanco),
-        label: const Text(
-          'Categoría',
-          style: TextStyle(
+        label: Text(
+          tr('categorias.una'),
+          style: const TextStyle(
             color: Paleta.blanco,
             fontWeight: FontWeight.w700,
           ),
@@ -231,7 +233,7 @@ class _CategoriasPageState extends State<CategoriasPage> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '$cuantos prod.',
+                            '$cuantos ${tr('categorias.prod')}',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -248,23 +250,23 @@ class _CategoriasPageState extends State<CategoriasPage> {
                               if (value == 'eliminar') _eliminar(categoria);
                             },
                             itemBuilder: (_) => [
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'editar',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.edit, size: 18),
-                                    SizedBox(width: 8),
-                                    Text('Editar'),
+                                    const Icon(Icons.edit, size: 18),
+                                    const SizedBox(width: 8),
+                                    Text(tr('comun.editar')),
                                   ],
                                 ),
                               ),
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'eliminar',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outline, size: 18),
-                                    SizedBox(width: 8),
-                                    Text('Eliminar'),
+                                    const Icon(Icons.delete_outline, size: 18),
+                                    const SizedBox(width: 8),
+                                    Text(tr('comun.eliminar')),
                                   ],
                                 ),
                               ),

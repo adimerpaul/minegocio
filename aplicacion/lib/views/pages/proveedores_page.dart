@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config/paleta.dart';
 import '../../models/proveedor.dart';
 import '../../services/auth_service.dart';
+import '../../services/idioma_service.dart';
 import '../../services/proveedor_service.dart';
 import '../widgets/campo_texto.dart';
 
@@ -67,9 +68,9 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _cargar,
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Paleta.primario),
+              child: Text(
+                tr('comun.reintentar'),
+                style: const TextStyle(color: Paleta.primario),
               ),
             ),
           ],
@@ -92,7 +93,7 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                 child: TextField(
                   onChanged: (v) => setState(() => _filtro = v),
                   style: const TextStyle(fontSize: 14, color: Paleta.texto),
-                  decoration: decoracionCampo('Nombre, NIT o teléfono'),
+                  decoration: decoracionCampo(tr('clientes.buscar')),
                 ),
               ),
               const SizedBox(width: 10),
@@ -134,8 +135,10 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
 
   Widget _tarjetaProveedor(Proveedor proveedor) {
     final detalle = [
-      if (proveedor.telefono?.isNotEmpty ?? false) 'Cel. ${proveedor.telefono}',
-      if (proveedor.nit?.isNotEmpty ?? false) 'NIT ${proveedor.nit}',
+      if (proveedor.telefono?.isNotEmpty ?? false)
+        '${tr('comun.cel')} ${proveedor.telefono}',
+      if (proveedor.nit?.isNotEmpty ?? false)
+        '${tr('registro.nit')} ${proveedor.nit}',
     ].join(' · ');
 
     return Material(
@@ -145,12 +148,8 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
         borderRadius: BorderRadius.circular(14),
         onTap: proveedor.esDefault
             ? () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'S/N es el proveedor de las compras sin nombre; '
-                      'no se puede editar.',
-                    ),
-                  ),
+                  SnackBar(
+                      content: Text(tr('proveedores.default_no_editable'))),
                 )
             : () => _abrirFormulario(proveedor),
         child: Container(
@@ -208,9 +207,9 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                     color: Paleta.tinte,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text(
-                    'Por defecto',
-                    style: TextStyle(
+                  child: Text(
+                    tr('clientes.por_defecto'),
+                    style: const TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
                       color: Paleta.primarioOscuro,
@@ -253,7 +252,8 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
           builder: (sheetContext, setSheetState) {
             Future<void> guardar() async {
               if (nombre.text.trim().isEmpty) {
-                setSheetState(() => errorSheet = 'El nombre es obligatorio.');
+                setSheetState(
+                    () => errorSheet = tr('clientes.nombre_obligatorio'));
                 return;
               }
               setSheetState(() {
@@ -296,20 +296,20 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
               final confirmado = await showDialog<bool>(
                 context: sheetContext,
                 builder: (dialogContext) => AlertDialog(
-                  title: const Text('Borrar proveedor'),
-                  content: Text('¿Borrar a ${proveedor!.nombre}? Sus compras '
-                      'registradas no se pierden.'),
+                  title: Text(tr('proveedores.borrar')),
+                  content: Text(trp('proveedores.borrar_confirmar',
+                      {'nombre': proveedor!.nombre})),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext, false),
-                      child: const Text('Cancelar'),
+                      child: Text(tr('comun.cancelar')),
                     ),
                     FilledButton(
                       style: FilledButton.styleFrom(
                         backgroundColor: Paleta.alertaTexto,
                       ),
                       onPressed: () => Navigator.pop(dialogContext, true),
-                      child: const Text('Borrar'),
+                      child: Text(tr('comun.borrar')),
                     ),
                   ],
                 ),
@@ -350,8 +350,8 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                     children: [
                       Text(
                         proveedor == null
-                            ? 'Nuevo proveedor'
-                            : 'Editar proveedor',
+                            ? tr('proveedores.nuevo')
+                            : tr('proveedores.editar'),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -360,7 +360,7 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                       ),
                       const SizedBox(height: 14),
                       CampoTexto(
-                        label: 'Nombre o razón social',
+                        label: tr('proveedores.razon_social'),
                         controller: nombre,
                         denso: true,
                       ),
@@ -370,7 +370,7 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                         children: [
                           Expanded(
                             child: CampoTexto(
-                              label: 'NIT',
+                              label: tr('registro.nit'),
                               controller: nit,
                               keyboardType: TextInputType.number,
                               denso: true,
@@ -379,7 +379,7 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: CampoTexto(
-                              label: 'Teléfono',
+                              label: tr('registro.telefono'),
                               controller: telefono,
                               keyboardType: TextInputType.phone,
                               denso: true,
@@ -389,14 +389,14 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                       ),
                       const SizedBox(height: 10),
                       CampoTexto(
-                        label: 'Correo',
+                        label: tr('config.correo'),
                         controller: correo,
                         keyboardType: TextInputType.emailAddress,
                         denso: true,
                       ),
                       const SizedBox(height: 10),
                       CampoTexto(
-                        label: 'Dirección',
+                        label: tr('registro.direccion'),
                         controller: direccion,
                         denso: true,
                       ),
@@ -412,10 +412,10 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                         onPressed: guardando ? null : guardar,
                         child: Text(
                           guardando
-                              ? 'Guardando...'
+                              ? tr('config.guardando')
                               : (proveedor == null
-                                  ? 'Registrar proveedor'
-                                  : 'Guardar cambios'),
+                                  ? tr('proveedores.registrar')
+                                  : tr('config.guardar')),
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -427,9 +427,9 @@ class _ProveedoresPageState extends State<ProveedoresPage> {
                         const SizedBox(height: 6),
                         TextButton(
                           onPressed: guardando ? null : borrar,
-                          child: const Text(
-                            'Borrar proveedor',
-                            style: TextStyle(
+                          child: Text(
+                            tr('proveedores.borrar'),
+                            style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w600,
                               color: Paleta.alertaTexto,
