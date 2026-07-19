@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../config/formato.dart';
 import '../../config/paleta.dart';
 import '../../models/producto.dart';
 import '../../services/auth_service.dart';
