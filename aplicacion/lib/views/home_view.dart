@@ -10,6 +10,7 @@ import 'pages/clientes_page.dart';
 import 'pages/compras_page.dart';
 import 'pages/config_page.dart';
 import 'pages/inicio_page.dart';
+import 'pages/inventario_page.dart';
 import 'pages/lista_page.dart';
 import 'pages/productos_page.dart';
 import 'pages/proveedores_page.dart';
@@ -190,6 +191,8 @@ class _HomeViewState extends State<HomeView> {
         return ProveedoresPage(session: _session);
       case 'compras':
         return ComprasPage(session: _session);
+      case 'inventario':
+        return InventarioPage(session: _session);
       case 'config':
         return ConfigPage(
           session: _session,

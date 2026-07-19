@@ -97,6 +97,23 @@
             cursor: pointer;
         }
 
+        .app-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 36px;
+            padding: 0 12px;
+            background: var(--naranja);
+            color: var(--blanco);
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
         .cart-btn {
             position: relative;
             display: flex;
@@ -511,6 +528,41 @@
             gap: 10px;
         }
 
+        .cart-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .cart-form label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--texto-medio);
+        }
+
+        .cart-form input,
+        .cart-form textarea {
+            border: 1px solid var(--borde-fuerte);
+            border-radius: 9px;
+            padding: 9px 11px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--texto);
+            background: var(--blanco);
+        }
+
+        .cart-form input:focus,
+        .cart-form textarea:focus {
+            outline: none;
+            border-color: var(--naranja);
+        }
+
+        .cart-form textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
         .cart-total {
             display: flex;
             justify-content: space-between;
@@ -587,6 +639,10 @@
                 <button class="icon-btn" id="shareStoreBtn" title="Compartir tienda">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
                 </button>
+                <a href="#" class="app-btn" id="openAppBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <span>Abrir app</span>
+                </a>
                 <button class="cart-btn" id="cartBtn">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                     Canasta
@@ -638,7 +694,11 @@
                         $agotado = $producto->stock <= 0;
                         $imagen = $producto->imagen_path ? url($producto->imagen_path) : '';
                     @endphp
-                    <article class="product" data-id="{{ $producto->id }}" data-cat="{{ $categoriaNombre }}" data-nombre="{{ $producto->nombre }}" data-precio="{{ $producto->precio }}" data-imagen="{{ $imagen }}" data-agotado="{{ $agotado ? '1' : '0' }}" style="display:flex">
+                    @php
+                        $productoSlug = \Illuminate\Support\Str::slug($producto->nombre);
+                        $productoUrl = route('tienda.producto', ['slug' => $empresa->slug_tienda, 'producto' => $producto->id, 'nombreSlug' => $productoSlug]);
+                    @endphp
+                    <article class="product" data-id="{{ $producto->id }}" data-url="{{ $productoUrl }}" data-cat="{{ $categoriaNombre }}" data-nombre="{{ $producto->nombre }}" data-precio="{{ $producto->precio }}" data-imagen="{{ $imagen }}" data-agotado="{{ $agotado ? '1' : '0' }}" style="display:flex">
                         <div class="product-img-wrap">
                             @if($imagen)
                                 <img src="{{ $imagen }}" alt="{{ $producto->nombre }}" loading="lazy">
@@ -680,13 +740,23 @@
             <div class="cart-empty">Tu canasta está vacía.<br>Agrega productos con el botón +</div>
         </div>
         <div class="cart-footer">
+            <div class="cart-form">
+                <label for="clienteNombre">Tu nombre</label>
+                <input type="text" id="clienteNombre" placeholder="Ej. Juan Pérez">
+                <label for="clienteTelefono">Teléfono</label>
+                <input type="tel" id="clienteTelefono" placeholder="Ej. 70012345">
+                <label for="clienteDireccion">Dirección de entrega</label>
+                <input type="text" id="clienteDireccion" placeholder="Ej. Av. América #245">
+                <label for="pedidoNotas">Notas adicionales</label>
+                <textarea id="pedidoNotas" placeholder="Ej. Sin picante, entregar por la tarde..."></textarea>
+            </div>
             <div class="cart-total">
                 <span>Total</span>
                 <span id="cartTotal">{{ $empresa->moneda }} 0.00</span>
             </div>
             <button class="checkout-btn" id="checkoutBtn" disabled>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.3c1.4.8 3.1 1.2 4.9 1.2h.1c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3h-.1c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3 .8.8-2.9-.2-.3C3.8 15.2 3.3 13.6 3.3 12c0-4.8 3.9-8.7 8.7-8.7s8.7 3.9 8.7 8.7-3.9 8.7-8.7 8.7zm5.5-5.9c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.8-1.4-1.7-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.7 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.2-.1-.2-.3-.2-.5-.3z"/></svg>
-                Pedir por WhatsApp
+                <span id="checkoutText">Pedir por WhatsApp</span>
             </button>
         </div>
     </aside>
@@ -695,6 +765,7 @@
         const MONEDA = '{{ $empresa->moneda }}';
         const TELEFONO = '{{ $empresa->telefono }}';
         const SLUG = '{{ $empresa->slug_tienda }}';
+        const EMPRESA_ID = {{ $empresa->id }};
         const EMPRESA_NOMBRE = '{{ $empresa->nombre }}';
 
         let carrito = {};
@@ -808,14 +879,75 @@
             renderCarrito();
         }
 
-        function enviarPedido() {
+        async function enviarPedido() {
             if (!TELEFONO) {
                 alert('Esta tienda aún no tiene un teléfono configurado.');
                 return;
             }
-            const items = Object.values(carrito).map(i => `- ${i.cantidad}x ${i.nombre} (${formatearPrecio(i.precio * i.cantidad)})`).join('\n');
-            const mensaje = `Hola ${EMPRESA_NOMBRE}, quisiera hacer este pedido:\n${items}\nTotal: ${formatearPrecio(totalCarrito())}`;
-            window.open('https://wa.me/' + TELEFONO.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensaje), '_blank');
+
+            const clienteNombre = document.getElementById('clienteNombre').value.trim();
+            const clienteTelefono = document.getElementById('clienteTelefono').value.trim();
+            const clienteDireccion = document.getElementById('clienteDireccion').value.trim();
+            const pedidoNotas = document.getElementById('pedidoNotas').value.trim();
+
+            if (!clienteNombre || !clienteTelefono) {
+                alert('Por favor ingresa tu nombre y teléfono para continuar.');
+                return;
+            }
+
+            const items = Object.values(carrito).map(i => ({
+                producto_id: parseInt(i.id),
+                cantidad: i.cantidad
+            }));
+
+            checkoutBtn.disabled = true;
+            checkoutText.textContent = 'Guardando pedido…';
+
+            try {
+                const respuesta = await fetch('/api/pedidos', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        empresa_id: EMPRESA_ID,
+                        cliente_nombre: clienteNombre,
+                        cliente_telefono: clienteTelefono,
+                        direccion: clienteDireccion,
+                        notas: pedidoNotas,
+                        items: items
+                    })
+                });
+
+                const datos = await respuesta.json().catch(() => ({}));
+
+                if (!respuesta.ok) {
+                    throw new Error(datos.message || 'No se pudo guardar el pedido. Inténtalo de nuevo.');
+                }
+
+                const pedido = datos.pedido;
+                const numeroPedido = pedido ? pedido.id : '';
+
+                const resumenItems = Object.values(carrito).map(i =>
+                    `- ${i.cantidad}x ${i.nombre} (${formatearPrecio(i.precio * i.cantidad)})`
+                ).join('\n');
+                const mensaje = `Hola ${EMPRESA_NOMBRE}, quisiera hacer este pedido:\n${resumenItems}\nTotal: ${formatearPrecio(totalCarrito())}${numeroPedido ? '\nN° pedido: ' + numeroPedido : ''}`;
+
+                // Limpia el carrito una vez guardado el pedido.
+                carrito = {};
+                guardarCarrito();
+                renderCarrito();
+                cerrarCarrito();
+
+                window.open('https://wa.me/' + TELEFONO.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensaje), '_blank');
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                checkoutBtn.disabled = cantidadCarrito() === 0;
+                checkoutText.textContent = 'Pedir por WhatsApp';
+            }
         }
 
         function filtrarCategoria(cat) {
@@ -841,14 +973,13 @@
             if (!card) return;
             const nombre = card.dataset.nombre;
             const precio = parseFloat(card.dataset.precio);
-            const url = new URL(window.location.href);
-            url.searchParams.set('producto', id);
+            const url = card.dataset.url;
             const texto = `${nombre} - ${formatearPrecio(precio)} en ${EMPRESA_NOMBRE}`;
 
             if (navigator.share) {
-                navigator.share({ title: nombre, text: texto, url: url.toString() }).catch(() => {});
+                navigator.share({ title: nombre, text: texto, url }).catch(() => {});
             } else {
-                window.open('https://wa.me/?text=' + encodeURIComponent(texto + ' ' + url.toString()), '_blank');
+                window.open('https://wa.me/?text=' + encodeURIComponent(texto + ' ' + url), '_blank');
             }
         }
 
@@ -874,6 +1005,12 @@
             if (shareBtn) {
                 e.stopPropagation();
                 compartirProducto(shareBtn.dataset.id);
+                return;
+            }
+
+            const card = e.target.closest('.product');
+            if (card && card.dataset.url) {
+                window.location.href = card.dataset.url;
             }
         });
 
@@ -888,6 +1025,13 @@
         });
 
         document.getElementById('shareStoreBtn').addEventListener('click', compartirTienda);
+        document.getElementById('openAppBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            window.location.href = 'minegocio://tienda/{{ $empresa->slug_tienda }}';
+            setTimeout(function () {
+                window.location.href = 'https://play.google.com/store/apps/details?id=com.example.minegocio';
+            }, 1500);
+        });
         cartBtn.addEventListener('click', abrirCarrito);
         closeCart.addEventListener('click', cerrarCarrito);
         cartOverlay.addEventListener('click', cerrarCarrito);

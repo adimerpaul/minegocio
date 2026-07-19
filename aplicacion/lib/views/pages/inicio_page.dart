@@ -164,7 +164,7 @@ class _InicioPageState extends State<InicioPage> {
                   Icons.warning_amber_rounded,
                   '$_stockCritico',
                   'Stock crítico',
-                  'productos',
+                  'inventario',
                   alerta: true,
                 ),
               ),

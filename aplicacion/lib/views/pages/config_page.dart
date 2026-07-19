@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../config/env.dart';
 import '../../config/paleta.dart';
 import '../../services/auth_service.dart';
 import '../../viewmodels/empresa_viewmodel.dart';
@@ -319,7 +320,7 @@ class _ConfigPageState extends State<ConfigPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'tu-dominio.com/tienda/${widget.session.user.empresa!.slugTienda}',
+                          '${Env.apiUrl}/tienda/${widget.session.user.empresa!.slugTienda}',
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
