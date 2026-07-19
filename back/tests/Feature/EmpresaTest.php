@@ -58,7 +58,7 @@ it('asigna el logo por defecto si la empresa se crea sin logo', function () {
     $user = usuarioSinEmpresa();
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina', 'slug_tienda' => 'comercial-andina']);
+    $response = $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina']);
     $empresaId = $response->assertCreated()->json('empresa.id');
 
     expect($response->json('empresa.logo_path'))
@@ -72,7 +72,7 @@ it('rechaza registrar una segunda empresa para la misma cuenta', function () {
     $user->empresa()->associate(Empresa::factory()->create())->save();
     Sanctum::actingAs($user);
 
-    $this->postJson('/api/empresas', ['nombre' => 'Otra Empresa', 'slug_tienda' => 'otra-empresa'])
+    $this->postJson('/api/empresas', ['nombre' => 'Otra Empresa'])
         ->assertConflict();
 
     expect(Empresa::count())->toBe(1);
@@ -87,7 +87,7 @@ it('exige el nombre comercial', function () {
 });
 
 it('exige autenticación para crear la empresa', function () {
-    $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina', 'slug_tienda' => 'comercial-andina'])
+    $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina'])
         ->assertUnauthorized();
 });
 
@@ -96,7 +96,7 @@ it('crea el catálogo de comida por defecto al registrar la empresa', function (
     $user = usuarioSinEmpresa();
     Sanctum::actingAs($user);
 
-    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana', 'slug_tienda' => 'pollos-copacabana'])
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
         ->assertCreated();
 
     $empresa = $user->refresh()->empresa;
@@ -123,7 +123,7 @@ it('devuelve el catálogo de la empresa en /api/productos', function () {
     $user = usuarioSinEmpresa();
     Sanctum::actingAs($user);
 
-    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana', 'slug_tienda' => 'pollos-copacabana'])
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
         ->assertCreated();
 
     $this->getJson('/api/productos')
@@ -145,7 +145,7 @@ it('usa la foto real empaquetada del producto, no un placeholder', function () {
     $user = usuarioSinEmpresa();
     Sanctum::actingAs($user);
 
-    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana', 'slug_tienda' => 'pollos-copacabana'])
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
         ->assertCreated();
 
     $empresa = $user->refresh()->empresa;
@@ -159,7 +159,7 @@ it('los productos y categorías usan borrado suave', function () {
     $user = usuarioSinEmpresa();
     Sanctum::actingAs($user);
 
-    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana', 'slug_tienda' => 'pollos-copacabana'])
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
         ->assertCreated();
 
     $empresa = $user->refresh()->empresa;
@@ -188,7 +188,7 @@ it('registra auditoría de los cambios de la empresa', function () {
     $user = usuarioSinEmpresa();
     Sanctum::actingAs($user);
 
-    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana', 'slug_tienda' => 'pollos-copacabana'])
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
         ->assertCreated();
 
     $this->putJson('/api/empresa', ['nombre' => 'Pollos Renovados'])
@@ -290,78 +290,83 @@ it('permite crear una empresa nueva tras eliminar la cuenta anterior', function 
     // El nuevo usuario puede registrar una empresa desde cero.
     Sanctum::actingAs(User::find($nuevoUserId));
 
-    $this->postJson('/api/empresas', ['nombre' => 'Nuevo Negocio', 'slug_tienda' => 'nuevo-negocio'])
+    $this->postJson('/api/empresas', ['nombre' => 'Nuevo Negocio'])
         ->assertCreated()
         ->assertJsonPath('empresa.nombre', 'Nuevo Negocio')
         ->assertJsonPath('user.empresa.nombre', 'Nuevo Negocio');
 });
 
-it('normaliza el slug de tienda a minúsculas, sin ñ y sin espacios', function () {
+it('genera el slug de tienda automáticamente desde el nombre', function () {
     Storage::fake('public');
     Sanctum::actingAs(usuarioSinEmpresa());
 
-    $this->postJson('/api/empresas', [
-        'nombre' => 'Pollos Copacabana',
-        'slug_tienda' => 'Pollos Copacabaña 2024',
-    ])
+    $this->postJson('/api/empresas', ['nombre' => 'Pollos Copacabaña'])
         ->assertCreated()
-        ->assertJsonPath('empresa.slug_tienda', 'pollos-copacabana-2024');
+        ->assertJsonPath('empresa.slug_tienda', 'pollos-copacabana');
 });
 
-it('exige el slug de tienda al crear la empresa', function () {
-    Sanctum::actingAs(usuarioSinEmpresa());
-
-    $this->postJson('/api/empresas', ['nombre' => 'Sin Slug'])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('slug_tienda');
-});
-
-it('rechaza un slug de tienda que ya está en uso', function () {
+it('genera slugs únicos cuando dos empresas tienen el mismo nombre', function () {
     Storage::fake('public');
-    Empresa::factory()->create(['slug_tienda' => 'mi-tienda']);
-    Sanctum::actingAs(usuarioSinEmpresa());
 
-    $this->postJson('/api/empresas', [
-        'nombre' => 'Otra Tienda',
-        'slug_tienda' => 'mi-tienda',
-    ])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('slug_tienda');
+    Sanctum::actingAs(usuarioSinEmpresa());
+    $primera = $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina'])
+        ->assertCreated()
+        ->json('empresa.slug_tienda');
+
+    Sanctum::actingAs(usuarioSinEmpresa());
+    $segunda = $this->postJson('/api/empresas', ['nombre' => 'Comercial Andina'])
+        ->assertCreated()
+        ->json('empresa.slug_tienda');
+
+    expect($primera)->toBe('comercial-andina')
+        ->and($segunda)->toBe('comercial-andina-2')
+        ->and($primera)->not->toBe($segunda);
 });
 
-it('permite conservar el mismo slug al actualizar la empresa', function () {
+it('regenera el slug al cambiar el nombre de la empresa', function () {
     $user = usuarioSinEmpresa();
     $user->empresa()->associate(Empresa::factory()->create([
         'nombre' => 'Original',
-        'slug_tienda' => 'mi-tienda',
+        'slug_tienda' => 'original',
     ]))->save();
     Sanctum::actingAs($user);
 
-    $this->putJson('/api/empresa', [
-        'nombre' => 'Original Renovada',
-        'slug_tienda' => 'mi-tienda',
-    ])
+    $this->putJson('/api/empresa', ['nombre' => 'Nuevo Nombre Ñandú'])
         ->assertOk()
-        ->assertJsonPath('empresa.slug_tienda', 'mi-tienda');
+        ->assertJsonPath('empresa.slug_tienda', 'nuevo-nombre-nandu');
 });
 
-it('rechaza cambiar el slug por uno que ya existe', function () {
-    Empresa::factory()->create(['slug_tienda' => 'ocupado']);
+it('mantiene el slug si el nombre no cambia al actualizar', function () {
     $user = usuarioSinEmpresa();
     $user->empresa()->associate(Empresa::factory()->create([
-        'slug_tienda' => 'mi-tienda',
+        'nombre' => 'Original',
+        'slug_tienda' => 'original',
     ]))->save();
     Sanctum::actingAs($user);
 
     $this->putJson('/api/empresa', [
-        'nombre' => $user->empresa->nombre,
-        'slug_tienda' => 'ocupado',
+        'nombre' => 'Original',
+        'moneda' => 'USD',
     ])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('slug_tienda');
+        ->assertOk()
+        ->assertJsonPath('empresa.slug_tienda', 'original');
 });
 
-it('indica disponibilidad de un slug mediante el endpoint público', function () {
+it('evita colisiones al regenerar el slug por cambio de nombre', function () {
+    Empresa::factory()->create(['slug_tienda' => 'comercial-andina']);
+    $user = usuarioSinEmpresa();
+    $user->empresa()->associate(Empresa::factory()->create([
+        'nombre' => 'Otra',
+        'slug_tienda' => 'otra',
+    ]))->save();
+    Sanctum::actingAs($user);
+
+    $this->putJson('/api/empresa', ['nombre' => 'Comercial Andina'])
+        ->assertOk()
+        ->assertJsonPath('empresa.slug_tienda', 'comercial-andina-2');
+});
+
+it('indica disponibilidad de un slug mediante el endpoint', function () {
     Empresa::factory()->create(['slug_tienda' => 'ocupado']);
     Sanctum::actingAs(usuarioSinEmpresa());
 

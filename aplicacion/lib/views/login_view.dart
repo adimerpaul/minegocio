@@ -39,7 +39,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Paleta.fondoOscuro,
+      backgroundColor: Paleta.fondo,
       body: Column(
         children: [
           Expanded(
@@ -51,14 +51,14 @@ class _LoginViewState extends State<LoginView> {
                   children: [
                     Image.asset(
                       'assets/images/logo_default.webp',
-                      width: 96,
-                      height: 96,
+                      width: 180,
+                      fit: BoxFit.contain,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     const Text(
                       'Mi Negocio',
                       style: TextStyle(
-                        color: Paleta.blanco,
+                        color: Paleta.texto,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
@@ -71,7 +71,7 @@ class _LoginViewState extends State<LoginView> {
                         'Tu negocio y tu tienda en línea, desde el celular.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Color(0xFFB3A89F),
+                          color: Paleta.textoSuave,
                           fontSize: 15,
                           height: 1.5,
                         ),

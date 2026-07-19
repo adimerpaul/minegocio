@@ -11,14 +11,14 @@ use App\Services\WebpImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 
 class EmpresaController extends Controller
 {
     /**
      * Registra la empresa del usuario autenticado (pantalla "Registro de
      * empresa" del mockup) y vincula su cuenta a ella. El logo es opcional
-     * y se guarda como WebP en storage/app/public/logos/.
+     * y se guarda como WebP en storage/app/public/logos/. El slug de tienda
+     * se genera automáticamente desde el nombre, asegurando que sea único.
      */
     public function store(Request $request): JsonResponse
     {
@@ -30,7 +30,8 @@ class EmpresaController extends Controller
             ], 409);
         }
 
-        $data = $this->validated($request, null);
+        $data = $this->validated($request);
+        $data['slug_tienda'] = $this->generarSlugUnico($data['nombre']);
 
         $empresa = Empresa::create(collect($data)->except('logo')->all());
 
@@ -79,6 +80,8 @@ class EmpresaController extends Controller
 
     /**
      * Actualiza los datos de la empresa del usuario (pantalla Configuración).
+     * Si cambia el nombre comercial, se regenera el slug de tienda
+     * automáticamente manteniendo la unicidad.
      */
     public function update(Request $request): JsonResponse
     {
@@ -91,7 +94,11 @@ class EmpresaController extends Controller
             ], 404);
         }
 
-        $data = $this->validated($request, $empresa);
+        $data = $this->validated($request);
+
+        if (array_key_exists('nombre', $data) && $data['nombre'] !== $empresa->nombre) {
+            $data['slug_tienda'] = $this->generarSlugUnico($data['nombre'], $empresa);
+        }
 
         $empresa->update(collect($data)->except('logo')->all());
 
@@ -120,8 +127,8 @@ class EmpresaController extends Controller
     }
 
     /**
-     * Verifica si un slug de tienda está disponible. Ignora el ID propio de
-     * la empresa cuando se actualiza.
+     * Verifica si un slug de tienda está disponible. Útil para previsualizar
+     * o validar desde la app; la generación real se hace automáticamente.
      */
     public function slugDisponible(Request $request, ?Empresa $empresa = null): JsonResponse
     {
@@ -154,47 +161,48 @@ class EmpresaController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function validated(Request $request, ?Empresa $empresaActual): array
+    private function validated(Request $request): array
     {
-        $data = $request->validate([
+        return $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
             'nit' => ['nullable', 'string', 'max:30'],
             'telefono' => ['nullable', 'string', 'max:30'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'correo' => ['nullable', 'email', 'max:255'],
             'moneda' => ['nullable', 'string', 'in:BOB,USD,PEN'],
-            'slug_tienda' => $empresaActual === null
-                ? ['required', 'string', 'max:50']
-                : ['sometimes', 'string', 'max:50'],
             'logo' => ['nullable', 'image', 'max:4096'],
         ], [], [
             'nombre' => 'nombre comercial',
             'correo' => 'correo de la empresa',
-            'slug_tienda' => 'nombre de la tienda',
         ]);
+    }
 
-        if (array_key_exists('slug_tienda', $data)) {
-            $data['slug_tienda'] = $this->normalizarSlug($data['slug_tienda']);
+    /**
+     * Genera un slug de tienda único a partir del nombre. Si el slug base
+     * ya existe, agrega un sufijo numérico creciente. La unicidad se controla
+     * desde el backend, no desde un índice unique de la base de datos.
+     */
+    private function generarSlugUnico(string $nombre, ?Empresa $excepto = null): string
+    {
+        $base = $this->normalizarSlug($nombre);
+        $slug = $base;
+        $contador = 2;
 
-            if (strlen($data['slug_tienda']) < 3) {
-                throw ValidationException::withMessages([
-                    'slug_tienda' => 'El nombre de tienda debe tener al menos 3 caracteres válidos.',
-                ]);
+        while (true) {
+            $query = Empresa::where('slug_tienda', $slug);
+            if ($excepto !== null) {
+                $query->where('id', '!=', $excepto->id);
             }
 
-            $query = Empresa::where('slug_tienda', $data['slug_tienda']);
-            if ($empresaActual !== null) {
-                $query->where('id', '!=', $empresaActual->id);
+            if (! $query->exists()) {
+                break;
             }
 
-            if ($query->exists()) {
-                throw ValidationException::withMessages([
-                    'slug_tienda' => 'Ese nombre de tienda ya está en uso. Elige otro.',
-                ]);
-            }
+            $slug = "{$base}-{$contador}";
+            $contador++;
         }
 
-        return $data;
+        return $slug;
     }
 
     /**

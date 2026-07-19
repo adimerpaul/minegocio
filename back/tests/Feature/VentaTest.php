@@ -11,10 +11,8 @@ function usuarioConCatalogo(): User
     $user = User::factory()->create();
     Sanctum::actingAs($user);
 
-    test()->postJson('/api/empresas', [
-        'nombre' => 'Pollos Copacabana',
-        'slug_tienda' => 'pollos-copacabana-'.$user->id,
-    ])->assertCreated();
+    test()->postJson('/api/empresas', ['nombre' => 'Pollos Copacabana'])
+        ->assertCreated();
 
     return $user->refresh();
 }
