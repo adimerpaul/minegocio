@@ -140,4 +140,30 @@ class ProductoController extends Controller
 
         return response()->json(['producto' => $producto->refresh()]);
     }
+
+    /**
+     * Elimina (soft delete) un producto de la empresa.
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $empresa = $request->user()->empresa;
+
+        if ($empresa === null) {
+            return response()->json([
+                'message' => 'Tu cuenta no tiene una empresa registrada.',
+            ], 404);
+        }
+
+        $producto = $empresa->productos()->find($id);
+
+        if ($producto === null) {
+            return response()->json([
+                'message' => 'El producto no existe.',
+            ], 404);
+        }
+
+        $producto->delete();
+
+        return response()->json(['message' => 'Producto eliminado.']);
+    }
 }

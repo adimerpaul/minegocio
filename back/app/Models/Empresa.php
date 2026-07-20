@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
-#[Fillable(['nombre', 'nit', 'telefono', 'direccion', 'correo', 'moneda', 'logo_path', 'slug_tienda'])]
+#[Fillable(['nombre', 'nit', 'telefono', 'codigo_pais', 'direccion', 'correo', 'moneda', 'logo_path', 'slug_tienda'])]
 class Empresa extends Model implements AuditableContract
 {
     /** @use HasFactory<EmpresaFactory> */

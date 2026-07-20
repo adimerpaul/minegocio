@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../config/formato.dart';
 import '../../config/paleta.dart';
+import '../../models/pedido.dart';
 import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
 import '../../services/idioma_service.dart';
+import '../../services/pedido_service.dart';
 import '../../services/venta_service.dart';
 
-/// Dashboard de inicio (mockup): ventas de hoy y de la semana reales,
-/// accesos rápidos con contadores del catálogo y pedidos (próximamente).
+/// Dashboard de inicio (mockup): ventas de hoy y de la semana, pedidos y
+/// accesos rápidos con contadores del catálogo, todo con datos reales.
 class InicioPage extends StatefulWidget {
   final Session session;
   final ValueChanged<String> onIrModulo;
@@ -30,6 +32,7 @@ class _InicioPageState extends State<InicioPage> {
   int _productos = 0;
   int _stockCritico = 0;
   List<Venta> _ventas = [];
+  List<Pedido> _pedidos = [];
 
   String get _simbolo => simboloMoneda(widget.session.user.empresa?.moneda);
 
@@ -56,6 +59,14 @@ class _InicioPageState extends State<InicioPage> {
       if (!mounted) return;
       setState(() => _ventas = ventas);
     } catch (_) {}
+
+    try {
+      final pedidos = await PedidoService.instance.listar(
+        widget.session.token,
+      );
+      if (!mounted) return;
+      setState(() => _pedidos = pedidos);
+    } catch (_) {}
   }
 
   bool _mismoDia(DateTime a, DateTime b) =>
@@ -78,6 +89,8 @@ class _InicioPageState extends State<InicioPage> {
       return (dia, total);
     });
     final totalSemana = dias.fold(0.0, (a, d) => a + d.$2);
+    final pedidosPendientes =
+        _pedidos.where((p) => p.estado == 'pendiente').toList();
 
     return RefreshIndicator(
       color: Paleta.primario,
@@ -139,7 +152,11 @@ class _InicioPageState extends State<InicioPage> {
             children: [
               Expanded(
                 child: _kpi(
-                    Icons.schedule, '0', tr('inicio.pedidos_linea'), 'pedidos'),
+                  Icons.schedule,
+                  '${pedidosPendientes.length}',
+                  tr('inicio.pedidos_linea'),
+                  'pedidos',
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -196,14 +213,58 @@ class _InicioPageState extends State<InicioPage> {
             titulo: tr('inicio.pedidos_linea'),
             accion: tr('inicio.ver_todos'),
             onAccion: () => widget.onIrModulo('pedidos'),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                tr('inicio.sin_pedidos'),
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13, color: Paleta.textoSuave),
-              ),
-            ),
+            child: _pedidos.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      tr('inicio.sin_pedidos'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 13, color: Paleta.textoSuave),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Column(
+                      children: [
+                        for (final pedido in _pedidos.take(3))
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: GestureDetector(
+                              onTap: () => widget.onIrModulo('pedidos'),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      (pedido.clienteNombre?.isNotEmpty ??
+                                              false)
+                                          ? pedido.clienteNombre!
+                                          : tr('pedidos.sin_datos'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: Paleta.texto,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    formatoMoneda(pedido.total,
+                                        simbolo: _simbolo),
+                                    style: const TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Paleta.texto,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
           ),
         ],
       ),

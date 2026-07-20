@@ -35,6 +35,7 @@ class LocalDb {
         nombre TEXT NOT NULL,
         nit TEXT,
         telefono TEXT,
+        codigo_pais TEXT,
         direccion TEXT,
         correo TEXT,
         moneda TEXT NOT NULL DEFAULT 'BOB',
@@ -49,7 +50,7 @@ class LocalDb {
 
     _db = await openDatabase(
       p.join(await getDatabasesPath(), 'minegocio.db'),
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await _crearTablas(db);
       },

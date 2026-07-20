@@ -6,6 +6,7 @@ import '../services/idioma_service.dart';
 import '../viewmodels/empresa_viewmodel.dart';
 import 'home_view.dart';
 import 'widgets/campo_texto.dart';
+import 'widgets/selector_codigo_pais.dart';
 
 /// Pantalla "Registra tu empresa" del mockup: se muestra cuando la cuenta
 /// de Gmail todavía no está vinculada a ninguna empresa.
@@ -27,11 +28,28 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
   final _direccion = TextEditingController();
   final _correo = TextEditingController();
   String _moneda = 'BOB';
+  String? _codigoPais;
 
   final _monedas = {
     'BOB': tr('moneda.BOB'),
     'USD': tr('moneda.USD'),
     'PEN': tr('moneda.PEN'),
+    'EUR': tr('moneda.EUR'),
+    'BRL': tr('moneda.BRL'),
+    'ARS': tr('moneda.ARS'),
+    'CLP': tr('moneda.CLP'),
+    'COP': tr('moneda.COP'),
+    'MXN': tr('moneda.MXN'),
+    'UYU': tr('moneda.UYU'),
+    'PYG': tr('moneda.PYG'),
+    'AOA': tr('moneda.AOA'),
+    'MZN': tr('moneda.MZN'),
+    'CVE': tr('moneda.CVE'),
+    'STN': tr('moneda.STN'),
+    'XOF': tr('moneda.XOF'),
+    'GBP': tr('moneda.GBP'),
+    'JPY': tr('moneda.JPY'),
+    'CNY': tr('moneda.CNY'),
   };
 
   @override
@@ -55,6 +73,7 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
       'nombre': _nombre.text.trim(),
       'nit': _nit.text.trim(),
       'telefono': _telefono.text.trim(),
+      'codigo_pais': _codigoPais,
       'direccion': _direccion.text.trim(),
       'correo': _correo.text.trim(),
       'moneda': _moneda,
@@ -117,21 +136,33 @@ class _RegistroEmpresaViewState extends State<RegistroEmpresaView> {
                     controller: _nombre,
                   ),
                   const SizedBox(height: 16),
+                  CampoTexto(
+                    label: tr('registro.nit'),
+                    hint: tr('registro.nit_hint'),
+                    controller: _nit,
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    tr('registro.telefono'),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Paleta.textoMedio,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: CampoTexto(
-                          label: tr('registro.nit'),
-                          hint: tr('registro.nit_hint'),
-                          controller: _nit,
-                          keyboardType: TextInputType.number,
-                        ),
+                      SelectorCodigoPais(
+                        codigo: _codigoPais,
+                        onChanged: (codigo) => setState(() => _codigoPais = codigo),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: CampoTexto(
-                          label: tr('registro.telefono'),
+                          label: '',
                           hint: tr('registro.telefono_hint'),
                           controller: _telefono,
                           keyboardType: TextInputType.phone,

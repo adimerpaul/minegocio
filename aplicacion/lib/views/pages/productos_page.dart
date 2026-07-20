@@ -6,6 +6,7 @@ import '../../models/producto.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
 import '../../services/idioma_service.dart';
+import '../../services/producto_service.dart';
 import '../widgets/campo_texto.dart';
 import 'producto_crear_page.dart';
 import 'producto_editar_page.dart';
@@ -59,10 +60,10 @@ class _ProductosPageState extends State<ProductosPage> {
     }
   }
 
-  /// Abre "Editar producto"; al volver con cambios recarga la lista
-  /// (la caché del catálogo ya viene refrescada por ProductoService).
+  /// Abre "Editar producto"; al volver con cambios o eliminación recarga
+  /// la lista (la caché del catálogo ya viene refrescada por ProductoService).
   Future<void> _editar(Producto producto) async {
-    final actualizado = await Navigator.of(context).push<Producto>(
+    final resultado = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ProductoEditarPage(
           session: widget.session,
@@ -72,7 +73,46 @@ class _ProductosPageState extends State<ProductosPage> {
       ),
     );
 
-    if (actualizado != null && mounted) _cargar();
+    if (resultado != null && mounted) _cargar();
+  }
+
+  Future<void> _confirmarEliminar(Producto producto) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('productos.borrar')),
+        content: Text(
+          trp('productos.borrar_confirmar', {'nombre': producto.nombre}),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr('comun.cancelar')),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Paleta.alertaTexto),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr('comun.borrar')),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado != true || !mounted) return;
+
+    try {
+      await ProductoService.instance.eliminar(
+        token: widget.session.token,
+        producto: producto,
+      );
+      if (mounted) _cargar();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$e'.replaceFirst('Exception: ', ''))),
+        );
+      }
+    }
   }
 
   Future<void> _crear() async {
@@ -403,6 +443,12 @@ class _ProductosPageState extends State<ProductosPage> {
                       ),
                     ),
                 ],
+              ),
+              IconButton(
+                onPressed: () => _confirmarEliminar(producto),
+                icon: const Icon(Icons.delete_outline,
+                    color: Paleta.textoSuave),
+                tooltip: tr('productos.borrar'),
               ),
             ],
           ),

@@ -9,6 +9,7 @@ import '../../services/idioma_service.dart';
 import '../../services/tienda_launcher.dart';
 import '../../viewmodels/empresa_viewmodel.dart';
 import '../widgets/campo_texto.dart';
+import '../widgets/selector_codigo_pais.dart';
 import '../widgets/selector_idioma.dart';
 import '../widgets/selector_imagen.dart';
 
@@ -17,11 +18,13 @@ import '../widgets/selector_imagen.dart';
 class ConfigPage extends StatefulWidget {
   final Session session;
   final ValueChanged<Session> onSessionActualizada;
+  final VoidCallback onCerrarSesion;
 
   const ConfigPage({
     super.key,
     required this.session,
     required this.onSessionActualizada,
+    required this.onCerrarSesion,
   });
 
   @override
@@ -37,12 +40,29 @@ class _ConfigPageState extends State<ConfigPage> {
   late final TextEditingController _direccion;
   late final TextEditingController _correo;
   late String _moneda;
+  String? _codigoPais;
   File? _logo; // logo nuevo elegido, aún sin guardar
 
   final _monedas = {
     'BOB': tr('moneda.BOB'),
     'USD': tr('moneda.USD'),
     'PEN': tr('moneda.PEN'),
+    'EUR': tr('moneda.EUR'),
+    'BRL': tr('moneda.BRL'),
+    'ARS': tr('moneda.ARS'),
+    'CLP': tr('moneda.CLP'),
+    'COP': tr('moneda.COP'),
+    'MXN': tr('moneda.MXN'),
+    'UYU': tr('moneda.UYU'),
+    'PYG': tr('moneda.PYG'),
+    'AOA': tr('moneda.AOA'),
+    'MZN': tr('moneda.MZN'),
+    'CVE': tr('moneda.CVE'),
+    'STN': tr('moneda.STN'),
+    'XOF': tr('moneda.XOF'),
+    'GBP': tr('moneda.GBP'),
+    'JPY': tr('moneda.JPY'),
+    'CNY': tr('moneda.CNY'),
   };
 
   @override
@@ -55,6 +75,7 @@ class _ConfigPageState extends State<ConfigPage> {
     _direccion = TextEditingController(text: empresa?.direccion ?? '');
     _correo = TextEditingController(text: empresa?.correo ?? '');
     _moneda = empresa?.moneda ?? 'BOB';
+    _codigoPais = empresa?.codigoPais;
   }
 
   @override
@@ -84,6 +105,7 @@ class _ConfigPageState extends State<ConfigPage> {
       'nombre': _nombre.text.trim(),
       'nit': _nit.text.trim(),
       'telefono': _telefono.text.trim(),
+      'codigo_pais': _codigoPais,
       'direccion': _direccion.text.trim(),
       'correo': _correo.text.trim(),
       'moneda': _moneda,
@@ -189,20 +211,32 @@ class _ConfigPageState extends State<ConfigPage> {
                     denso: true,
                   ),
                   const SizedBox(height: 10),
+                  CampoTexto(
+                    label: tr('registro.nit'),
+                    controller: _nit,
+                    denso: true,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    tr('registro.telefono'),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Paleta.textoMedio,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: CampoTexto(
-                          label: tr('registro.nit'),
-                          controller: _nit,
-                          denso: true,
-                        ),
+                      SelectorCodigoPais(
+                        codigo: _codigoPais,
+                        onChanged: (codigo) => setState(() => _codigoPais = codigo),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: CampoTexto(
-                          label: tr('registro.telefono'),
+                          label: '',
                           controller: _telefono,
                           denso: true,
                         ),
@@ -400,6 +434,33 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
               ],
             ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Material(
+          color: Paleta.blanco,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Paleta.bordeSuave),
+          ),
+          child: ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            leading: const Icon(Icons.logout, color: Paleta.alertaTexto),
+            title: Text(
+              tr('sesion.cerrar'),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Paleta.alertaTexto,
+              ),
+            ),
+            trailing: const Icon(
+              Icons.chevron_right,
+              color: Paleta.textoSuave,
+            ),
+            onTap: widget.onCerrarSesion,
           ),
         ),
       ],

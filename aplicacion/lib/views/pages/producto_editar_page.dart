@@ -41,6 +41,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
   int? _categoriaId;
   File? _imagen;
   bool _guardando = false;
+  bool _eliminando = false;
   String? _error;
 
   @override
@@ -85,6 +86,49 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
     );
     if (codigo == null || !mounted) return;
     setState(() => _codigoBarras.text = codigo);
+  }
+
+  Future<void> _eliminar() async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('productos.borrar')),
+        content: Text(
+          trp('productos.borrar_confirmar', {
+            'nombre': widget.producto.nombre,
+          }),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr('comun.cancelar')),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Paleta.alertaTexto),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr('comun.borrar')),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado != true || !mounted) return;
+
+    setState(() => _eliminando = true);
+    try {
+      await ProductoService.instance.eliminar(
+        token: widget.session.token,
+        producto: widget.producto,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = '$e'.replaceFirst('Exception: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _eliminando = false);
+    }
   }
 
   Future<void> _guardar() async {
@@ -334,7 +378,7 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                 ),
                 const SizedBox(height: 10),
                 OutlinedButton(
-                  onPressed: _guardando
+                  onPressed: _guardando || _eliminando
                       ? null
                       : () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
@@ -350,6 +394,36 @@ class _ProductoEditarPageState extends State<ProductoEditarPage> {
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Paleta.textoMedio,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                OutlinedButton.icon(
+                  onPressed: _guardando || _eliminando ? null : _eliminar,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    side: const BorderSide(color: Paleta.alertaTexto),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: _eliminando
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Paleta.alertaTexto,
+                          ),
+                        )
+                      : const Icon(Icons.delete_outline,
+                          color: Paleta.alertaTexto),
+                  label: Text(
+                    tr('productos.borrar'),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Paleta.alertaTexto,
                     ),
                   ),
                 ),

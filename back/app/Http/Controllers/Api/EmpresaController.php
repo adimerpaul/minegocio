@@ -167,9 +167,10 @@ class EmpresaController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'nit' => ['nullable', 'string', 'max:30'],
             'telefono' => ['nullable', 'string', 'max:30'],
+            'codigo_pais' => ['nullable', 'string', 'max:5'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'correo' => ['nullable', 'email', 'max:255'],
-            'moneda' => ['nullable', 'string', 'in:BOB,USD,PEN'],
+            'moneda' => ['nullable', 'string', 'in:BOB,USD,PEN,EUR,BRL,ARS,CLP,COP,MXN,UYU,PYG,AOA,MZN,CVE,STN,XOF,GBP,JPY,CNY'],
             'logo' => ['nullable', 'image', 'max:4096'],
         ], [], [
             'nombre' => 'nombre comercial',

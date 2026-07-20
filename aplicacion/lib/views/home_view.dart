@@ -14,6 +14,7 @@ import 'pages/config_page.dart';
 import 'pages/inicio_page.dart';
 import 'pages/inventario_page.dart';
 import 'pages/lista_page.dart';
+import 'pages/pedidos_page.dart';
 import 'pages/productos_page.dart';
 import 'pages/proveedores_page.dart';
 import 'pages/venta_page.dart';
@@ -207,10 +208,13 @@ class _HomeViewState extends State<HomeView> {
         return ComprasPage(session: _session);
       case 'inventario':
         return InventarioPage(session: _session);
+      case 'pedidos':
+        return PedidosPage(session: _session);
       case 'config':
         return ConfigPage(
           session: _session,
           onSessionActualizada: (s) => setState(() => _session = s),
+          onCerrarSesion: _cerrarSesion,
         );
       default:
         return ListaPage(key: ValueKey(_modulo), modulo: _modulo);

@@ -6,6 +6,7 @@ class Empresa {
   final String nombre;
   final String? nit;
   final String? telefono;
+  final String? codigoPais;
   final String? direccion;
   final String? correo;
   final String moneda;
@@ -17,6 +18,7 @@ class Empresa {
     required this.nombre,
     this.nit,
     this.telefono,
+    this.codigoPais,
     this.direccion,
     this.correo,
     this.moneda = 'BOB',
@@ -32,6 +34,7 @@ class Empresa {
       nombre: json['nombre'] as String,
       nit: json['nit'] as String?,
       telefono: json['telefono'] as String?,
+      codigoPais: json['codigo_pais'] as String?,
       direccion: json['direccion'] as String?,
       correo: json['correo'] as String?,
       moneda: (json['moneda'] as String?) ?? 'BOB',
@@ -52,6 +55,7 @@ class Empresa {
         'nombre': nombre,
         'nit': nit,
         'telefono': telefono,
+        'codigo_pais': codigoPais,
         'direccion': direccion,
         'correo': correo,
         'moneda': moneda,
@@ -64,6 +68,7 @@ class Empresa {
         nombre: row['nombre'] as String,
         nit: row['nit'] as String?,
         telefono: row['telefono'] as String?,
+        codigoPais: row['codigo_pais'] as String?,
         direccion: row['direccion'] as String?,
         correo: row['correo'] as String?,
         moneda: (row['moneda'] as String?) ?? 'BOB',

@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../../config/formato.dart';
 import '../../config/paleta.dart';
 import '../../models/cliente.dart';
+import '../../models/pedido.dart';
 import '../../models/producto.dart';
 import '../../models/venta.dart';
 import '../../services/auth_service.dart';
 import '../../services/catalogo_service.dart';
 import '../../services/cliente_service.dart';
 import '../../services/idioma_service.dart';
+import '../../services/pedido_service.dart';
 import '../../services/venta_service.dart';
 import '../../services/voucher_service.dart';
 import '../widgets/campo_texto.dart';
@@ -138,6 +140,137 @@ class _VentaPageState extends State<VentaPage> {
           'cantidad': '${_orden[producto.id]}',
         })),
       ),
+    );
+  }
+
+  /// Abre la lista de pedidos pendientes (tienda en línea o registrados a
+  /// mano) y, al elegir uno, agrega sus productos a la orden actual.
+  Future<void> _recuperarPedido() async {
+    List<Pedido> pedidos;
+    try {
+      final todos = await PedidoService.instance.listar(widget.session.token);
+      pedidos = todos.where((p) => p.estado == 'pendiente').toList();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$e'.replaceFirst('Exception: ', ''))),
+      );
+      return;
+    }
+    if (!mounted) return;
+
+    final elegido = await showModalBottomSheet<Pedido>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Paleta.blanco,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  tr('venta.recuperar_pedido'),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Paleta.texto,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (pedidos.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      tr('venta.sin_pedidos_pendientes'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        color: Paleta.textoSuave,
+                      ),
+                    ),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 360),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: pedidos.length,
+                      itemBuilder: (context, i) {
+                        final pedido = pedidos[i];
+
+                        return ListTile(
+                          dense: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                          onTap: () => Navigator.pop(sheetContext, pedido),
+                          leading: const Icon(
+                            Icons.receipt_long_outlined,
+                            size: 20,
+                            color: Paleta.primario,
+                          ),
+                          title: Text(
+                            (pedido.clienteNombre?.isNotEmpty ?? false)
+                                ? pedido.clienteNombre!
+                                : tr('pedidos.sin_datos'),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Paleta.texto,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '#${pedido.id} · ${pedido.cantidadItems} ${tr('ventas.items')}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Paleta.textoSuave,
+                            ),
+                          ),
+                          trailing: Text(
+                            formatoMoneda(pedido.total, simbolo: _simbolo),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Paleta.texto,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (elegido == null || !mounted) return;
+
+    var faltantes = 0;
+    for (final item in elegido.items) {
+      final producto = _catalogo!.productos
+          .where((p) => p.id == item.productoId)
+          .firstOrNull;
+      if (producto == null) {
+        faltantes++;
+        continue;
+      }
+      _orden[producto.id] = (_orden[producto.id] ?? 0) + item.cantidad;
+    }
+    setState(() {});
+
+    final mensaje = faltantes > 0
+        ? trp('venta.pedido_productos_no_disponibles', {'codigo': '${elegido.id}'})
+        : trp('venta.pedido_recuperado', {'codigo': '${elegido.id}'});
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje)),
     );
   }
 
@@ -350,6 +483,27 @@ class _VentaPageState extends State<VentaPage> {
                       Icons.qr_code_scanner,
                       size: 24,
                       color: Paleta.blanco,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Material(
+                color: Paleta.blanco,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: _cobrando ? null : _recuperarPedido,
+                  child: Container(
+                    padding: const EdgeInsets.all(13),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Paleta.primario),
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_outlined,
+                      size: 24,
+                      color: Paleta.primario,
                     ),
                   ),
                 ),

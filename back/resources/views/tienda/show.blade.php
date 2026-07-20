@@ -3,7 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $empresa->nombre }} — Tienda en línea</title>
+    @php
+        $ogTitulo = "{$empresa->nombre} — Tienda en línea";
+        $ogDescripcion = "Mira el catálogo de {$empresa->nombre} y pide por WhatsApp.";
+        $ogImagen = $empresa->logo_path ? url($empresa->logo_path) : null;
+        $ogUrl = route('tienda.show', $empresa->slug_tienda);
+        // wa.me necesita el número completo (código de país + local) sin
+        // signos; el teléfono se guarda sin el código, que va aparte.
+        $telefonoWhatsapp = preg_replace('/\D/', '', ($empresa->codigo_pais ?? '').$empresa->telefono);
+    @endphp
+    <title>{{ $ogTitulo }}</title>
+    <meta name="description" content="{{ $ogDescripcion }}">
+    <link rel="canonical" href="{{ $ogUrl }}">
+
+    {{-- Open Graph: así arma WhatsApp/Facebook la tarjeta con miniatura al compartir este link. --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $empresa->nombre }}">
+    <meta property="og:title" content="{{ $ogTitulo }}">
+    <meta property="og:description" content="{{ $ogDescripcion }}">
+    <meta property="og:url" content="{{ $ogUrl }}">
+    @if($ogImagen)
+        <meta property="og:image" content="{{ $ogImagen }}">
+        <meta property="og:image:secure_url" content="{{ $ogImagen }}">
+        <meta property="og:image:type" content="image/webp">
+        <meta property="og:image:alt" content="{{ $empresa->nombre }}">
+    @endif
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $ogTitulo }}">
+    <meta name="twitter:description" content="{{ $ogDescripcion }}">
+    @if($ogImagen)
+        <meta name="twitter:image" content="{{ $ogImagen }}">
+    @endif
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -695,7 +727,7 @@
                 <p>Agrega productos con el botón + y envíanos tu pedido completo en un mensaje.</p>
             </div>
             @if($empresa->telefono)
-                <a href="https://wa.me/{{ preg_replace('/\D/', '', $empresa->telefono) }}" target="_blank">
+                <a href="https://wa.me/{{ $telefonoWhatsapp }}" target="_blank">
                     <i class="fa-brands fa-whatsapp"></i> Escríbenos
                 </a>
             @endif
@@ -765,7 +797,7 @@
     </div>
 
     <footer>
-        {{ $empresa->nombre }} · {{ $empresa->telefono }} · {{ $empresa->direccion }}
+        {{ $empresa->nombre }} · {{ trim(($empresa->codigo_pais ?? '').' '.$empresa->telefono) }} · {{ $empresa->direccion }}
     </footer>
 
     <div class="cart-overlay" id="cartOverlay"></div>
@@ -779,13 +811,13 @@
         </div>
         <div class="cart-footer">
             <div class="cart-form">
-                <label for="clienteNombre">Tu nombre</label>
+                <label for="clienteNombre">Tu nombre (opcional)</label>
                 <input type="text" id="clienteNombre" placeholder="Ej. Juan Pérez">
-                <label for="clienteTelefono">Teléfono</label>
+                <label for="clienteTelefono">Teléfono (opcional)</label>
                 <input type="tel" id="clienteTelefono" placeholder="Ej. 70012345">
-                <label for="clienteDireccion">Dirección de entrega</label>
+                <label for="clienteDireccion">Dirección de entrega (opcional)</label>
                 <input type="text" id="clienteDireccion" placeholder="Ej. Av. América #245">
-                <label for="pedidoNotas">Notas adicionales</label>
+                <label for="pedidoNotas">Notas adicionales (opcional)</label>
                 <textarea id="pedidoNotas" placeholder="Ej. Sin picante, entregar por la tarde..."></textarea>
             </div>
             <div class="cart-total">
@@ -809,7 +841,7 @@
 
     <script>
         const MONEDA = '{{ $empresa->moneda }}';
-        const TELEFONO = '{{ $empresa->telefono }}';
+        const TELEFONO = '{{ $telefonoWhatsapp }}';
         const SLUG = '{{ $empresa->slug_tienda }}';
         const EMPRESA_ID = {{ $empresa->id }};
         const EMPRESA_NOMBRE = '{{ $empresa->nombre }}';
@@ -929,20 +961,12 @@
         }
 
         async function enviarPedido() {
-            if (!TELEFONO) {
-                alert('Esta tienda aún no tiene un teléfono configurado.');
-                return;
-            }
-
+            // Los datos de contacto son opcionales: el pedido se guarda igual
+            // aunque el cliente no llene nombre, teléfono, dirección ni notas.
             const clienteNombre = document.getElementById('clienteNombre').value.trim();
             const clienteTelefono = document.getElementById('clienteTelefono').value.trim();
             const clienteDireccion = document.getElementById('clienteDireccion').value.trim();
             const pedidoNotas = document.getElementById('pedidoNotas').value.trim();
-
-            if (!clienteNombre || !clienteTelefono) {
-                alert('Por favor ingresa tu nombre y teléfono para continuar.');
-                return;
-            }
 
             const items = Object.values(carrito).map(i => ({
                 producto_id: parseInt(i.id),
@@ -962,10 +986,10 @@
                     },
                     body: JSON.stringify({
                         empresa_id: EMPRESA_ID,
-                        cliente_nombre: clienteNombre,
-                        cliente_telefono: clienteTelefono,
-                        direccion: clienteDireccion,
-                        notas: pedidoNotas,
+                        cliente_nombre: clienteNombre || null,
+                        cliente_telefono: clienteTelefono || null,
+                        direccion: clienteDireccion || null,
+                        notas: pedidoNotas || null,
                         items: items
                     })
                 });
@@ -984,13 +1008,18 @@
                 ).join('\n');
                 const mensaje = `Hola ${EMPRESA_NOMBRE}, quisiera hacer este pedido:\n${resumenItems}\nTotal: ${formatearPrecio(totalCarrito())}${numeroPedido ? '\nN° pedido: ' + numeroPedido : ''}`;
 
-                // Limpia el carrito una vez guardado el pedido.
+                // El pedido ya quedó guardado en la base de datos; limpia el
+                // carrito y, si la tienda tiene WhatsApp, abre el mensaje.
                 carrito = {};
                 guardarCarrito();
                 renderCarrito();
                 cerrarCarrito();
 
-                window.open('https://wa.me/' + TELEFONO.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensaje), '_blank');
+                if (TELEFONO) {
+                    window.open('https://wa.me/' + TELEFONO.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensaje), '_blank');
+                } else {
+                    alert('¡Pedido registrado' + (numeroPedido ? ' N° ' + numeroPedido : '') + '! Pronto nos pondremos en contacto contigo.');
+                }
             } catch (error) {
                 alert(error.message);
             } finally {

@@ -107,12 +107,13 @@ class PedidoController extends Controller
             ], 404);
         }
 
-        $pedidos = $empresa->pedidos()
-            ->with('items')
-            ->orderByDesc('created_at')
-            ->paginate(20);
-
-        return response()->json($pedidos);
+        return response()->json([
+            'pedidos' => $empresa->pedidos()
+                ->with('items')
+                ->orderByDesc('id')
+                ->limit(200)
+                ->get(),
+        ]);
     }
 
     /**

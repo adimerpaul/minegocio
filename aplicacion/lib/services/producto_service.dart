@@ -95,6 +95,28 @@ class ProductoService {
     return creado;
   }
 
+  /// Elimina (soft delete) un producto de la empresa.
+  Future<void> eliminar({
+    required String token,
+    required Producto producto,
+  }) async {
+    final uri = Uri.parse('${Env.apiUrl}/api/productos/${producto.id}');
+
+    final response = await http.delete(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 15));
+
+    if (response.statusCode != 200) {
+      throw Exception(_mensajeError(response));
+    }
+
+    await CatalogoService.instance.listar(token, refrescar: true);
+  }
+
   /// Mensaje legible del error de la API (validación o mensaje general).
   String _mensajeError(http.Response response) {
     try {

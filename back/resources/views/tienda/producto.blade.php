@@ -3,8 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $productoModel->nombre }} — {{ $empresa->nombre }}</title>
-    <meta name="description" content="{{ $productoModel->nombre }} a {{ $empresa->moneda }} {{ number_format($productoModel->precio, 2) }} en {{ $empresa->nombre }}">
+    @php
+        $ogTitulo = "{$productoModel->nombre} — {$empresa->nombre}";
+        $ogDescripcion = "{$productoModel->nombre} a {$empresa->moneda} ".number_format($productoModel->precio, 2)." en {$empresa->nombre}";
+        $ogImagen = $productoModel->imagen_path
+            ? url($productoModel->imagen_path)
+            : ($empresa->logo_path ? url($empresa->logo_path) : null);
+        $ogUrl = route('tienda.producto', [
+            'slug' => $empresa->slug_tienda,
+            'producto' => $productoModel->id,
+            'nombreSlug' => \Illuminate\Support\Str::slug($productoModel->nombre),
+        ]);
+        // wa.me necesita el número completo (código de país + local) sin
+        // signos; el teléfono se guarda sin el código, que va aparte.
+        $telefonoWhatsapp = preg_replace('/\D/', '', ($empresa->codigo_pais ?? '').$empresa->telefono);
+    @endphp
+    <title>{{ $ogTitulo }}</title>
+    <meta name="description" content="{{ $ogDescripcion }}">
+    <link rel="canonical" href="{{ $ogUrl }}">
+
+    {{-- Open Graph: así arma WhatsApp/Facebook la tarjeta con miniatura al compartir este link. --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $empresa->nombre }}">
+    <meta property="og:title" content="{{ $ogTitulo }}">
+    <meta property="og:description" content="{{ $ogDescripcion }}">
+    <meta property="og:url" content="{{ $ogUrl }}">
+    @if($ogImagen)
+        <meta property="og:image" content="{{ $ogImagen }}">
+        <meta property="og:image:secure_url" content="{{ $ogImagen }}">
+        <meta property="og:image:type" content="image/webp">
+        <meta property="og:image:alt" content="{{ $productoModel->nombre }}">
+    @endif
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $ogTitulo }}">
+    <meta name="twitter:description" content="{{ $ogDescripcion }}">
+    @if($ogImagen)
+        <meta name="twitter:image" content="{{ $ogImagen }}">
+    @endif
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -579,7 +616,7 @@
     </main>
 
     <footer>
-        {{ $empresa->nombre }} · {{ $empresa->telefono }} · {{ $empresa->direccion }}
+        {{ $empresa->nombre }} · {{ trim(($empresa->codigo_pais ?? '').' '.$empresa->telefono) }} · {{ $empresa->direccion }}
     </footer>
 
     <div class="modal-overlay" id="pedidoModalOverlay">
@@ -589,13 +626,13 @@
                 <button class="modal-close" id="cerrarModalBtn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-form">
-                <label for="clienteNombre">Tu nombre</label>
+                <label for="clienteNombre">Tu nombre (opcional)</label>
                 <input type="text" id="clienteNombre" placeholder="Ej. Juan Pérez">
-                <label for="clienteTelefono">Teléfono</label>
+                <label for="clienteTelefono">Teléfono (opcional)</label>
                 <input type="tel" id="clienteTelefono" placeholder="Ej. 70012345">
-                <label for="clienteDireccion">Dirección de entrega</label>
+                <label for="clienteDireccion">Dirección de entrega (opcional)</label>
                 <input type="text" id="clienteDireccion" placeholder="Ej. Av. América #245">
-                <label for="pedidoNotas">Notas adicionales</label>
+                <label for="pedidoNotas">Notas adicionales (opcional)</label>
                 <textarea id="pedidoNotas" placeholder="Ej. Sin picante, entregar por la tarde..."></textarea>
             </div>
             <div class="modal-total">
@@ -618,7 +655,7 @@
     </a>
 
     <script>
-        const TELEFONO = '{{ $empresa->telefono }}';
+        const TELEFONO = '{{ $telefonoWhatsapp }}';
         const EMPRESA_ID = {{ $empresa->id }};
         const EMPRESA_NOMBRE = '{{ $empresa->nombre }}';
         const PRODUCTO_ID = {{ $productoModel->id }};
@@ -687,20 +724,12 @@
         }
 
         async function confirmarPedido() {
-            if (!TELEFONO) {
-                alert('Esta tienda aún no tiene un teléfono configurado.');
-                return;
-            }
-
+            // Los datos de contacto son opcionales: el pedido se guarda igual
+            // aunque el cliente no llene nombre, teléfono, dirección ni notas.
             const clienteNombre = document.getElementById('clienteNombre').value.trim();
             const clienteTelefono = document.getElementById('clienteTelefono').value.trim();
             const clienteDireccion = document.getElementById('clienteDireccion').value.trim();
             const pedidoNotas = document.getElementById('pedidoNotas').value.trim();
-
-            if (!clienteNombre || !clienteTelefono) {
-                alert('Por favor ingresa tu nombre y teléfono para continuar.');
-                return;
-            }
 
             confirmarPedidoBtn.disabled = true;
             confirmarPedidoBtn.textContent = 'Guardando pedido…';
@@ -715,10 +744,10 @@
                     },
                     body: JSON.stringify({
                         empresa_id: EMPRESA_ID,
-                        cliente_nombre: clienteNombre,
-                        cliente_telefono: clienteTelefono,
-                        direccion: clienteDireccion,
-                        notas: pedidoNotas,
+                        cliente_nombre: clienteNombre || null,
+                        cliente_telefono: clienteTelefono || null,
+                        direccion: clienteDireccion || null,
+                        notas: pedidoNotas || null,
                         items: [
                             { producto_id: PRODUCTO_ID, cantidad: 1 }
                         ]
@@ -735,8 +764,15 @@
                 const numeroPedido = pedido ? pedido.id : '';
                 const mensaje = `Hola ${EMPRESA_NOMBRE}, quisiera hacer este pedido:\n- 1x ${PRODUCTO_NOMBRE} (${formatearPrecio(PRODUCTO_PRECIO)})\nTotal: ${formatearPrecio(PRODUCTO_PRECIO)}${numeroPedido ? '\nN° pedido: ' + numeroPedido : ''}`;
 
+                // El pedido ya quedó guardado en la base de datos; si la
+                // tienda tiene WhatsApp, abre el mensaje con el resumen.
                 cerrarModal();
-                window.open('https://wa.me/' + TELEFONO.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensaje), '_blank');
+
+                if (TELEFONO) {
+                    window.open('https://wa.me/' + TELEFONO.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensaje), '_blank');
+                } else {
+                    alert('¡Pedido registrado' + (numeroPedido ? ' N° ' + numeroPedido : '') + '! Pronto nos pondremos en contacto contigo.');
+                }
             } catch (error) {
                 alert(error.message);
             } finally {

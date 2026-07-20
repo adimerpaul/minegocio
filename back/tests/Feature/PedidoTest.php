@@ -54,6 +54,46 @@ it('recibe un pedido desde la tienda pública y descuenta stock', function () {
     ]);
 });
 
+it('guarda un pedido sin datos de contacto: solo los productos son obligatorios', function () {
+    $empresa = Empresa::factory()->create([
+        'nombre' => 'Pollos Copacabana',
+        'slug_tienda' => 'pollos-copacabana',
+    ]);
+
+    $categoria = $empresa->categorias()->create(['nombre' => 'Pollos']);
+    $producto = $empresa->productos()->create([
+        'categoria_id' => $categoria->id,
+        'nombre' => 'Pollo entero',
+        'precio' => 90,
+        'stock' => 10,
+        'codigo' => 'P-001',
+    ]);
+
+    $response = $this->postJson('/api/pedidos', [
+        'empresa_id' => $empresa->id,
+        'items' => [
+            ['producto_id' => $producto->id, 'cantidad' => 1],
+        ],
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('pedido.estado', 'pendiente')
+        ->assertJsonPath('pedido.cliente_nombre', null)
+        ->assertJsonPath('pedido.cliente_telefono', null)
+        ->assertJsonPath('pedido.direccion', null)
+        ->assertJsonPath('pedido.notas', null);
+
+    $this->assertDatabaseHas('pedidos', [
+        'empresa_id' => $empresa->id,
+        'cliente_nombre' => null,
+        'cliente_telefono' => null,
+        'total' => 90,
+        'estado' => 'pendiente',
+    ]);
+
+    expect($producto->refresh()->stock)->toBe(9);
+});
+
 it('rechaza un pedido de otra empresa', function () {
     $empresa = Empresa::factory()->create([
         'nombre' => 'Pollos Copacabana',
@@ -165,6 +205,6 @@ it('lista los pedidos de la empresa autenticada', function () {
 
     $this->getJson('/api/pedidos')
         ->assertOk()
-        ->assertJsonPath('data.0.id', $pedido->id)
-        ->assertJsonPath('data.0.cliente_nombre', 'Juan');
+        ->assertJsonPath('pedidos.0.id', $pedido->id)
+        ->assertJsonPath('pedidos.0.cliente_nombre', 'Juan');
 });
