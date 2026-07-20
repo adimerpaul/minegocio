@@ -43,6 +43,9 @@ class Empresa {
     );
   }
 
+  /// URL pública del catálogo (tienda en línea), o null si aún no tiene slug.
+  String? get urlTienda => slugTienda == null ? null : '${Env.apiUrl}/tienda/$slugTienda';
+
   /// Fila de la tabla `empresa` de la base local (SQLite del teléfono).
   Map<String, Object?> toDbMap() => {
         'id': id,

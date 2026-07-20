@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
             --naranja: #ea580c;
@@ -85,30 +86,17 @@
             gap: 8px;
         }
 
-        .icon-btn, .app-btn {
+        .icon-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            width: 36px;
             height: 36px;
             border-radius: 10px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .icon-btn {
-            width: 36px;
             background: var(--blanco);
             color: var(--texto);
             border: 1px solid var(--borde-fuerte);
-        }
-
-        .app-btn {
-            padding: 0 12px;
-            background: var(--naranja);
-            color: var(--blanco);
-            border: none;
+            font-size: 13px;
         }
 
         .container {
@@ -458,11 +446,49 @@
             .modal-panel { border-radius: 18px; max-height: 88vh; }
         }
 
+        .fab-cart {
+            position: fixed;
+            right: 18px;
+            bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+            z-index: 35;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--naranja);
+            color: var(--blanco);
+            border: none;
+            text-decoration: none;
+            padding: 13px 18px;
+            border-radius: 999px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 26px rgba(234, 88, 12, 0.38);
+        }
+
+        .fab-cart i {
+            font-size: 16px;
+        }
+
+        .fab-cart .fab-count {
+            background: var(--blanco);
+            color: var(--naranja);
+            font-size: 11.5px;
+            font-weight: 800;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
         @media (max-width: 480px) {
-            .app-btn span { display: none; }
             .product-name { font-size: 20px; }
             .product-price { font-size: 24px; }
             .products { grid-template-columns: repeat(2, 1fr); }
+            .fab-cart { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
         }
     </style>
 </head>
@@ -479,12 +505,8 @@
             </a>
             <div class="header-actions">
                 <button class="icon-btn" id="shareProductBtn" title="Compartir producto">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+                    <i class="fa-solid fa-share-nodes"></i>
                 </button>
-                <a href="#" class="app-btn" id="openAppBtn">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                    <span>Abrir app</span>
-                </a>
             </div>
         </div>
     </header>
@@ -501,7 +523,7 @@
                 @if($productoModel->imagen_path)
                     <img src="{{ url($productoModel->imagen_path) }}" alt="{{ $productoModel->nombre }}">
                 @else
-                    <div class="placeholder">🛍️</div>
+                    <div class="placeholder"><i class="fa-solid fa-image"></i></div>
                 @endif
             </div>
             <div class="product-info">
@@ -519,12 +541,12 @@
                 </div>
                 <div class="actions">
                     <button class="btn-primary" id="addToCartBtn" @disabled($productoModel->stock <= 0)>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        <i class="fa-solid fa-basket-shopping"></i>
                         Agregar a la canasta
                     </button>
                     @if($empresa->telefono && $productoModel->stock > 0)
                         <button class="btn-whatsapp" id="pedirAhoraBtn" type="button">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.3c1.4.8 3.1 1.2 4.9 1.2h.1c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3h-.1c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3 .8.8-2.9-.2-.3C3.8 15.2 3.3 13.6 3.3 12c0-4.8 3.9-8.7 8.7-8.7s8.7 3.9 8.7 8.7-3.9 8.7-8.7 8.7z"/></svg>
+                            <i class="fa-brands fa-whatsapp"></i>
                             Pedir ahora
                         </button>
                     @endif
@@ -545,7 +567,7 @@
                             @if($imagenRel)
                                 <img src="{{ $imagenRel }}" alt="{{ $rel->nombre }}" loading="lazy">
                             @else
-                                <div class="placeholder">🛍️</div>
+                                <div class="placeholder"><i class="fa-solid fa-image"></i></div>
                             @endif
                         </div>
                         <h3 class="product-card-name">{{ $rel->nombre }}</h3>
@@ -564,7 +586,7 @@
         <div class="modal-panel">
             <div class="modal-header">
                 <h3>Tu pedido</h3>
-                <button class="modal-close" id="cerrarModalBtn">×</button>
+                <button class="modal-close" id="cerrarModalBtn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-form">
                 <label for="clienteNombre">Tu nombre</label>
@@ -581,11 +603,19 @@
                 <span id="modalTotal">{{ $empresa->moneda }} {{ number_format($productoModel->precio, 2) }}</span>
             </div>
             <button class="modal-submit" id="confirmarPedidoBtn" type="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.3c1.4.8 3.1 1.2 4.9 1.2h.1c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3h-.1c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3 .8.8-2.9-.2-.3C3.8 15.2 3.3 13.6 3.3 12c0-4.8 3.9-8.7 8.7-8.7s8.7 3.9 8.7 8.7-3.9 8.7-8.7 8.7zm5.5-5.9c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.8-1.4-1.7-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.7 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.2-.1-.2-.3-.2-.5-.3z"/></svg>
+                <i class="fa-brands fa-whatsapp"></i>
                 Confirmar y pedir por WhatsApp
             </button>
         </div>
     </div>
+
+    <!-- Botón flotante: siempre visible, lleva de vuelta al catálogo con
+         la canasta abierta para ver lo que ya se está pidiendo. -->
+    <a class="fab-cart" href="{{ route('tienda.show', $empresa->slug_tienda) }}?canasta=1" aria-label="Ver mi canasta">
+        <i class="fa-solid fa-basket-shopping"></i>
+        <span>Canasta</span>
+        <span class="fab-count" id="fabCartCount">0</span>
+    </a>
 
     <script>
         const TELEFONO = '{{ $empresa->telefono }}';
@@ -634,8 +664,9 @@
 
             localStorage.setItem('tienda_' + SLUG + '_carrito', JSON.stringify(carrito));
             this.textContent = '¡Agregado!';
+            actualizarFabCarrito();
             setTimeout(() => {
-                this.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Agregar a la canasta`;
+                this.innerHTML = '<i class="fa-solid fa-basket-shopping"></i> Agregar a la canasta';
             }, 1500);
         });
 
@@ -710,7 +741,7 @@
                 alert(error.message);
             } finally {
                 confirmarPedidoBtn.disabled = false;
-                confirmarPedidoBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.3c1.4.8 3.1 1.2 4.9 1.2h.1c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3h-.1c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3 .8.8-2.9-.2-.3C3.8 15.2 3.3 13.6 3.3 12c0-4.8 3.9-8.7 8.7-8.7s8.7 3.9 8.7 8.7-3.9 8.7-8.7 8.7zm5.5-5.9c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.8-1.4-1.7-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.7 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.2-.1-.2-.3-.2-.5-.3z"/></svg> Confirmar y pedir por WhatsApp`;
+                confirmarPedidoBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Confirmar y pedir por WhatsApp';
             }
         }
 
@@ -721,14 +752,23 @@
         });
         if (confirmarPedidoBtn) confirmarPedidoBtn.addEventListener('click', confirmarPedido);
 
-        // Enlace a la app: intenta abrir el deep link; si no existe, lleva a descarga.
-        document.getElementById('openAppBtn').addEventListener('click', function (e) {
-            e.preventDefault();
-            window.location.href = 'minegocio://tienda/{{ $empresa->slug_tienda }}';
-            setTimeout(function () {
-                window.location.href = 'https://play.google.com/store/apps/details?id=com.example.minegocio';
-            }, 1500);
-        });
+        // Botón flotante: cuenta lo que ya lleva en la canasta (misma clave
+        // de localStorage que la tienda) y lleva de vuelta al catálogo a
+        // revisarla o completar el pedido.
+        const SLUG_TIENDA = '{{ $empresa->slug_tienda }}';
+        const fabCartCount = document.getElementById('fabCartCount');
+
+        function actualizarFabCarrito() {
+            let carrito = {};
+            const guardado = localStorage.getItem('tienda_' + SLUG_TIENDA + '_carrito');
+            if (guardado) {
+                try { carrito = JSON.parse(guardado); } catch (e) { carrito = {}; }
+            }
+            const cantidad = Object.values(carrito).reduce((sum, item) => sum + item.cantidad, 0);
+            fabCartCount.textContent = cantidad;
+        }
+
+        actualizarFabCarrito();
     </script>
 </body>
 </html>

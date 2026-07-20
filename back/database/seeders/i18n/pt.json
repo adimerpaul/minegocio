@@ -44,7 +44,6 @@
   "menu.seccion_caja": "Menus de caixa",
   "menu.seccion_admin": "Menus de administração",
   "menu.administrador": "Administrador",
-  "menu.tienda_pronto": "A loja online estará disponível em breve.",
 
   "sesion.cerrar": "Sair",
   "sesion.confirmar": "Seus dados locais serão apagados deste telefone. Continuar?",
@@ -74,6 +73,8 @@
   "config.tienda": "Loja online",
   "config.tienda_activa": "Sua loja é gerada automaticamente a partir do nome da sua empresa.",
   "config.tienda_inactiva": "Salve o nome comercial para ativar seu catálogo público. Seus clientes poderão ver os produtos e fazer pedidos.",
+  "config.abrir_tienda": "Abrir loja",
+  "config.tienda_error": "Não foi possível abrir a loja no navegador.",
   "config.idioma_nota": "Mude o idioma de todo o aplicativo.",
 
   "comun.reintentar": "Tentar novamente",

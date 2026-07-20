@@ -6,6 +6,7 @@ import '../../config/env.dart';
 import '../../config/paleta.dart';
 import '../../services/auth_service.dart';
 import '../../services/idioma_service.dart';
+import '../../services/tienda_launcher.dart';
 import '../../viewmodels/empresa_viewmodel.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/selector_idioma.dart';
@@ -372,6 +373,29 @@ class _ConfigPageState extends State<ConfigPage> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => abrirTienda(
+                      context,
+                      widget.session.user.empresa,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Paleta.primarioOscuro,
+                      side: const BorderSide(color: Paleta.primario),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.open_in_new, size: 18),
+                    label: Text(
+                      tr('config.abrir_tienda'),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ),
               ],

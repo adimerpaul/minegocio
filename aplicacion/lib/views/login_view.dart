@@ -66,14 +66,52 @@ class _LoginViewState extends State<LoginView> {
                   Align(
                     alignment: Alignment.topRight,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8, right: 8),
-                      child: IconButton(
-                        onPressed: () => mostrarSelectorIdioma(context),
-                        icon: const Icon(
-                          Icons.language,
-                          color: Paleta.textoSuave,
+                      padding: const EdgeInsets.only(top: 12, right: 12),
+                      child: Material(
+                        color: Paleta.blanco,
+                        borderRadius: BorderRadius.circular(20),
+                        elevation: 0,
+                        child: InkWell(
+                          onTap: () => mostrarSelectorIdioma(context),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Paleta.blanco,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Paleta.bordeSuave),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x1A221A15),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.language_rounded,
+                                  color: Paleta.primario,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  tr('comun.idioma'),
+                                  style: const TextStyle(
+                                    color: Paleta.texto,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        tooltip: tr('comun.idioma'),
                       ),
                     ),
                   ),
@@ -81,19 +119,37 @@ class _LoginViewState extends State<LoginView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/images/logo_default.webp',
-                      width: 180,
-                      fit: BoxFit.contain,
+                    Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        color: Paleta.blanco,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Paleta.bordeSuave, width: 1.5),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x26221A15),
+                            blurRadius: 28,
+                            offset: Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(22),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/logo_default.webp',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     Text(
                       tr('app.nombre'),
                       style: const TextStyle(
                         color: Paleta.texto,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.8,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -155,22 +211,11 @@ class _LoginViewState extends State<LoginView> {
                                 ),
                               )
                             else
-                              Container(
-                                width: 22,
-                                height: 22,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Paleta.borde),
-                                ),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'G',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: Paleta.primario,
-                                  ),
-                                ),
+                              Image.asset(
+                                'assets/images/gmail_logo.png',
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.contain,
                               ),
                             const SizedBox(width: 10),
                             Text(

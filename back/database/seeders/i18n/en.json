@@ -44,7 +44,6 @@
   "menu.seccion_caja": "Cashier menus",
   "menu.seccion_admin": "Administration menus",
   "menu.administrador": "Administrator",
-  "menu.tienda_pronto": "The online store will be available soon.",
 
   "sesion.cerrar": "Sign out",
   "sesion.confirmar": "Your local data will be deleted from this phone. Continue?",
@@ -74,6 +73,8 @@
   "config.tienda": "Online store",
   "config.tienda_activa": "Your store is generated automatically from your business name.",
   "config.tienda_inactiva": "Save the business name to activate your public catalog. Your customers will be able to view products and place orders.",
+  "config.abrir_tienda": "Open store",
+  "config.tienda_error": "Could not open the store in the browser.",
   "config.idioma_nota": "Change the app language.",
 
   "comun.reintentar": "Retry",

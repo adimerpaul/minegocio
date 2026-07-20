@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../config/paleta.dart';
 import '../services/auth_service.dart';
 import '../services/idioma_service.dart';
+import '../services/tienda_launcher.dart';
 import 'login_view.dart';
 import 'pages/categorias_page.dart';
 import 'pages/clientes_page.dart';
@@ -162,11 +163,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  void _tiendaPendiente() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(tr('menu.tienda_pronto'))),
-    );
-  }
+  void _abrirTienda() => abrirTienda(context, _session.user.empresa);
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +245,7 @@ class _HomeViewState extends State<HomeView> {
             icono: Icons.storefront_outlined,
             fondo: Paleta.primario,
             color: Paleta.blanco,
-            onTap: _tiendaPendiente,
+            onTap: _abrirTienda,
           ),
         ],
       ),

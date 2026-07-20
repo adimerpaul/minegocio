@@ -3,7 +3,7 @@
   "comun.cancelar": "Cancelar",
   "comun.buscar": "Buscar",
   "comun.error": "Ocurrió un error",
-  "comun.idioma": "Idioma",
+  "comun.idioma": "selecciona tu idioma",
   "comun.sin_conexion": "No hay conexión con el servidor.",
 
   "login.eslogan": "Tu negocio y tu tienda en línea, desde el celular.",
@@ -44,7 +44,6 @@
   "menu.seccion_caja": "Menús de caja",
   "menu.seccion_admin": "Menús de administración",
   "menu.administrador": "Administrador",
-  "menu.tienda_pronto": "La tienda en línea estará disponible pronto.",
 
   "sesion.cerrar": "Cerrar sesión",
   "sesion.confirmar": "Tus datos locales se borrarán de este teléfono. ¿Continuar?",
@@ -74,6 +73,8 @@
   "config.tienda": "Tienda en línea",
   "config.tienda_activa": "Tu tienda se genera automáticamente desde el nombre de tu empresa.",
   "config.tienda_inactiva": "Guarda el nombre comercial para activar tu catálogo público. Tus clientes podrán ver tus productos y hacer pedidos.",
+  "config.abrir_tienda": "Abrir tienda",
+  "config.tienda_error": "No se pudo abrir la tienda en el navegador.",
   "config.idioma_nota": "Cambia el idioma de toda la aplicación.",
 
   "comun.reintentar": "Reintentar",

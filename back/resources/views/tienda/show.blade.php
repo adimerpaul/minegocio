@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
             --naranja: #ea580c;
@@ -97,23 +98,6 @@
             cursor: pointer;
         }
 
-        .app-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            height: 36px;
-            padding: 0 12px;
-            background: var(--naranja);
-            color: var(--blanco);
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
         .cart-btn {
             position: relative;
             display: flex;
@@ -177,6 +161,9 @@
         }
 
         .hero a {
+            display: flex;
+            align-items: center;
+            gap: 7px;
             background: var(--blanco);
             color: var(--naranja);
             text-decoration: none;
@@ -185,6 +172,11 @@
             padding: 10px 18px;
             border-radius: 10px;
             flex-shrink: 0;
+        }
+
+        .hero a i {
+            color: var(--whatsapp);
+            font-size: 16px;
         }
 
         .categories {
@@ -298,6 +290,8 @@
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            color: var(--texto);
+            font-size: 11px;
         }
 
         .product-name {
@@ -341,7 +335,7 @@
             border: none;
             background: var(--naranja);
             color: var(--blanco);
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -362,11 +356,11 @@
             color: var(--texto-suave);
         }
 
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            stroke: var(--borde-fuerte);
+        .empty-state i {
+            font-size: 52px;
+            color: var(--borde-fuerte);
             margin-bottom: 16px;
+            display: block;
         }
 
         /* Drawer */
@@ -422,7 +416,7 @@
         .close-cart {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
             color: var(--texto-suave);
             line-height: 1;
@@ -495,8 +489,12 @@
             background: var(--blanco);
             cursor: pointer;
             font-weight: 700;
+            font-size: 10px;
             color: var(--texto);
             line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .qty-controls span {
@@ -599,6 +597,10 @@
             color: var(--blanco);
         }
 
+        .checkout-btn i {
+            font-size: 18px;
+        }
+
         .checkout-btn:disabled {
             background: var(--borde);
             color: #c9bcae;
@@ -619,8 +621,46 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .fab-cart {
+            position: fixed;
+            right: 18px;
+            bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+            z-index: 35;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--naranja);
+            color: var(--blanco);
+            border: none;
+            padding: 13px 18px;
+            border-radius: 999px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 26px rgba(234, 88, 12, 0.38);
+        }
+
+        .fab-cart i {
+            font-size: 16px;
+        }
+
+        .fab-cart .fab-count {
+            background: var(--blanco);
+            color: var(--naranja);
+            font-size: 11.5px;
+            font-weight: 800;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
         @media (max-width: 480px) {
             .products { grid-template-columns: repeat(2, 1fr); }
+            .fab-cart { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
         }
     </style>
 </head>
@@ -637,14 +677,10 @@
             </div>
             <div class="header-actions">
                 <button class="icon-btn" id="shareStoreBtn" title="Compartir tienda">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+                    <i class="fa-solid fa-share-nodes"></i>
                 </button>
-                <a href="#" class="app-btn" id="openAppBtn">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                    <span>Abrir app</span>
-                </a>
                 <button class="cart-btn" id="cartBtn">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <i class="fa-solid fa-basket-shopping"></i>
                     Canasta
                     <span class="count" id="cartCount" style="display:none">0</span>
                 </button>
@@ -659,7 +695,9 @@
                 <p>Agrega productos con el botón + y envíanos tu pedido completo en un mensaje.</p>
             </div>
             @if($empresa->telefono)
-                <a href="https://wa.me/{{ preg_replace('/\D/', '', $empresa->telefono) }}" target="_blank">Escríbenos</a>
+                <a href="https://wa.me/{{ preg_replace('/\D/', '', $empresa->telefono) }}" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Escríbenos
+                </a>
             @endif
         </section>
 
@@ -683,7 +721,7 @@
 
         @if($empresa->productos->isEmpty())
             <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <i class="fa-solid fa-basket-shopping"></i>
                 <p>La tienda aún no tiene productos disponibles.</p>
             </div>
         @else
@@ -703,13 +741,13 @@
                             @if($imagen)
                                 <img src="{{ $imagen }}" alt="{{ $producto->nombre }}" loading="lazy">
                             @else
-                                <div class="placeholder">🛍️</div>
+                                <div class="placeholder"><i class="fa-solid fa-image"></i></div>
                             @endif
                             @if($agotado)
                                 <span class="badge">Agotado</span>
                             @endif
                             <button class="share-product" data-id="{{ $producto->id }}" title="Compartir producto">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#221d18" stroke-width="2.2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+                                <i class="fa-solid fa-share-nodes"></i>
                             </button>
                         </div>
                         <h4 class="product-name">{{ $producto->nombre }}</h4>
@@ -717,7 +755,7 @@
                             <span class="product-price">{{ $empresa->moneda }} {{ number_format($producto->precio, 2) }}</span>
                             <div class="product-actions">
                                 <span class="qty-badge" data-qty-id="{{ $producto->id }}" style="display:none"></span>
-                                <button class="add-btn" data-id="{{ $producto->id }}" @disabled($agotado)>+</button>
+                                <button class="add-btn" data-id="{{ $producto->id }}" @disabled($agotado)><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </div>
                     </article>
@@ -734,7 +772,7 @@
     <aside class="cart-panel" id="cartPanel">
         <div class="cart-header">
             <h3>Mi canasta</h3>
-            <button class="close-cart" id="closeCart">×</button>
+            <button class="close-cart" id="closeCart"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="cart-items" id="cartItems">
             <div class="cart-empty">Tu canasta está vacía.<br>Agrega productos con el botón +</div>
@@ -755,11 +793,19 @@
                 <span id="cartTotal">{{ $empresa->moneda }} 0.00</span>
             </div>
             <button class="checkout-btn" id="checkoutBtn" disabled>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.3c1.4.8 3.1 1.2 4.9 1.2h.1c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3h-.1c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3 .8.8-2.9-.2-.3C3.8 15.2 3.3 13.6 3.3 12c0-4.8 3.9-8.7 8.7-8.7s8.7 3.9 8.7 8.7-3.9 8.7-8.7 8.7zm5.5-5.9c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.8-1.4-1.7-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.7 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.2-.1-.2-.3-.2-.5-.3z"/></svg>
+                <i class="fa-brands fa-whatsapp"></i>
                 <span id="checkoutText">Pedir por WhatsApp</span>
             </button>
         </div>
     </aside>
+
+    <!-- Botón flotante: siempre visible mientras se navega el catálogo,
+         para que el cliente vea de un vistazo lo que lleva pedido. -->
+    <button class="fab-cart" id="fabCartBtn" aria-label="Ver mi canasta">
+        <i class="fa-solid fa-basket-shopping"></i>
+        <span id="fabCartLabel">Canasta</span>
+        <span class="fab-count" id="fabCartCount">0</span>
+    </button>
 
     <script>
         const MONEDA = '{{ $empresa->moneda }}';
@@ -779,6 +825,8 @@
         const cartItems = document.getElementById('cartItems');
         const cartTotal = document.getElementById('cartTotal');
         const checkoutBtn = document.getElementById('checkoutBtn');
+        const fabCartBtn = document.getElementById('fabCartBtn');
+        const fabCartCount = document.getElementById('fabCartCount');
 
         function abrirCarrito() {
             cartOverlay.classList.add('open');
@@ -831,6 +879,7 @@
             cartCount.textContent = cantidad;
             cartCount.style.display = cantidad > 0 ? 'grid' : 'none';
             cartTotal.textContent = formatearPrecio(total);
+            fabCartCount.textContent = cantidad;
 
             checkoutBtn.disabled = cantidad === 0;
             checkoutBtn.classList.toggle('active', cantidad > 0);
@@ -840,15 +889,15 @@
             } else {
                 cartItems.innerHTML = items.map(item => `
                     <div class="cart-item">
-                        ${item.imagen ? '<img src="' + item.imagen + '" alt="' + item.nombre + '">' : '<div class="cart-item-thumb">🛍️</div>'}
+                        ${item.imagen ? '<img src="' + item.imagen + '" alt="' + item.nombre + '">' : '<div class="cart-item-thumb"><i class="fa-solid fa-image"></i></div>'}
                         <div class="cart-item-info">
                             <p class="cart-item-name">${item.nombre}</p>
                             <p class="cart-item-price">${formatearPrecio(item.precio)} c/u</p>
                         </div>
                         <div class="qty-controls">
-                            <button data-id="${item.id}" data-action="restar">−</button>
+                            <button data-id="${item.id}" data-action="restar"><i class="fa-solid fa-minus"></i></button>
                             <span>${item.cantidad}</span>
-                            <button data-id="${item.id}" data-action="sumar">+</button>
+                            <button data-id="${item.id}" data-action="sumar"><i class="fa-solid fa-plus"></i></button>
                         </div>
                         <span class="cart-item-subtotal">${formatearPrecio(item.precio * item.cantidad)}</span>
                     </div>
@@ -1025,14 +1074,8 @@
         });
 
         document.getElementById('shareStoreBtn').addEventListener('click', compartirTienda);
-        document.getElementById('openAppBtn').addEventListener('click', function (e) {
-            e.preventDefault();
-            window.location.href = 'minegocio://tienda/{{ $empresa->slug_tienda }}';
-            setTimeout(function () {
-                window.location.href = 'https://play.google.com/store/apps/details?id=com.example.minegocio';
-            }, 1500);
-        });
         cartBtn.addEventListener('click', abrirCarrito);
+        fabCartBtn.addEventListener('click', abrirCarrito);
         closeCart.addEventListener('click', cerrarCarrito);
         cartOverlay.addEventListener('click', cerrarCarrito);
         checkoutBtn.addEventListener('click', enviarPedido);
@@ -1043,6 +1086,10 @@
         // Resaltar producto compartido por URL
         const params = new URLSearchParams(window.location.search);
         const productoId = params.get('producto');
+
+        // Llegó desde "Ver canasta" en la página de un producto: abre el drawer.
+        if (params.get('canasta') === '1') abrirCarrito();
+
         if (productoId) {
             const card = document.querySelector('.product[data-id="' + productoId + '"]');
             if (card) {

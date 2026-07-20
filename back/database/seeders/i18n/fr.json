@@ -44,7 +44,6 @@
   "menu.seccion_caja": "Menus caisse",
   "menu.seccion_admin": "Menus administration",
   "menu.administrador": "Administrateur",
-  "menu.tienda_pronto": "La boutique en ligne sera bientôt disponible.",
 
   "sesion.cerrar": "Déconnexion",
   "sesion.confirmar": "Vos données locales seront supprimées de ce téléphone. Continuer ?",
@@ -74,6 +73,8 @@
   "config.tienda": "Boutique en ligne",
   "config.tienda_activa": "Votre boutique est générée automatiquement à partir du nom de votre entreprise.",
   "config.tienda_inactiva": "Enregistrez le nom commercial pour activer votre catalogue public. Vos clients pourront voir les produits et passer des commandes.",
+  "config.abrir_tienda": "Ouvrir la boutique",
+  "config.tienda_error": "Impossible d'ouvrir la boutique dans le navigateur.",
   "config.idioma_nota": "Changez la langue de toute l'application.",
 
   "comun.reintentar": "Réessayer",
