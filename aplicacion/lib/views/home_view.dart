@@ -11,6 +11,7 @@ import 'pages/categorias_page.dart';
 import 'pages/clientes_page.dart';
 import 'pages/compras_page.dart';
 import 'pages/config_page.dart';
+import 'pages/desarrollador_page.dart';
 import 'pages/inicio_page.dart';
 import 'pages/inventario_page.dart';
 import 'pages/lista_page.dart';
@@ -166,6 +167,13 @@ class _HomeViewState extends State<HomeView> {
 
   void _abrirTienda() => abrirTienda(context, _session.user.empresa);
 
+  void _abrirDesarrollador() {
+    _scaffoldKey.currentState?.closeDrawer();
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const DesarrolladorPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,7 +222,6 @@ class _HomeViewState extends State<HomeView> {
         return ConfigPage(
           session: _session,
           onSessionActualizada: (s) => setState(() => _session = s),
-          onCerrarSesion: _cerrarSesion,
         );
       default:
         return ListaPage(key: ValueKey(_modulo), modulo: _modulo);
@@ -404,15 +411,6 @@ class _HomeViewState extends State<HomeView> {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: _cerrarSesion,
-                  tooltip: tr('sesion.cerrar'),
-                  icon: const Icon(
-                    Icons.power_settings_new,
-                    color: Paleta.primarioOscuro,
-                    size: 22,
-                  ),
-                ),
               ],
             ),
           ),
@@ -435,6 +433,19 @@ class _HomeViewState extends State<HomeView> {
                   ),
                   for (final id in ids) _itemMenu(id),
                 ],
+                const Divider(height: 24, color: Paleta.bordeSuave),
+                _itemAccion(
+                  icono: Icons.code_rounded,
+                  titulo: tr('menu.desarrollador'),
+                  onTap: _abrirDesarrollador,
+                ),
+                const SizedBox(height: 2),
+                _itemAccion(
+                  icono: Icons.logout,
+                  titulo: tr('sesion.cerrar'),
+                  color: Paleta.alertaTexto,
+                  onTap: _cerrarSesion,
+                ),
               ],
             ),
           ),
@@ -470,6 +481,54 @@ class _HomeViewState extends State<HomeView> {
           color: Paleta.blanco,
           fontSize: 16,
           fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  /// Item del menú lateral para una acción que no es un módulo del negocio
+  /// (Desarrollador, Cerrar sesión): mismo estilo que `_itemMenu` pero sin
+  /// estado "activo" y con color opcional (rojo para Cerrar sesión).
+  Widget _itemAccion({
+    required IconData icono,
+    required String titulo,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    final col = color ?? Paleta.texto;
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F0EC),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icono, size: 17, color: col),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  titulo,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: col,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

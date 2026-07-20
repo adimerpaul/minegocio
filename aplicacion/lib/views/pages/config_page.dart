@@ -18,13 +18,11 @@ import '../widgets/selector_imagen.dart';
 class ConfigPage extends StatefulWidget {
   final Session session;
   final ValueChanged<Session> onSessionActualizada;
-  final VoidCallback onCerrarSesion;
 
   const ConfigPage({
     super.key,
     required this.session,
     required this.onSessionActualizada,
-    required this.onCerrarSesion,
   });
 
   @override
@@ -434,33 +432,6 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
               ],
             ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Material(
-          color: Paleta.blanco,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Paleta.bordeSuave),
-          ),
-          child: ListTile(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            leading: const Icon(Icons.logout, color: Paleta.alertaTexto),
-            title: Text(
-              tr('sesion.cerrar'),
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: Paleta.alertaTexto,
-              ),
-            ),
-            trailing: const Icon(
-              Icons.chevron_right,
-              color: Paleta.textoSuave,
-            ),
-            onTap: widget.onCerrarSesion,
           ),
         ),
       ],

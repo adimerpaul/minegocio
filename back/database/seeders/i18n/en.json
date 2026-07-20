@@ -46,10 +46,16 @@
   "menu.seccion_caja": "Cashier menus",
   "menu.seccion_admin": "Administration menus",
   "menu.administrador": "Administrator",
+  "menu.desarrollador": "Developer",
 
   "sesion.cerrar": "Sign out",
   "sesion.confirmar": "Your local data will be deleted from this phone. Continue?",
   "sesion.cerrando": "Signing out…",
+
+  "desarrollador.tagline": "Need a system built for your business? I developed this app and can build a similar solution for you.",
+  "desarrollador.whatsapp": "Message on WhatsApp",
+  "desarrollador.github": "View GitHub profile",
+  "desarrollador.enlace_error": "Could not open the link.",
 
   "inicio.hola": "Hi, :nombre",
   "inicio.ventas_hoy": "Today's sales",

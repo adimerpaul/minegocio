@@ -46,10 +46,16 @@
   "menu.seccion_caja": "Menus de caixa",
   "menu.seccion_admin": "Menus de administração",
   "menu.administrador": "Administrador",
+  "menu.desarrollador": "Desenvolvedor",
 
   "sesion.cerrar": "Sair",
   "sesion.confirmar": "Seus dados locais serão apagados deste telefone. Continuar?",
   "sesion.cerrando": "Saindo…",
+
+  "desarrollador.tagline": "Precisa de um sistema feito sob medida? Eu desenvolvi este aplicativo e posso criar uma solução parecida para o seu negócio.",
+  "desarrollador.whatsapp": "Enviar mensagem no WhatsApp",
+  "desarrollador.github": "Ver perfil no GitHub",
+  "desarrollador.enlace_error": "Não foi possível abrir o link.",
 
   "inicio.hola": "Olá, :nombre",
   "inicio.ventas_hoy": "Vendas de hoje",

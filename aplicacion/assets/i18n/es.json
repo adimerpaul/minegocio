@@ -58,6 +58,7 @@
   "menu.inicio": "Inicio",
   "menu.menu": "Menú",
   "menu.administrador": "Administrador",
+  "menu.desarrollador": "Desarrollador",
   "menu.seccion_caja": "Caja",
   "menu.seccion_admin": "Administrador",
 
@@ -198,6 +199,11 @@
   "sesion.cerrar": "Cerrar sesión",
   "sesion.confirmar": "Tus datos locales se borrarán de este teléfono. ¿Continuar?",
   "sesion.cerrando": "Cerrando sesión…",
+
+  "desarrollador.tagline": "¿Necesitas un sistema hecho a tu medida? Yo desarrollé esta aplicación y puedo construir una solución parecida para tu negocio.",
+  "desarrollador.whatsapp": "Escribir por WhatsApp",
+  "desarrollador.github": "Ver perfil de GitHub",
+  "desarrollador.enlace_error": "No se pudo abrir el enlace.",
 
   "pedidos.pendientes": "Pendientes",
   "pedidos.entregados": "Entregados este mes",
