@@ -10,6 +10,7 @@ use App\Services\ProveedoresIniciales;
 use App\Services\WebpImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class EmpresaController extends Controller
@@ -54,8 +55,13 @@ class EmpresaController extends Controller
             if (is_file($origen)) {
                 $archivo = "logos/empresa-{$empresa->id}.webp";
                 Storage::disk('public')->makeDirectory('logos');
-                copy($origen, Storage::disk('public')->path($archivo));
-                $empresa->update(['logo_path' => "/storage/{$archivo}"]);
+                $ruta = Storage::disk('public')->path($archivo);
+
+                if (copy($origen, $ruta)) {
+                    $empresa->update(['logo_path' => "/storage/{$archivo}"]);
+                } else {
+                    Log::warning("EmpresaController: no se pudo copiar el logo por defecto a {$ruta}. Verifica los permisos de storage/app/public.");
+                }
             }
         }
 

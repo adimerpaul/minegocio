@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Empresa;
 use App\Models\Producto;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -120,7 +121,13 @@ class CatalogoInicial
 
         $archivo = "categorias/{$empresa->id}/{$slug}.webp";
         Storage::disk('public')->makeDirectory(dirname($archivo));
-        copy($origen, Storage::disk('public')->path($archivo));
+        $ruta = Storage::disk('public')->path($archivo);
+
+        if (! copy($origen, $ruta)) {
+            Log::warning("CatalogoInicial: no se pudo copiar {$origen} a {$ruta}. Verifica los permisos de storage/app/public.");
+
+            return null;
+        }
 
         return "/storage/{$archivo}";
     }
@@ -141,7 +148,13 @@ class CatalogoInicial
 
         $archivo = "productos/{$empresa->id}/{$slug}.webp";
         Storage::disk('public')->makeDirectory(dirname($archivo));
-        copy($origen, Storage::disk('public')->path($archivo));
+        $ruta = Storage::disk('public')->path($archivo);
+
+        if (! copy($origen, $ruta)) {
+            Log::warning("CatalogoInicial: no se pudo copiar {$origen} a {$ruta}. Verifica los permisos de storage/app/public.");
+
+            return null;
+        }
 
         return "/storage/{$archivo}";
     }
@@ -176,8 +189,15 @@ class CatalogoInicial
 
             $archivo = 'productos/'.$empresa->id.'/'.Str::slug($producto->nombre).'.webp';
             Storage::disk('public')->makeDirectory(dirname($archivo));
-            imagewebp($imagen, Storage::disk('public')->path($archivo), 85);
+            $ruta = Storage::disk('public')->path($archivo);
+            $guardado = imagewebp($imagen, $ruta, 85);
             imagedestroy($imagen);
+
+            if (! $guardado || ! is_file($ruta)) {
+                Log::warning("CatalogoInicial: no se pudo generar el placeholder en {$ruta}. Verifica los permisos de storage/app/public y que PHP-GD tenga soporte WebP (gd_info()).");
+
+                return null;
+            }
 
             return "/storage/{$archivo}";
         } catch (\Throwable) {
